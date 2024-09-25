@@ -21,7 +21,7 @@ def register(request):
         })
         '''
         # 返回注册结果给前端
-        return JsonResponse(data.json())
+        return JsonResponse(data)
 
     else:
         return HttpResponse('.....')
@@ -45,6 +45,6 @@ def login(request):
         })
         '''
         # 返回登录结果给前端
-        return JsonResponse(response.json())
+        return JsonResponse(data)
     else:
         return HttpResponse('.....')
