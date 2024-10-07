@@ -16,7 +16,7 @@ def register(request):
 
         session=requests.Session()
 
-        url2='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/default.aspx?vdir=2&vdxmc=%u51b3%u7b56%u652f%u6301%u7cfb%u7edf%u5bfc%u8bba&vrjslogin=True'
+        url2='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/default.aspx?vdir=2&vdxmc=%e5%86%b3%e7%ad%96%e6%94%af%e6%8c%81%e7%b3%bb%e7%bb%9f%e5%af%bc%e8%ae%ba&vrjslogin=True'
         data2={
             '__EVENTTARGET':'', 
             '__EVENTARGUMENT': '',
@@ -71,7 +71,7 @@ def login(request):
         data_list=None
         session=requests.Session()
 
-        url2='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/default.aspx?vdir=34&vdxmc=%u5168%u56fd%u521b%u4e1a%u51b3%u7b56%u5927%u8d5b--%u4eba%u673a%u5bf9%u6297%u5b9e%u8bad&vrjslogin=True'
+        url2='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/default.aspx?vdir=2&vdxmc=%e5%86%b3%e7%ad%96%e6%94%af%e6%8c%81%e7%b3%bb%e7%bb%9f%e5%af%bc%e8%ae%ba&vrjslogin=True'
         data2={
             '__EVENTTARGET':'', 
             '__EVENTARGUMENT': '',
