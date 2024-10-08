@@ -1,6 +1,13 @@
-import './assets/main.css'
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
+import VueSweetalert2 from 'vue-sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
-import { createApp } from 'vue'
-import App from './App.vue'
+createApp(App)
+    .use(router)
+    .use(VueSweetalert2)
+    .mount('#app');
 
-createApp(App).mount('#app')
+// 应用启动后直接跳转到登录页面
+router.push('/login');
