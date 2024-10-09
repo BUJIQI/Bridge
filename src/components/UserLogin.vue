@@ -10,39 +10,45 @@
                 <button type="button" id="register-btn" @click="goToRegister">注册</button>
             </div>
         </form>
-        <swal v-if="loginResult" title="提示" :text="loginResult.text" :icon="loginResult.icon"></swal>
     </div>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref } from 'vue'; 
 import axios from 'axios'; 
 import { useRouter } from 'vue-router';
+import Swal from 'sweetalert2'; // 引入原生 SweetAlert2
 
 export default {
-    setup() {
+    setup() { 
         const router = useRouter();
         const username = ref('');
         const password = ref('');
-        const loginResult = ref('');
 
         const login = async () => {
             const payload = { username: username.value, password: password.value };
+            console.log('请求数据:', payload);
             try {
                 const response = await axios.post('http://127.0.0.1:8000/users/login/', payload);
+                console.log('响应数据:', response.data);
                 if (response.data.status === 'True') {
-                    router.push('/main/'); // 登录成功后跳转到主页
+                    // 登录成功后跳转到主页
+                    router.push('/main/'); 
                 } else {
-                    loginResult.value = {
-                        text: response.data.data.logintxt, // 显示登录失败的信息
-                        icon: 'error'
-                    };
+                    // 登录失败，使用 SweetAlert 显示提示
+                    Swal.fire({
+                        title: '提示',
+                        text: response.data.data.logintxt,
+                        icon: 'error',
+                    });
                 }
             } catch (error) {
-                loginResult.value = {
-                    text: '登录失败，请重试！', // 设置错误提示
-                    icon: 'error'
-                };
+                // 捕获错误，使用 SweetAlert 显示提示
+                Swal.fire({
+                    title: '提示',
+                    text: '登录失败，请重试！',
+                    icon: 'error',
+                });
             }
         };
 
@@ -53,7 +59,6 @@ export default {
         return {
             username,
             password,
-            loginResult,
             login,
             goToRegister,
         };
