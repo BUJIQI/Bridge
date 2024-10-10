@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import UserLogin from '../components/UserLogin.vue'; // 登录组件
 import UserRegister from '../components/UserRegister.vue'; // 注册组件
-import Main from '../components/Main.vue'; // 主页组件(原HelloWorld)
+import MainComponent from '../components/MainComponent.vue'; // 主页组件(原HelloWorld)
 
 const routes = [
     {
@@ -19,7 +19,7 @@ const routes = [
     {
         path: '/main',
         name: 'Main',
-        component: Main,
+        component: MainComponent,
         meta: { title: '主页' }
     },
 ];

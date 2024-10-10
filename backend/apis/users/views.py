@@ -9,7 +9,9 @@ from lxml import etree
 def register(request):
     if request.method == 'POST':
         # 获取前端发送的用户注册信息
+
         data=json.loads(request.body)
+
         classid= data.get('classid')
         studentid= data.get('studentid')
         name= data.get('name')
@@ -76,7 +78,9 @@ def register(request):
 def login(request):
     if request.method == 'POST':
         # 获取前端发送的登录信息
+
         data=json.loads(request.body)
+
         username = data.get('username')
         password = data.get('password')
 
