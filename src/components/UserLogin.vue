@@ -18,7 +18,10 @@ import { ref } from 'vue';
 import axios from 'axios'; 
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2'; // 引入原生 SweetAlert2
+<<<<<<< HEAD
 import { useUserStore } from '@/store/user'; // 导入用户存储
+=======
+>>>>>>> 60ec4f5f7f08a6d3ee01101033b83b6320f4c309
 
 export default {
     setup() { 
@@ -29,8 +32,10 @@ export default {
 
         const login = async () => {
             const payload = { username: username.value, password: password.value };
+            console.log('请求数据:', payload);
             try {
                 const response = await axios.post('http://127.0.0.1:8000/users/login/', payload);
+                console.log('响应数据:', response.data);
                 if (response.data.status === 'True') {
                     userStore.setUserInfo(response.data.data);
                     // 登录成功后跳转到主页
