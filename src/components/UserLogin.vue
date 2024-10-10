@@ -18,10 +18,7 @@ import { ref } from 'vue';
 import axios from 'axios'; 
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2'; // 引入原生 SweetAlert2
-<<<<<<< HEAD
 import { useUserStore } from '@/store/user'; // 导入用户存储
-=======
->>>>>>> 60ec4f5f7f08a6d3ee01101033b83b6320f4c309
 
 export default {
     setup() { 
