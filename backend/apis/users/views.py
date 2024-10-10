@@ -1,3 +1,4 @@
+import json
 from bs4 import BeautifulSoup
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -8,12 +9,13 @@ from lxml import etree
 def register(request):
     if request.method == 'POST':
         # 获取前端发送的用户注册信息
-        classid= request.POST.get('classid')
-        studentid= request.POST.get('studentid')
-        name= request.POST.get('name')
-        teamname= request.POST.get('teamname')
-        pwd= request.POST.get('pwd')
-        phone= request.POST.get('phone')
+        data = json.loads(request.body)
+        classid= data.get('classid')
+        studentid= data.get('studentid')
+        name= data.get('name')
+        teamname= data.get('teamname')
+        pwd= data.get('pwd')
+        phone= data.get('phone')
 
         session=requests.Session()
         response_register={}
@@ -74,8 +76,9 @@ def register(request):
 def login(request):
     if request.method == 'POST':
         # 获取前端发送的登录信息
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
 
         session=requests.Session()
 

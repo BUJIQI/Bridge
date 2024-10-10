@@ -1,12 +1,12 @@
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from './router';
-import VueSweetalert2 from 'vue-sweetalert2';
-import 'sweetalert2/dist/sweetalert2.min.css';
+
 
 createApp(App)
     .use(router)
-    .use(VueSweetalert2)
+    .use(createPinia())
     .mount('#app');
 
 // 应用启动后直接跳转到登录页面
