@@ -108,6 +108,8 @@ def login(request):
         response_login={}
         # 返回登录结果给前端
         if smessage is None:
+            # 登录成功，保存会话信息到 Django 的 session 中
+            request.session['session_cookies'] = session.cookies.get_dict()
             response_login['status'] = 'True'
             response_login['data'] = {}
             #爬取目标网站
@@ -134,3 +136,131 @@ def login(request):
         return JsonResponse(response_login)
     else:
         return HttpResponse('.....')
+
+@csrf_exempt
+def look1(request):
+    # 从 session 中获取之前保存的 cookies
+    session_cookies = request.session.get('session_cookies')
+
+    # 使用 requests.Session() 复用登录状态
+    session = requests.Session()
+    session.cookies.update(session_cookies)
+    response_look1={}
+
+    #爬取目标网站
+    url_look1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
+    response1=session.get(url=url_look1)
+    # 解析HTML内容
+    tree=etree.HTML(response1.text)
+
+    # 使用XPath定位元素
+    # 例如，定位一个包含特定文本的元素
+    element1 = tree.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
+    element2 = tree.xpath('//font[@color="#000000" and @style="font-size:18px"]/text()')
+    element3 = tree.xpath('//font[@class="title"]/text()')
+    # 删除字段中的 \xa0
+    cleaned_element1 = [text.replace('\xa0', '') for text in element1]
+    cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+    cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+    cleaned_element1 = [element.lstrip('·') for element in cleaned_element1]
+    response_looknow={}
+    response_looknow['标题']=cleaned_element3[0]
+    for i,j in zip(cleaned_element1,cleaned_element2):
+        response_looknow[i]=j
+    response_look1[response_looknow['标题']]=response_looknow
+
+    while len(response_looknow['标题'])<16:
+        url_look1_switchover='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
+        data_look1_switchover={
+            '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOQ9kFgJmD2QWAgIDD2QWAgIBD2QWBAIEDxYCHgdWaXNpYmxlaBYCAgEPZBYEAgEPDxYCHgRUZXh0BTXnrKwgMSDlkajmnJ/miqXlkYrlt7LmmK/lj6/nnIvnmoTmnIDml6nmiqXlkYrvvIw8YnIvPmRkAgMPDxYCHwFlZGQCCA8WAh8AaBYCAgEPZBYCAgEPDxYCHwEFNiA8YnIvPuesrCA3IOWRqOacn+aKpeWRiuW3suaYr+WPr+eci+eahOacgOWQjuaKpeWRiu+8gWRkZBmTd+AeDzUNQa2vzCRT56lsSWQmVcW0na2NEIfHf9Tc',
+            '__VIEWSTATEGENERATOR': '94DCD150',
+            '__EVENTVALIDATION': '/wEdAAaI5UnofgfVCsO/QLIHFqLpufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zDQiHzVrlf2wb7y+XRSWNi82if6HN5I9VzZLdku/7Y22A==',
+            'ctl00$contentplaceholder1$ober': '上一周期',
+            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+        }
+        response1=session.post(url=url_look1_switchover,data=data_look1_switchover)
+        # 解析HTML内容
+        tree=etree.HTML(response1.text)
+        # 使用XPath定位元素
+        # 例如，定位一个包含特定文本的元素
+        element1 = tree.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
+        element2 = tree.xpath('//font[@color="#000000" and @style="font-size:18px"]/text()')
+        element3 = tree.xpath('//font[@class="title"]/text()')
+        # 删除字段中的 \xa0
+        cleaned_element1 = [text.replace('\xa0', '') for text in element1]
+        cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+        cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+        cleaned_element1 = [element.lstrip('·') for element in cleaned_element1]
+        response_looknow={}
+        response_looknow['标题']=cleaned_element3[0]
+        for i,j in zip(cleaned_element1,cleaned_element2):
+            response_looknow[i]=j
+        response_look1[response_looknow['标题']]=response_looknow
+    # 将字典项转换为列表并倒序
+    reversed_items = list(response_look1.items())[::-1]
+
+    # 将倒序后的列表转换回字典
+    response_look1 = dict(reversed_items)
+    if len(response_look1)<7:
+        for i in range(len(response_look1),8-len(response_look1)):
+            response_look1['第'+str(i+1)+'周期市场形势报告']='无'
+    return JsonResponse(response_look1)
+
+
+
+@csrf_exempt
+def lookhistory(request):
+    if request.method == 'POST':
+        # 从 session 中获取之前保存的 cookies
+        session_cookies = request.session.get('session_cookies')
+
+        # 使用 requests.Session() 复用登录状态
+        session = requests.Session()
+        session.cookies.update(session_cookies)
+
+        url_lookhistory='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
+        data_lookhistory={
+            '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOWRkcH+X8uLl91V+Wwn59cMAChdkvb49cBtIUw1ctC5d2vI=',
+            '__VIEWSTATEGENERATOR': '94DCD150',
+            '__EVENTVALIDATION': '/wEdAAas194nENGdrO9KNXirw1X2ufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zArqoVeHawAFMgtV364YEwGDV0dgpUkABn/BNQJlgqepA==',
+            'ctl00$contentplaceholder1$back': '历史平均',
+            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+        }
+
+        response1=session.post(url=url_lookhistory,data=data_lookhistory)
+        # 解析返回的页面
+        soup = BeautifulSoup(response1.text, 'html.parser')
+
+        # 解析HTML内容
+        tree=etree.HTML(response1.text)
+
+        # 使用XPath定位元素
+        # 例如，定位一个包含特定文本的元素
+        element2 = tree.xpath('//font[@color="#000000" and @style="font-size: 16px"]/text()')
+        element3 = tree.xpath('//font[@class="title"]/text()')
+        # 删除字段中的 \xa0
+
+        cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+        cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+        data_list=cleaned_element2
+
+        response_lookhistory={}
+        response_lookhistory['标题']=cleaned_element3[0]
+
+
+        # Extracting order quantities and unit prices
+        response_lookhistory['订购批量_批量范围'] = data_list[0:12:3]
+        response_lookhistory['订购批量_原材料单价（元）'] = data_list[1:12:3]
+        response_lookhistory['订购批量_附件单价（元）'] = data_list[2:12:3]
+
+        # Extracting department salaries
+        response_lookhistory['部门'] = data_list[12:22:2]
+        response_lookhistory['年薪（万元）'] = data_list[13:22:2]
+
+        # Extracting fund types and amounts
+        response_lookhistory['资金类型'] = data_list[22::2]
+        response_lookhistory['数额（万元）'] = data_list[23::2]
+        return JsonResponse(response_lookhistory)
+    else:
+        return HttpResponse('.....')
+
