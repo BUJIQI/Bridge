@@ -5,8 +5,10 @@ from django.views.decorators.csrf import csrf_exempt
 import requests
 from lxml import etree
 
+
 @csrf_exempt  # 禁用 CSRF 验证，适用于开发环境
 def register(request):
+    from .models import User
     if request.method == 'POST':
         # 获取前端发送的用户注册信息
 
@@ -18,6 +20,8 @@ def register(request):
         teamname= data.get('teamname')
         pwd= data.get('pwd')
         phone= data.get('phone')
+
+
 
         session=requests.Session()
         response_register={}
@@ -65,6 +69,18 @@ def register(request):
             response_register['data']={}
             response_register['data']['group'] = parts[1].split('组')[0]
             response_register['data']['number'] = parts[2].split('企业')[0]
+                    # 创建用户对象并保存到数据库
+            new_user = User(
+                user_class=classid,   # 对应模型中的字段
+                studentid=studentid,
+                name=name,
+                teamname=teamname,
+                pwd=pwd,
+                phone=phone,
+                group=response_register['data']['group'],
+                number=response_register['data']['number']
+            )
+            new_user.save()  # 保存到数据库中
         else:
             response_register['status'] = 'False'
             response_register['data']={}
@@ -210,57 +226,54 @@ def look1(request):
 
 @csrf_exempt
 def lookhistory(request):
-    if request.method == 'POST':
-        # 从 session 中获取之前保存的 cookies
-        session_cookies = request.session.get('session_cookies')
+    # 从 session 中获取之前保存的 cookies
+    session_cookies = request.session.get('session_cookies')
 
-        # 使用 requests.Session() 复用登录状态
-        session = requests.Session()
-        session.cookies.update(session_cookies)
+    # 使用 requests.Session() 复用登录状态
+    session = requests.Session()
+    session.cookies.update(session_cookies)
 
-        url_lookhistory='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
-        data_lookhistory={
-            '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOWRkcH+X8uLl91V+Wwn59cMAChdkvb49cBtIUw1ctC5d2vI=',
-            '__VIEWSTATEGENERATOR': '94DCD150',
-            '__EVENTVALIDATION': '/wEdAAas194nENGdrO9KNXirw1X2ufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zArqoVeHawAFMgtV364YEwGDV0dgpUkABn/BNQJlgqepA==',
-            'ctl00$contentplaceholder1$back': '历史平均',
-            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
-        }
+    url_lookhistory='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
+    data_lookhistory={
+        '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOWRkcH+X8uLl91V+Wwn59cMAChdkvb49cBtIUw1ctC5d2vI=',
+        '__VIEWSTATEGENERATOR': '94DCD150',
+        '__EVENTVALIDATION': '/wEdAAas194nENGdrO9KNXirw1X2ufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zArqoVeHawAFMgtV364YEwGDV0dgpUkABn/BNQJlgqepA==',
+        'ctl00$contentplaceholder1$back': '历史平均',
+        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+    }
 
-        response1=session.post(url=url_lookhistory,data=data_lookhistory)
-        # 解析返回的页面
-        soup = BeautifulSoup(response1.text, 'html.parser')
+    response1=session.post(url=url_lookhistory,data=data_lookhistory)
+    # 解析返回的页面
+    soup = BeautifulSoup(response1.text, 'html.parser')
 
-        # 解析HTML内容
-        tree=etree.HTML(response1.text)
+    # 解析HTML内容
+    tree=etree.HTML(response1.text)
 
-        # 使用XPath定位元素
-        # 例如，定位一个包含特定文本的元素
-        element2 = tree.xpath('//font[@color="#000000" and @style="font-size: 16px"]/text()')
-        element3 = tree.xpath('//font[@class="title"]/text()')
-        # 删除字段中的 \xa0
+    # 使用XPath定位元素
+    # 例如，定位一个包含特定文本的元素
+    element2 = tree.xpath('//font[@color="#000000" and @style="font-size: 16px"]/text()')
+    element3 = tree.xpath('//font[@class="title"]/text()')
+    # 删除字段中的 \xa0
 
-        cleaned_element2 = [text.replace('\xa0', '') for text in element2]
-        cleaned_element3 = [text.replace('\xa0', '') for text in element3]
-        data_list=cleaned_element2
+    cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+    cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+    data_list=cleaned_element2
 
-        response_lookhistory={}
-        response_lookhistory['标题']=cleaned_element3[0]
+    response_lookhistory={}
+    response_lookhistory['标题']=cleaned_element3[0]
 
 
-        # Extracting order quantities and unit prices
-        response_lookhistory['订购批量_批量范围'] = data_list[0:12:3]
-        response_lookhistory['订购批量_原材料单价（元）'] = data_list[1:12:3]
-        response_lookhistory['订购批量_附件单价（元）'] = data_list[2:12:3]
+    # Extracting order quantities and unit prices
+    response_lookhistory['订购批量_批量范围'] = data_list[0:12:3]
+    response_lookhistory['订购批量_原材料单价（元）'] = data_list[1:12:3]
+    response_lookhistory['订购批量_附件单价（元）'] = data_list[2:12:3]
 
-        # Extracting department salaries
-        response_lookhistory['部门'] = data_list[12:22:2]
-        response_lookhistory['年薪（万元）'] = data_list[13:22:2]
+    # Extracting department salaries
+    response_lookhistory['部门'] = data_list[12:22:2]
+    response_lookhistory['年薪（万元）'] = data_list[13:22:2]
 
-        # Extracting fund types and amounts
-        response_lookhistory['资金类型'] = data_list[22::2]
-        response_lookhistory['数额（万元）'] = data_list[23::2]
-        return JsonResponse(response_lookhistory)
-    else:
-        return HttpResponse('.....')
+    # Extracting fund types and amounts
+    response_lookhistory['资金类型'] = data_list[22::2]
+    response_lookhistory['数额（万元）'] = data_list[23::2]
+    return JsonResponse(response_lookhistory)
 
