@@ -1,7 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import UserLogin from '../components/UserLogin.vue'; // 登录组件
-import UserRegister from '../components/UserRegister.vue'; // 注册组件
-import MainComponent from '../components/MainComponent.vue'; // 主页组件(原HelloWorld)
+import UserLogin from '../components/UserLogin.vue'; 
+import UserRegister from '../components/UserRegister.vue'; 
+import DecisionSimulation from '../components/DecisionSimulation.vue'; 
+import ImportantInformation from '../components/ImportantInformation.vue';
+import FirstPeriod from '../components/FirstPeriod.vue';
+import WelcomeMessage from '../components/WelcomeMessage.vue';
 
 const routes = [
     {
@@ -17,11 +20,32 @@ const routes = [
         meta: { title: '注册' }
     },
     {
-        path: '/main',
-        name: 'Main',
-        component: MainComponent,
-        meta: { title: '主页' }
+        path: '/decision',
+        name: 'Decision',
+        component: DecisionSimulation,
+        meta: { title: '决策仿真' },
+        children: [
+            {
+                path: '/welcome',
+                name: 'Welcome',
+                component: WelcomeMessage,
+                meta: { title: '欢迎' }
+            },
+            {
+                path: '/market/cycle/一',
+                name: 'Period1',
+                component: FirstPeriod,
+                meta: { title: '第1周期' }
+            },           
+        ]
     },
+    {
+        path: '/important',
+        name: 'Important',
+        component: ImportantInformation,
+        meta: { title: '重要信息' }
+    },
+
 ];
 
 const router = createRouter({
