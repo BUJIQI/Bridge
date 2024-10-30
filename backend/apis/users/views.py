@@ -145,11 +145,11 @@ def login(request):
             response_login['data']['cycle'] = element2[1]
         else:
             response_login['status'] = 'False'
-            response_login['data'] = {}
+            response_login['data'] = {
+    '           sessionid': session.cookies.get('sessionid')  
+             }
             response_login['data']['logintxt'] = smessage.text
-        response_login['data'] = {
-        'sessionid': session.cookies.get('sessionid')  
-    }
+
         response = JsonResponse(response_login)
         response.set_cookie('sessionid', response_login['data']['sessionid'], httponly=True, secure=True) 
         return response
