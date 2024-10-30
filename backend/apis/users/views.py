@@ -148,7 +148,7 @@ def login(request):
             response_login['data']['cycle'] = element2[1]
         else:
             response_login['status'] = 'False'
-
+            response_login['data'] = {}
             response_login['data']['logintxt'] = smessage.text
 
         response = JsonResponse(response_login)
