@@ -140,7 +140,7 @@ def login(request):
             text = element2[0]
             # 使用字符串切片方法提取数字
             response_login['data'] = {
-    '           sessionid': session.cookies.get('sessionid')  
+            'sessionid': session.cookies.get('sessionid')  
              }
             response_login['data']['group'] = int(text[text.index('第')+1:text.index('组')])
             response_login['data']['number'] = int(text[text.index('组第')+2:text.index('企业')])
