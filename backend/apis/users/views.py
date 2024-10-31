@@ -139,6 +139,9 @@ def login(request):
             # 提取第一个字符串
             text = element2[0]
             # 使用字符串切片方法提取数字
+            response_login['data'] = {
+            'sessionid': session.cookies.get('sessionid')  
+             }
             response_login['data']['group'] = int(text[text.index('第')+1:text.index('组')])
             response_login['data']['number'] = int(text[text.index('组第')+2:text.index('企业')])
             response_login['data']['rival'] = int(text[text.index('仅有')+2:text.index(' 位')])
@@ -148,8 +151,11 @@ def login(request):
             response_login['data'] = {}
             response_login['data']['logintxt'] = smessage.text
 
+        response = JsonResponse(response_login)
+        response.set_cookie('sessionid', response_login['data']['sessionid'], httponly=True, secure=True) 
+        return response
 
-        return JsonResponse(response_login)
+
     else:
         return HttpResponse('.....')
 
