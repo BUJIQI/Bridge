@@ -46,7 +46,57 @@
         <div class="col-md-3 sidebar bg-light">
           <ul class="nav flex-column">
             <li class="nav-item">
-              <a href="#" class="list-link active">进行决策</a>
+              <a 
+                href="#" 
+                class="list-link" 
+                @click="toggleMenu('makeDecision')"
+                :class="{ collapsed: !subMenuVisible.makeDecision }"
+              >
+                进行决策
+              <span class="arrow" :class="{ 'arrow-up': subMenuVisible.makeDecision, 'arrow-down': !subMenuVisible.makeDecision }"></span>
+              </a>
+              <ul v-if="subMenuVisible.makeDecision" class="submenu">
+                <li class="nav-item"><router-link class="list-link" to="/decison/input">输入决策数据</router-link></li>                
+                <li class="nav-item">
+                  <a 
+                    href="#" 
+                    class="list-link" 
+                    @click="toggleMenu('budgetReports')"  
+                    :class="{ collapsed: !subMenuVisible.budgetReports }"
+                  >            
+                    预算数据报告
+                  <span class="arrow" :class="{ 'arrow-up': subMenuVisible.budgetReports, 'arrow-down': !subMenuVisible.budgetReports }"></span>
+                  </a>
+                  <ul v-if="subMenuVisible.budgetReports" class="submenu">
+                    <li class="nav-item"><router-link class="list-link" to="/company/budget-market-production">市场生产数据报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/company/budget-cost-type">成本类型核算报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/company/budget-cost-department">成本发生部门报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/company/budget-cost-unit">成本承担单元报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/company/budget-profit-loss">利润亏损核算报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/company/budget-after-tax-profit">税后利润核算报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/company/budget-profit-distribution">利润分配核算报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/company/budget-operating-financial">生产经营财务报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/company/budget-balance-sheet">资产负债合计报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/company/budget-market-research">竞争市场调研报告</router-link></li>
+                  </ul>                  
+                </li>
+                <li class="nav-item">
+                  <a 
+                    href="#" 
+                    class="list-link" 
+                    @click="toggleMenu('historyDecision')"
+                    :class="{ collapsed: !subMenuVisible.historyDecision }"
+                  >
+                    历史决策
+                  <span class="arrow" :class="{ 'arrow-up': subMenuVisible.historyDecision, 'arrow-down': !subMenuVisible.historyDecision }"></span>
+                  </a>                  
+                  <ul v-if="subMenuVisible.historyDecision" class="submenu">
+                    <li v-for="cycle in historyCyclesToDisplay" :key="cycle" class="nav-item">
+                      <router-link class="list-link" :to="`/market/history-data/${cycle}`" @click="selectedHistory(cycle)">第{{ cycle }}周期</router-link>
+                    </li>
+                  </ul>
+                </li>
+              </ul>              
             </li>
             <li class="nav-item">
               <a 
@@ -70,7 +120,7 @@
                   <span class="arrow" :class="{ 'arrow-up': subMenuVisible.marketCycle, 'arrow-down': !subMenuVisible.marketCycle }"></span>
                   </a>
                   <ul v-if="subMenuVisible.marketCycle" class="submenu">
-                    <li v-for="cycle in cyclesToDisplay" :key="cycle" class="nav-item">
+                    <li v-for="cycle in marketCyclesToDisplay" :key="cycle" class="nav-item">
                       <router-link class="list-link" :to="`/market/cycle/${cycle}`">第{{ cycle }}周期</router-link>
                     </li>
                   </ul>
@@ -100,9 +150,9 @@
                 </li>
               </ul>
             </li>
-            <li class="nav-item">
-              <a href="#" class="list-link">竞争结果报表</a>
-            </li>
+
+            <li class="nav-item"><router-link class="list-link" to="/outcome">竞争结果报表</router-link></li>
+
             <li class="nav-item">
               <a 
                 href="#" 
@@ -139,33 +189,36 @@ export default {
   setup() {
     const userStore = useUserStore();
     const userInfo = userStore.userInfo;
-
-
-    let cyclesToDisplay = ['一', '二', '三', '四', '五', '六', '七'];
-    const chineseToNumberMap = {
-      '一': 1,
-      '二': 2,
-      '三': 3,
-      '四': 4,
-      '五': 5,
-      '六': 6,
-      '七': 7,
+    const selectedHistory = (cycle) => {
+            userStore.setSelectedHistory(cycle);
     };
-    const cycleNumber = chineseToNumberMap[userInfo.cycle] || 0;
-    if (cycleNumber) {
-      cyclesToDisplay = cyclesToDisplay.slice(0, cycleNumber);
-    }  
+
+    // 对于历史决策，只返回当前周期之前的周期
+    const historyCyclesToDisplay = [];
+    for (let i = 1; i < userInfo.cycle; i++) {
+      historyCyclesToDisplay.push(i);
+    }
+
+    // 对于市场周期形势，返回当前周期及之前的周期
+    const marketCyclesToDisplay = [];
+    for (let i = 1; i <= userInfo.cycle; i++) {
+      marketCyclesToDisplay.push(i);
+    }
 
     return {
       userInfo,
+      selectedHistory,
       subMenuVisible: {
+        makeDecision: false,
+        budgetReports: false,
         dataReports: false,
         marketCycle: false,
         competitionResults: false,
         evaluation: false,
         companyData: false,
       },
-      cyclesToDisplay,
+      historyCyclesToDisplay,
+      marketCyclesToDisplay,
     };
   },
   methods: {

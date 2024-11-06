@@ -5,13 +5,13 @@
             <div class="mb-3 row">
                 <label for="username" class="col-sm-3 col-form-label">学号:</label>
                 <div class="col-sm-9">
-                    <input type="text" id="username" v-model="username" class="form-control"  required>
+                    <input type="text" id="username" v-model="username" class="form-control" required>
                 </div>
             </div>
             <div class="mb-3 row">
                 <label for="password" class="col-sm-3 col-form-label">密码:</label>
                 <div class="col-sm-9">
-                    <input type="password" id="password" v-model="password" class="form-control"  required>
+                    <input type="password" id="password" v-model="password" class="form-control" required>
                 </div>
             </div>
             <p>新用户请先点击注册！</p>
@@ -40,10 +40,13 @@ export default {
         const login = async () => {
             const payload = { username: username.value, password: password.value };
             try {
-                const response = await axios.post('http://127.0.0.1:8000/users/login/', payload);
+                const response = await axios.post('http://127.0.0.1:8000/users/login/', payload, {
+                    withCredentials: true // 允许跨域请求时携带 cookies
+                });
+                
                 if (response.data.status === 'True') {
                     userStore.setUserInfo(response.data.data);
-                    router.push('/decision'); 
+                    router.push('/welcome'); 
                 } else {
                     Swal.fire({
                         title: '提示',

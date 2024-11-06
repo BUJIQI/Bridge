@@ -5,6 +5,9 @@ import DecisionSimulation from '../components/DecisionSimulation.vue';
 import ImportantInformation from '../components/ImportantInformation.vue';
 import FirstPeriod from '../components/FirstPeriod.vue';
 import WelcomeMessage from '../components/WelcomeMessage.vue';
+import InputData from '../components/InputData.vue';
+import HistoryDecision from '../components/HistoryDecision.vue';
+import CompetitionOutcome from '../components/CompetitionOutcome.vue';
 
 const routes = [
     {
@@ -23,7 +26,7 @@ const routes = [
         path: '/decision',
         name: 'Decision',
         component: DecisionSimulation,
-        meta: { title: '决策仿真' },
+        meta: { title: '决策仿真' }, 
         children: [
             {
                 path: '/welcome',
@@ -32,20 +35,73 @@ const routes = [
                 meta: { title: '欢迎' }
             },
             {
-                path: '/market/cycle/一',
+                path: '/market/cycle/1',
                 name: 'Period1',
                 component: FirstPeriod,
                 meta: { title: '第1周期' }
-            },           
+            },  
+            {
+                path: '/important',
+                name: 'Important',
+                component: ImportantInformation,
+                meta: { title: '重要信息' }
+            }, 
+            {
+                path: '/decison/input',
+                name: 'Input',
+                component: InputData,
+                meta: { title: '决策数据输入' }
+            },  
+            {
+                path: '/market/history-data/1',
+                name: 'History1',
+                component: HistoryDecision,
+                meta: { title: '第1周期历史决策' }
+            }, 
+            {
+                path: '/market/history-data/2',
+                name: 'History2',
+                component: HistoryDecision,
+                meta: { title: '第2周期历史决策' }
+            }, 
+            {
+                path: '/market/history-data/3',
+                name: 'History3',
+                component: HistoryDecision,
+                meta: { title: '第3周期历史决策' }
+            }, 
+            {
+                path: '/market/history-data/4',
+                name: 'History4',
+                component: HistoryDecision,
+                meta: { title: '第4周期历史决策' }
+            }, 
+            {
+                path: '/market/history-data/5',
+                name: 'History5',
+                component: HistoryDecision,
+                meta: { title: '第5周期历史决策' }
+            }, 
+            {
+                path: '/market/history-data/6',
+                name: 'History6',
+                component: HistoryDecision,
+                meta: { title: '第6周期历史决策' }
+            },                  
+            {
+                path: '/market/history-data/7',
+                name: 'History7',
+                component: HistoryDecision,
+                meta: { title: '第7周期历史决策' }
+            }, 
+            {
+                path: '/outcome',
+                name: 'Outcome',  
+                component: CompetitionOutcome,
+                meta: { title: '竞争结果报表' }
+            },
         ]
     },
-    {
-        path: '/important',
-        name: 'Important',
-        component: ImportantInformation,
-        meta: { title: '重要信息' }
-    },
-
 ];
 
 const router = createRouter({

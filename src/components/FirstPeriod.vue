@@ -24,10 +24,13 @@ const reportData = ref({});
 
 const fetchReportData = async () => {
   try {
-    const response = await axios.get('http://127.0.0.1:8000/users/look1/');
+
+    const response = await axios.get('http://127.0.0.1:8000/users/look1/', {
+            withCredentials: true
+  });
     const data = response.data;
 
-    const reportTitle = '第 1 周期（创业周期）市场形势报告';
+    const reportTitle = '第1周期（创业周期）市场形势报告';
 
     // 直接获取第 1 周期市场形势报告的内容
     if (data[reportTitle]) {
@@ -64,11 +67,12 @@ onMounted(() => {
 .panel-heading {
   background-color: #f7f7f9;
   padding: 15px;
-  font-size: 1.25rem;
 }
 
 .panel-body {
-  padding: 20px;
+  background-color: #ebdcdc;
+    padding: 20px;
+    border-radius: 8px;
 }
 
 .table-striped > tbody > tr:nth-child(odd) {
