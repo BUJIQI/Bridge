@@ -139,17 +139,37 @@ def login(request):
             # 提取第一个字符串
             text = element2[0]
             # 使用字符串切片方法提取数字
+            response_login['data'] = {
+            'sessionid': session.cookies.get('sessionid')  
+        }            
             response_login['data']['group'] = int(text[text.index('第')+1:text.index('组')])
             response_login['data']['number'] = int(text[text.index('组第')+2:text.index('企业')])
             response_login['data']['rival'] = int(text[text.index('仅有')+2:text.index(' 位')])
-            response_login['data']['cycle'] = element2[1]
+            # 提取 'cycle' 并转换为阿拉伯数字
+            cycle_str = element2[2].strip()
+            chinese_to_arabic = {
+                '一': 1,
+                '二': 2,
+                '三': 3,
+                '四': 4,
+                '五': 5,
+                '六': 6,
+                '七': 7
+            }
+            cycle_num = chinese_to_arabic.get(cycle_str, 0)  # 若未找到对应的中文数字，默认值为0
+            response_login['data']['cycle'] = cycle_num
         else:
             response_login['status'] = 'False'
             response_login['data'] = {}
             response_login['data']['logintxt'] = smessage.text
 
+        response = JsonResponse(response_login)
+        response.set_cookie('sessionid', response_login['data']['sessionid'], httponly=True, secure=True) 
 
-        return JsonResponse(response_login)
+
+        return response
+
+
     else:
         return HttpResponse('.....')
 
@@ -218,7 +238,7 @@ def look1(request):
     # 将倒序后的列表转换回字典
     response_look1 = dict(reversed_items)
     if len(response_look1)<7:
-        for i in range(len(response_look1),8-len(response_look1)):
+        for i in range(len(response_look1),7):
             response_look1['第'+str(i+1)+'周期市场形势报告']='无'
     return JsonResponse(response_look1)
 
@@ -277,3 +297,364 @@ def lookhistory(request):
     response_lookhistory['数额（万元）'] = data_list[23::2]
     return JsonResponse(response_lookhistory)
 
+
+
+@csrf_exempt
+def commit_decision(request):
+
+    data = json.loads(request.body)
+    general_market_price = data.get('general_market_price')  # 一般市场价格（元/台）
+    advertising_investment = data.get('advertising_investment')  # 广告费用投入（百万元）
+    sales_staff = data.get('sales_staff')  # 销售人员人数（个）
+    market_research_report = data.get('market_research_report')  # 市场和生产研究报告（Y/N）
+    bid_price = data.get('bid_price')  # 附件一：投标价格（元/台）
+    special_product_qty = data.get('special_product_qty')  # 附件二：特殊产品数（台）
+    production_plan_qty = data.get('production_plan_qty')  # 一般市场产品计划量（台）
+    production_line_investment = data.get('production_line_investment')  # 生产线投资（条）
+    production_line_change = data.get('production_line_change')  # 生产线变卖（条）
+    maintenance_cost = data.get('maintenance_cost')  # 维护保养费用（百万元）
+    production_optimization_investment = data.get('production_optimization_investment')  # 生产合理化投资（百万元）
+    production_staff_recruitment = data.get('production_staff_recruitment')  # 生产人员招收数（个）
+    production_staff_resignation = data.get('production_staff_resignation')  # 生产人员辞退数（个）
+    purchase_robot = data.get('purchase_robot')  # 购买机器人（个）
+    raw_material_purchase_qty = data.get('raw_material_purchase_qty')  # 购买原材料量（单位）
+    purchase_accessories = data.get('purchase_accessories')  # 购买附件量（单位）
+    research_staff_recruitment = data.get('research_staff_recruitment')  # 科研人员招收数（个）
+    research_staff_resignation = data.get('research_staff_resignation')  # 科研人员辞退数（个）
+    product_improvement_cost = data.get('product_improvement_cost')  # 产品改进费用（百万元）
+    social_benefits = data.get('social_benefits')  # 社会福利费用（%）
+    medium_term_loan = data.get('medium_term_loan')  # 中期贷款（百万元）
+    purchase_securities = data.get('purchase_securities')  # 购买有价证券（百万元）
+    planned_dividend_payment = data.get('planned_dividend_payment')  # 计划支付股息（百万元）
+    management_optimization_investment = data.get('management_optimization_investment')  # 管理合理化投资（百万元）
+
+    # 从 session 中获取之前保存的 cookies
+    session_cookies = request.session.get('session_cookies')
+
+    # 使用 requests.Session() 复用登录状态
+    session = requests.Session()
+    session.cookies.update(session_cookies)
+    url_update_decision_data='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/adddata/dataadd.aspx'
+    response = session.get(url_update_decision_data)
+
+    def extract_hidden_fields(soup):                   #定义提取页面中的所有隐藏字段的函数
+        hidden_fields = {}
+        for hidden in soup.find_all('input', type='hidden'):
+            name = hidden.get('name')
+            value = hidden.get('value', '')
+            if name:
+                hidden_fields[name] = value
+        return hidden_fields
+    
+    soup = BeautifulSoup(response.text, 'html.parser')
+    hidden_fields = extract_hidden_fields(soup)
+    data_update_decision_data={
+        '__VIEWSTATE': hidden_fields.get('__VIEWSTATE', ''),
+        '__VIEWSTATEGENERATOR': hidden_fields.get('__VIEWSTATEGENERATOR', ''),
+        '__EVENTVALIDATION': hidden_fields.get('__EVENTVALIDATION', ''),
+        'ctl00$contentplaceholderadd$prd5': general_market_price,
+        'ctl00$contentplaceholderadd$wed5': advertising_investment,
+        'ctl00$contentplaceholderadd$hzd5': sales_staff,
+        'ctl00$contentplaceholderadd$mfd5': market_research_report,
+        'ctl00$contentplaceholderadd$fed5': bid_price,
+        'ctl00$contentplaceholderadd$fzd5': special_product_qty,
+        'ctl00$contentplaceholderadd$rsd5': raw_material_purchase_qty,
+        'ctl00$contentplaceholderadd$zbd5': purchase_accessories,
+        'ctl00$contentplaceholderadd$end5': research_staff_recruitment,
+        'ctl00$contentplaceholderadd$eld5': research_staff_resignation,
+        'ctl00$contentplaceholderadd$vad5': product_improvement_cost,
+        'ctl00$contentplaceholderadd$pnd5': production_plan_qty,
+        'ctl00$contentplaceholderadd$smd5': production_line_investment,
+        'ctl00$contentplaceholderadd$swd5': production_line_change,
+        'ctl00$contentplaceholderadd$ikd5': maintenance_cost,
+        'ctl00$contentplaceholderadd$rkd5': production_optimization_investment,
+        'ctl00$contentplaceholderadd$nsd5': production_staff_recruitment,
+        'ctl00$contentplaceholderadd$nld5': production_staff_resignation,
+        'ctl00$contentplaceholderadd$rbd5': purchase_robot ,
+        'ctl00$contentplaceholderadd$zsd5': social_benefits,
+        'ctl00$contentplaceholderadd$mkd5': medium_term_loan,
+        'ctl00$contentplaceholderadd$wkd5': purchase_securities,
+        'ctl00$contentplaceholderadd$gdd5': planned_dividend_payment,
+        'ctl00$contentplaceholderadd$vid5': management_optimization_investment,
+        'ctl00$contentplaceholderadd$submit1.x':78,
+        'ctl00$contentplaceholderadd$submit1.y':28,
+        'ctl00$contentplaceholderadd$pb5':hidden_fields.get('ctl00$contentplaceholderadd$pb5', ''),
+        'ctl00$contentplaceholderadd$zyzj55':hidden_fields.get('ctl00$contentplaceholderadd$zyzj55', ''),
+        'ctl00$contentplaceholderadd$eb5':hidden_fields.get('ctl00$contentplaceholderadd$eb5', ''),
+        'ctl00$contentplaceholderadd$fs5':hidden_fields.get('ctl00$contentplaceholderadd$fs5', ''),
+        'ctl00$contentplaceholderadd$fz5':hidden_fields.get('ctl00$contentplaceholderadd$fz5', ''),
+        'ctl00$contentplaceholderadd$zyzj5':hidden_fields.get('ctl00$contentplaceholderadd$zyzj5', ''),
+        'ctl00$contentplaceholderadd$ff5': hidden_fields.get('ctl00$contentplaceholderadd$ff5', ''), 
+        'ctl00$contentplaceholderadd$rz5': hidden_fields.get('ctl00$contentplaceholderadd$rz5', ''), 
+        'ctl00$contentplaceholderadd$rf5': hidden_fields.get('ctl00$contentplaceholderadd$rf5', ''),
+        'ctl00$contentplaceholderadd$gr5': hidden_fields.get('ctl00$contentplaceholderadd$gr5', ''), 
+        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+    }
+    response_update_decision_data = session.post(url_update_decision_data, data_update_decision_data)
+
+
+    response_submit_decision_data={}
+    if "决策数据已经成功递交" in response_update_decision_data.text: 
+        response_submit_decision_data['提交结果']="决策数据已经成功递交"
+
+        #递交决策数据第一次post请求
+        url_sub1 = 'http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/select.aspx'
+        response_sub1 = session.get(url_sub1)
+        soup_sub1= BeautifulSoup(response_sub1.text, 'html.parser')
+        hidden_fields_sub1 = extract_hidden_fields(soup_sub1)
+        data_sub1 = {
+            '__EVENTTARGET': 'caculbt',
+            '__EVENTARGUMENT': '',
+            '__VIEWSTATE': hidden_fields_sub1.get('__VIEWSTATE', ''),
+            '__VIEWSTATEGENERATOR': hidden_fields_sub1.get('__VIEWSTATEGENERATOR', ''),
+            '__EVENTVALIDATION': hidden_fields_sub1.get('__EVENTVALIDATION', ''),
+            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+        }
+        response_sub1 = session.post(url_sub1, data_sub1)
+
+        #递交决策数据第二次post请求
+        soup_sub2 = BeautifulSoup(response_sub1.text, 'html.parser')
+        hidden_fields_sub2 = extract_hidden_fields(soup_sub2)
+        data_sub2 = {
+            '__EVENTTARGET': '',
+            '__EVENTARGUMENT': '',
+            '__VIEWSTATE': hidden_fields_sub2.get('__VIEWSTATE', ''),
+            '__VIEWSTATEGENERATOR': hidden_fields_sub2.get('__VIEWSTATEGENERATOR', ''),
+            '__EVENTVALIDATION': hidden_fields_sub2.get('__EVENTVALIDATION', ''),
+            'ImageButton3.x': 46,
+            'ImageButton3.y': 24,
+            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+        }
+        url_sub2 = 'http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/select.aspx'
+        response_sub2 = session.post(url_sub2, data_sub2)
+
+
+        #递交决策数据第三次post请求
+        soup_sub3 = BeautifulSoup(response_sub2.text, 'html.parser')
+        hidden_fields_sub3 = extract_hidden_fields(soup_sub3)
+        url_sub3='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/select.aspx'
+        data_sub3 = {
+            '__EVENTTARGET': '',
+            '__EVENTARGUMENT': '',
+            '__VIEWSTATE': hidden_fields_sub3.get('__VIEWSTATE', ''),
+            '__VIEWSTATEGENERATOR': hidden_fields_sub3.get('__VIEWSTATEGENERATOR', ''),
+            '__EVENTVALIDATION': hidden_fields_sub3.get('__EVENTVALIDATION', ''),
+            'ImageButton3.x': 46,
+            'ImageButton3.y': 24,
+            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+        }
+        response_submit3 = session.post(url_sub3, data_sub3)
+
+
+    else:
+        soup = BeautifulSoup(response_update_decision_data.text, 'html.parser')
+        response_submit_decision_data['提交结果']=soup.select_one("#contentplaceholderadd_Label8").text 
+    return JsonResponse(response_submit_decision_data)       
+
+
+@csrf_exempt
+def historical_decision(request):
+    # 从 session 中获取之前保存的 cookies
+    session_cookies = request.session.get('session_cookies')
+
+    # 使用 requests.Session() 复用登录状态
+    session = requests.Session()
+    session.cookies.update(session_cookies)
+    #爬取目标网站
+    url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/adddata/dataadd.aspx'
+
+    def extract_hidden_fields(soup,type):                   #定义提取页面中的所有隐藏字段的函数
+        hidden_fields = {}
+        for hidden in soup.find_all('input', type=type):
+            name = hidden.get('name')
+            value = hidden.get('value', '')
+            if name:
+                hidden_fields[name] = value
+        return hidden_fields
+
+    response = session.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    hidden_fields1 = extract_hidden_fields(soup,'hidden')
+    hidden_fields2 = extract_hidden_fields(soup,'text')
+
+    #mfd5的定位方式不同，所以单独处理
+    mfd5 = soup.find('select', id='contentplaceholderadd_mfd5')
+    mfd5_option = mfd5.find('option', selected=True)
+    smfd5_value = mfd5_option.get('value')
+    # 构造提交数据
+    data = {
+        '__VIEWSTATE': hidden_fields1.get('__VIEWSTATE', ''),
+        '__VIEWSTATEGENERATOR': hidden_fields1.get('__VIEWSTATEGENERATOR', ''),
+        '__EVENTVALIDATION': hidden_fields1.get('__EVENTVALIDATION', ''),
+        'ctl00$contentplaceholderadd$prd5': hidden_fields2.get('ctl00$contentplaceholderadd$prd5', ''), 
+        'ctl00$contentplaceholderadd$wed5': hidden_fields2.get('ctl00$contentplaceholderadd$wed5', ''),     
+        'ctl00$contentplaceholderadd$hzd5': hidden_fields2.get('ctl00$contentplaceholderadd$hzd5', ''),  
+        'ctl00$contentplaceholderadd$mfd5': smfd5_value,   
+        'ctl00$contentplaceholderadd$fed5': hidden_fields2.get('ctl00$contentplaceholderadd$fed5', ''),   
+        'ctl00$contentplaceholderadd$fzd5': hidden_fields2.get('ctl00$contentplaceholderadd$fzd5', ''),
+        'ctl00$contentplaceholderadd$rsd5': hidden_fields2.get('ctl00$contentplaceholderadd$rsd5', ''), 
+        'ctl00$contentplaceholderadd$zbd5': hidden_fields2.get('ctl00$contentplaceholderadd$end5', ''),  
+        'ctl00$contentplaceholderadd$end5': hidden_fields2.get('ctl00$contentplaceholderadd$end5', ''),  
+        'ctl00$contentplaceholderadd$eld5': hidden_fields2.get('ctl00$contentplaceholderadd$eld5', ''),    
+        'ctl00$contentplaceholderadd$vad5': hidden_fields2.get('ctl00$contentplaceholderadd$vad5', ''),
+        'ctl00$contentplaceholderadd$pnd5': hidden_fields2.get('ctl00$contentplaceholderadd$pnd5', ''), 
+        'ctl00$contentplaceholderadd$smd5': hidden_fields2.get('ctl00$contentplaceholderadd$smd5', ''),    
+        'ctl00$contentplaceholderadd$swd5': hidden_fields2.get('ctl00$contentplaceholderadd$swd5', ''),   
+        'ctl00$contentplaceholderadd$ikd5': hidden_fields2.get('ctl00$contentplaceholderadd$ikd5', ''),  
+        'ctl00$contentplaceholderadd$rkd5': hidden_fields2.get('ctl00$contentplaceholderadd$rkd5', ''),    
+        'ctl00$contentplaceholderadd$nsd5': hidden_fields2.get('ctl00$contentplaceholderadd$nsd5', ''),    
+        'ctl00$contentplaceholderadd$nld5': hidden_fields2.get('ctl00$contentplaceholderadd$nld5', ''),    
+        'ctl00$contentplaceholderadd$rbd5': hidden_fields2.get('ctl00$contentplaceholderadd$rbd5', ''),   
+        'ctl00$contentplaceholderadd$zsd5': hidden_fields2.get('ctl00$contentplaceholderadd$zsd5', ''),  
+        'ctl00$contentplaceholderadd$mkd5': hidden_fields2.get('ctl00$contentplaceholderadd$mkd5', ''),    
+        'ctl00$contentplaceholderadd$wkd5': hidden_fields2.get('ctl00$contentplaceholderadd$wkd5', ''),    
+        'ctl00$contentplaceholderadd$gdd5': hidden_fields2.get('ctl00$contentplaceholderadd$gdd5', ''),  
+        'ctl00$contentplaceholderadd$vid5': hidden_fields2.get('ctl00$contentplaceholderadd$vid5', ''),   
+        'ctl00$contentplaceholderadd$history.x':59,
+        'ctl00$contentplaceholderadd$history.y': 25,
+        'ctl00$contentplaceholderadd$pb5':hidden_fields1.get('ctl00$contentplaceholderadd$pb5', ''),
+        'ctl00$contentplaceholderadd$zyzj55':hidden_fields1.get('ctl00$contentplaceholderadd$zyzj55', ''),
+        'ctl00$contentplaceholderadd$eb5':hidden_fields1.get('ctl00$contentplaceholderadd$eb5', ''),
+        'ctl00$contentplaceholderadd$fs5':hidden_fields1.get('ctl00$contentplaceholderadd$fs5', ''),
+        'ctl00$contentplaceholderadd$fz5':hidden_fields1.get('ctl00$contentplaceholderadd$fz5', ''),
+        'ctl00$contentplaceholderadd$zyzj5':hidden_fields1.get('ctl00$contentplaceholderadd$zyzj5', ''),
+        'ctl00$contentplaceholderadd$ff5': hidden_fields1.get('ctl00$contentplaceholderadd$ff5', ''), 
+        'ctl00$contentplaceholderadd$rz5': hidden_fields1.get('ctl00$contentplaceholderadd$rz5', ''), 
+        'ctl00$contentplaceholderadd$rf5': hidden_fields1.get('ctl00$contentplaceholderadd$rf5', ''),
+        'ctl00$contentplaceholderadd$gr5': hidden_fields1.get('ctl00$contentplaceholderadd$gr5', ''), 
+    }
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
+    }
+    response=session.post(url,data,headers=headers)
+    # 解析HTML内容
+    tree=etree.HTML(response.text)
+    # 使用XPath定位元素
+
+    element1 = tree.xpath('//a[@class="light"]/text()')
+    element2 = tree.xpath('//input[starts-with(@id, "contentplaceholderadd_")]/@value')
+    element3 = tree.xpath('//option[@selected="selected"]/@value')
+    element2 =element2[0:23]
+    element1.insert(0, '一般市场价格')
+    element2.insert(3, element3[0])
+    element4 = tree.xpath('//span[@style="font-size: 36px"]/text()')
+    element4 = [text.replace('\xa0 ', '') for text in element4]
+
+
+    response_historical_decision={}
+    response_historical_decision[element4[0]]={}
+    for i,j in zip(element1,element2):
+        response_historical_decision[element4[0]][i]=j
+
+
+    for i in range(0,7):
+        url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/adddata/historydataadd.aspx'
+        soup = BeautifulSoup(response.text, 'html.parser')
+        hidden_fields1 = extract_hidden_fields(soup,'hidden')
+        hidden_fields2 = extract_hidden_fields(soup,'text')
+        #mfd5的定位方式不同，所以单独处理
+        mfd5 = soup.find('select', id='contentplaceholderadd_mfd5')
+        mfd5_option = mfd5.find('option', selected=True)
+        mfd5_value = mfd5_option.get('value')
+        data = {
+                '__VIEWSTATE': hidden_fields1.get('__VIEWSTATE', ''),
+                '__VIEWSTATEGENERATOR': hidden_fields1.get('__VIEWSTATEGENERATOR', ''),
+                '__EVENTVALIDATION': hidden_fields1.get('__EVENTVALIDATION', ''),
+                'ctl00$contentplaceholderadd$prd5': hidden_fields2.get('ctl00$contentplaceholderadd$prd5', ''),
+                'ctl00$contentplaceholderadd$wed5': hidden_fields2.get('ctl00$contentplaceholderadd$wed5', ''),
+                'ctl00$contentplaceholderadd$hzd5': hidden_fields2.get('ctl00$contentplaceholderadd$hzd5', ''),
+                'ctl00$contentplaceholderadd$mfd5': mfd5_value,
+                'ctl00$contentplaceholderadd$fed5': hidden_fields2.get('ctl00$contentplaceholderadd$fed5', ''),
+                'ctl00$contentplaceholderadd$fzd5': hidden_fields2.get('ctl00$contentplaceholderadd$fzd5', ''),
+                'ctl00$contentplaceholderadd$rsd5': hidden_fields2.get('ctl00$contentplaceholderadd$rsd5', ''),
+                'ctl00$contentplaceholderadd$zbd5': hidden_fields2.get('ctl00$contentplaceholderadd$zbd5', ''),
+                'ctl00$contentplaceholderadd$end5': hidden_fields2.get('ctl00$contentplaceholderadd$end5', ''),
+                'ctl00$contentplaceholderadd$eld5': hidden_fields2.get('ctl00$contentplaceholderadd$eld5', ''),
+                'ctl00$contentplaceholderadd$vad5': hidden_fields2.get('ctl00$contentplaceholderadd$vad5', ''),
+                'ctl00$contentplaceholderadd$pnd5': hidden_fields2.get('ctl00$contentplaceholderadd$pnd5', ''),
+                'ctl00$contentplaceholderadd$smd5': hidden_fields2.get('ctl00$contentplaceholderadd$smd5', ''),
+                'ctl00$contentplaceholderadd$swd5': hidden_fields2.get('ctl00$contentplaceholderadd$swd5', ''),
+                'ctl00$contentplaceholderadd$ikd5': hidden_fields2.get('ctl00$contentplaceholderadd$ikd5', ''),
+                'ctl00$contentplaceholderadd$rkd5': hidden_fields2.get('ctl00$contentplaceholderadd$rkd5', ''),
+                'ctl00$contentplaceholderadd$nsd5': hidden_fields2.get('ctl00$contentplaceholderadd$nsd5', ''),
+                'ctl00$contentplaceholderadd$nld5': hidden_fields2.get('ctl00$contentplaceholderadd$nld5', ''),
+                'ctl00$contentplaceholderadd$rbd5': hidden_fields2.get('ctl00$contentplaceholderadd$rbd5', ''),
+                'ctl00$contentplaceholderadd$zsd5': hidden_fields2.get('ctl00$contentplaceholderadd$zsd5', ''),
+                'ctl00$contentplaceholderadd$mkd5': hidden_fields2.get('ctl00$contentplaceholderadd$mkd5', ''),
+                'ctl00$contentplaceholderadd$wkd5': hidden_fields2.get('ctl00$contentplaceholderadd$wkd5', ''),
+                'ctl00$contentplaceholderadd$gdd5': hidden_fields2.get('ctl00$contentplaceholderadd$gdd5', ''),
+                'ctl00$contentplaceholderadd$vid5': hidden_fields2.get('ctl00$contentplaceholderadd$vid5', ''),
+                'ctl00$contentplaceholderadd$ober': '上一周期',
+            }
+        response=session.post(url,data,headers=headers)
+
+        # 解析HTML内容
+        tree=etree.HTML(response.text)
+        # 使用XPath定位元素
+
+        element1 = tree.xpath('//a[@class="light"]/text()')
+        element2 = tree.xpath('//input[starts-with(@id, "contentplaceholderadd_")]/@value')
+        element3 = tree.xpath('//option[@selected="selected"]/@value')
+        element2 =element2[0:23]
+        element1.insert(0, '一般市场价格')
+        element2.insert(3, element3[0])
+        element4 = tree.xpath('//span[@style="font-size: 36px"]/text()')
+        element4 = [text.replace('\xa0 ', '') for text in element4]
+        response_historical_decision[element4[0]]={}
+        for i,j in zip(element1,element2):
+            response_historical_decision[element4[0]][i]=j
+        if len(element4[0])>14:
+            break
+
+    # 将字典项转换为列表并倒序
+    reversed_items = list(response_historical_decision.items())[::-1]
+
+    # 将倒序后的列表转换回字典
+    response_historical_decision = dict(reversed_items)
+
+    if len(response_historical_decision)<7:
+        for i in range(len(response_historical_decision),7):
+            response_historical_decision['查看第'+str(i+1)+'周期决策数据']='无'
+
+    return JsonResponse(response_historical_decision)
+
+
+@csrf_exempt
+def compete_outcome(request):
+    # 从 session 中获取之前保存的 cookies
+    session_cookies = request.session.get('session_cookies')
+
+    # 使用 requests.Session() 复用登录状态
+    session = requests.Session()
+    session.cookies.update(session_cookies)
+    #爬取目标网站
+    url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/result/result.aspx?type=1'
+    response=session.get(url=url)
+
+
+    # 解析HTML内容
+    tree=etree.HTML(response.text)
+
+    # 使用XPath定位元素
+    element1 = tree.xpath('//font[@style="font-size:17px"]/text()')
+    cleaned_element1 = [text.replace('\xa0', '') for text in element1]
+    element2 = tree.xpath('//font[@style="font-size: 24px;"]/text()')
+    cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+    cleaned_element1 = cleaned_element1[2:-1]
+
+
+
+    # 初始化空字典用于存储结果
+    compete_outcome = {}
+    compete_outcome['标题'] = cleaned_element2[0]
+    # 按步长4遍历列表（标签、单位、值1、值2）
+    for i in range(0, len(cleaned_element1), 4):
+        # 提取标签和值
+        label = cleaned_element1[i]         # 标签
+        value1 = cleaned_element1[i+2]      # 企业1的值
+        value2 = cleaned_element1[i+3]      # 企业2的值
+        
+        # 将标签作为键，两个值作为列表存储在字典中
+        compete_outcome[label] = [value1, value2]
+    return JsonResponse(compete_outcome)  

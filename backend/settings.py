@@ -125,3 +125,24 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+CORS_ORIGIN_ALLOW_ALL = False  # 禁用通配符
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080"
+]
+
+# Cookie 设置
+SESSION_COOKIE_PATH = '/'                # 设置路径为根路径
+SESSION_COOKIE_DOMAIN = None             # 允许所有子域
+SESSION_COOKIE_SAMESITE = 'None'         # 允许跨站请求
+SESSION_COOKIE_SECURE = False            # 开发环境设置为 False
+SESSION_COOKIE_HTTPONLY = True           # 防止 XSS
+
+# CSRF 设置（如果使用）
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_PATH = '/'
