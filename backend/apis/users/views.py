@@ -139,19 +139,34 @@ def login(request):
             # 提取第一个字符串
             text = element2[0]
             # 使用字符串切片方法提取数字
+            response_login['data'] = {
+            'sessionid': session.cookies.get('sessionid')  
+        }            
             response_login['data']['group'] = int(text[text.index('第')+1:text.index('组')])
             response_login['data']['number'] = int(text[text.index('组第')+2:text.index('企业')])
             response_login['data']['rival'] = int(text[text.index('仅有')+2:text.index(' 位')])
-            response_login['data']['cycle'] = element2[1]
+            # 提取 'cycle' 并转换为阿拉伯数字
+            cycle_str = element2[2].strip()
+            chinese_to_arabic = {
+                '一': 1,
+                '二': 2,
+                '三': 3,
+                '四': 4,
+                '五': 5,
+                '六': 6,
+                '七': 7
+            }
+            cycle_num = chinese_to_arabic.get(cycle_str, 0)  # 若未找到对应的中文数字，默认值为0
+            response_login['data']['cycle'] = cycle_num
         else:
             response_login['status'] = 'False'
             response_login['data'] = {}
             response_login['data']['logintxt'] = smessage.text
-        response_login['data'] = {
-        'sessionid': session.cookies.get('sessionid')  
-    }
+
         response = JsonResponse(response_login)
         response.set_cookie('sessionid', response_login['data']['sessionid'], httponly=True, secure=True) 
+
+
         return response
 
 
