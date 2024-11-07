@@ -1,13 +1,23 @@
 <template>
-    <div class="container">
-        <h2>登录</h2>
+    <div class="container mt-5">
+        <h2 class="mb-4">登录</h2>
         <form @submit.prevent="login">
-            <input type="text" v-model="username" placeholder="用户名" required>
-            <input type="password" v-model="password" placeholder="密码" required>
+            <div class="mb-3 row">
+                <label for="username" class="col-sm-3 col-form-label">学号:</label>
+                <div class="col-sm-9">
+                    <input type="text" id="username" v-model="username" class="form-control" required>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="password" class="col-sm-3 col-form-label">密码:</label>
+                <div class="col-sm-9">
+                    <input type="password" id="password" v-model="password" class="form-control" required>
+                </div>
+            </div>
             <p>新用户请先点击注册！</p>
-            <div class="button-container">
-                <button type="submit" id="login-btn">登录</button>
-                <button type="button" id="register-btn" @click="goToRegister">注册</button>
+            <div class="button-container text-center">
+                <button type="submit" class="btn btn-primary me-2">登录</button>
+                <button type="button" class="btn btn-secondary" @click="goToRegister">注册</button>
             </div>
         </form>
     </div>
@@ -17,8 +27,8 @@
 import { ref } from 'vue'; 
 import axios from 'axios'; 
 import { useRouter } from 'vue-router';
-import Swal from 'sweetalert2'; // 引入原生 SweetAlert2
-import { useUserStore } from '@/store/user'; // 导入用户存储
+import Swal from 'sweetalert2'; 
+import { useUserStore } from '@/store/user'; 
 
 export default {
     setup() { 
@@ -29,16 +39,15 @@ export default {
 
         const login = async () => {
             const payload = { username: username.value, password: password.value };
-            console.log('请求数据:', payload);
             try {
-                const response = await axios.post('http://127.0.0.1:8000/users/login/', payload);
-                console.log('响应数据:', response.data);
+                const response = await axios.post('http://127.0.0.1:8000/users/login/', payload, {
+                    withCredentials: true // 允许跨域请求时携带 cookies
+                });
+                
                 if (response.data.status === 'True') {
                     userStore.setUserInfo(response.data.data);
-                    // 登录成功后跳转到主页
-                    router.push('/main/'); 
+                    router.push('/welcome'); 
                 } else {
-                    // 登录失败，使用 SweetAlert 显示提示
                     Swal.fire({
                         title: '提示',
                         text: response.data.data.logintxt,
@@ -46,7 +55,6 @@ export default {
                     });
                 }
             } catch (error) {
-                // 捕获错误，使用 SweetAlert 显示提示
                 Swal.fire({
                     title: '提示',
                     text: '登录失败，请重试！',
@@ -56,7 +64,7 @@ export default {
         };
 
         const goToRegister = () => {
-            router.push('/register/'); // 跳转到注册
+            router.push('/register/'); 
         };
 
         return {
@@ -70,6 +78,33 @@ export default {
 </script>
 
 <style>
-@import '@/assets/styles/L&R.css';
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    width: 300px;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+}
+
+button {
+    width: 100px;
+    padding: 10px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
 </style>
+
+
 

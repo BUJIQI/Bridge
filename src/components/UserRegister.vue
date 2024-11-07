@@ -1,16 +1,46 @@
 <template>
-    <div class="container">
-        <h2>注册</h2>
+    <div class="container mt-5">
+        <h2 class="mb-4">注册</h2>
         <form @submit.prevent="register">
-            <input type="text" v-model="className" placeholder="班级" required>
-            <input type="text" v-model="studentID" placeholder="学号" required>
-            <input type="text" v-model="name" placeholder="姓名" required>
-            <input type="text" v-model="teamName" placeholder="队名" required>
-            <input type="password" v-model="password" placeholder="密码" required>
-            <input type="tel" v-model="phone" placeholder="手机号" required>
-            <div class="button-container">
-                <button type="button" @click="goToLogin">返回登录</button>
-                <button type="submit" id="register-btn">注册</button>
+            <div class="mb-3 row">
+                <label for="className" class="col-sm-3 col-form-label">班级:</label>
+                <div class="col-sm-9">
+                    <input type="text" id="className" v-model="className" class="form-control" required>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="studentID" class="col-sm-3 col-form-label">学号:</label>
+                <div class="col-sm-9">
+                    <input type="text" id="studentID" v-model="studentID" class="form-control" required>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="name" class="col-sm-3 col-form-label">姓名:</label>
+                <div class="col-sm-9">
+                    <input type="text" id="name" v-model="name" class="form-control" required>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="teamName" class="col-sm-3 col-form-label">队名:</label>
+                <div class="col-sm-9">
+                    <input type="text" id="teamName" v-model="teamName" class="form-control" required>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="password" class="col-sm-3 col-form-label">密码:</label>
+                <div class="col-sm-9">
+                    <input type="password" id="password" v-model="password" class="form-control" required>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="phone" class="col-sm-3 col-form-label">手机:</label>
+                <div class="col-sm-9">
+                    <input type="tel" id="phone" v-model="phone" class="form-control" required>
+                </div>
+            </div>
+            <div class="button-container text-center">
+                <button type="button" class="btn btn-secondary me-2" @click="goToLogin">返回登录</button>
+                <button type="submit" class="btn btn-primary" id="register-btn">注册</button>
             </div>
         </form>
     </div>
@@ -21,7 +51,7 @@ import { ref } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2'; // 引入原生 SweetAlert2
-        
+
 export default {
     setup() {
         const router = useRouter();       
@@ -87,6 +117,5 @@ export default {
 };
 </script>
 
-<style>
-@import '@/assets/styles/L&R.css';
-</style>
+
+
