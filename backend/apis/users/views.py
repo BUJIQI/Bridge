@@ -4,7 +4,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import requests
 from lxml import etree
-
+import re
 
 @csrf_exempt  # 禁用 CSRF 验证，适用于开发环境
 def register(request):
@@ -658,3 +658,92 @@ def compete_outcome(request):
         # 将标签作为键，两个值作为列表存储在字典中
         compete_outcome[label] = [value1, value2]
     return JsonResponse(compete_outcome)  
+
+
+
+
+@csrf_exempt
+def enterreporting(request):
+    # 从 session 中获取之前保存的 cookies
+    session_cookies = request.session.get('session_cookies')
+
+    # 使用 requests.Session() 复用登录状态
+    session = requests.Session()
+    session.cookies.update(session_cookies)
+    response_enterreporting={} 
+    report_data = [
+        ['market', "http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/market.aspx?type=", '市场生产数据报告'],
+        ['cost_ctype', "http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/cost/ctype.aspx?type=", '产品成本类型核算报告'],
+        ['cost_cdept','http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/cost/cdept.aspx?type=', '成本发生部门核算报告'],
+        ['cost_ccell','http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/cost/ccell.aspx?type=','成本承担单元核算报告'],
+        ['profitlost_prolost','http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/profitlost/prolost.aspx?type=','利润和亏损核算报告'],
+        ['profitlost_ptax','http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/profitlost/ptax.aspx?type=','税后利润核算报告'],
+        ['profitlost_pdis','http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/profitlost/pdis.aspx?type=','利润分配核算报告'],
+        ['financer','http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/financer.aspx?type=','财务报告'],
+        ['assetdebt','http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/assetdebt.aspx?type=','资产负债表'],
+        ['research','http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/research.aspx?type=','各企业市场营销及生产研究报告']
+    ]
+    for dictl,urll,text in report_data:
+        dictl={}
+        dict_data=dictl
+        url=urll+'1'
+        response=session.get(url=url)
+        # 解析HTML内容
+        tree=etree.HTML(response.text)
+        # 使用XPath定位元素
+        # 例如，定位一个包含特定文本的元素
+        element1 = tree.xpath('//font[@style="font-size:16px"]/text()')
+        element2 = tree.xpath('//font[@style="POSITION:relative;top:20px;Z-INDEX:4;font-size: 24px;font-family:隶书;"]/text()')
+        element3 = tree.xpath('//font[@style="position:relative;top:15px;Z-INDEX:4;line-height:15px; width:500px;height: 50px;font-size: 40px;font-family:隶书;"]/text()')
+        # 删除字段中的 \xa0
+        cleaned_element1 = [text.replace('\xa0', '') for text in element1]
+        cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+        cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+        cleaned_element1 = [item.strip() for item in cleaned_element1 if re.search(r'\d', item)]
+        if  cleaned_element3:  
+            dict_data[cleaned_element3[0]+cleaned_element2[0]]=cleaned_element1
+            n=cleaned_element2[0][2]
+        else:
+            if text=='各企业市场营销及生产研究报告':
+                dict_data['各企业市场营销及生产研究报告（第'+n+'周期）']='本周期没有订购市场和生产研究报告！'
+
+        for i in range(int(n)-1,0,-1):
+            #爬取目标网站
+            url=urll+'3&hcycleno='+str(i)
+            response=session.get(url=url)
+
+            # 解析HTML内容
+            tree=etree.HTML(response.text)
+            # 使用XPath定位元素
+            # 例如，定位一个包含特定文本的元素
+            element1 = tree.xpath('//font[@style="font-size:16px"]/text()')
+            element2 = tree.xpath('//font[@style="POSITION:relative;top:20px;Z-INDEX:4;font-size: 24px;font-family:隶书;"]/text()')
+            element3 = tree.xpath('//font[@style="position:relative;top:15px;Z-INDEX:4;line-height:15px; width:500px;height: 50px;font-size: 40px;font-family:隶书;"]/text()')
+            # 删除字段中的 \xa0
+            cleaned_element1 = [text.replace('\xa0', '') for text in element1]
+            cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+            cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+            cleaned_element1 = [item.strip() for item in cleaned_element1 if re.search(r'\d', item)]
+            if cleaned_element3:
+                if text=='各企业市场营销及生产研究报告':
+                    cleaned_element2[0]=cleaned_element2[0][0]+cleaned_element2[0][6:]
+                    dict_data[cleaned_element3[0]+cleaned_element2[0]]=cleaned_element1
+                    a=cleaned_element3[0]
+                    b=int(cleaned_element2[0][-4])-1
+                    c=cleaned_element2[0]
+                else:
+                    dict_data[cleaned_element3[0]+cleaned_element2[0]]=cleaned_element1
+            else:
+                if text=='各企业市场营销及生产研究报告':
+                    c = c[:len(c) - 4] + str(b) + c[len(c) - 3:]
+                    dict_data[a+c]='本周期没有订购市场和生产研究报告！'
+        # 将字典项转换为列表并倒序
+        reversed_items = list(dict_data.items())[::-1]
+        # 将倒序后的列表转换回字典
+        dict_data= dict(reversed_items)
+            
+        if len(dict_data)<7:
+            for i in range(len(dict_data),7):
+                dict_data[text+'（第'+str(i+1)+'周期）']='无'
+        response_enterreporting[text]=dict_data
+    return JsonResponse(response_enterreporting)  

@@ -9,4 +9,5 @@ urlpatterns = [
     path('commit_decision/', views.commit_decision, name='commit_decision'),
     path('historical_decision/', views.historical_decision, name='historical_decision'),
     path('compete_outcome/', views.compete_outcome, name='compete_outcome'),
+    path('enterreporting/', views.enterreporting, name='enterreporting'),
 ]
