@@ -747,3 +747,48 @@ def enterreporting(request):
                 dict_data[text+'（第'+str(i+1)+'周期）']='无'
         response_enterreporting[text]=dict_data
     return JsonResponse(response_enterreporting)  
+
+
+
+@csrf_exempt
+def summart_evaluation(request):
+    # 从 session 中获取之前保存的 cookies
+    session_cookies = request.session.get('session_cookies')
+
+    # 使用 requests.Session() 复用登录状态
+    session = requests.Session()
+    session.cookies.update(session_cookies)
+
+
+    def filter_data(data):
+        """只保留包含阿拉伯数字或'--'的数据"""
+        filtered_data = {}
+        for key, values in data.items():
+            filtered_values = [v for v in values if re.search(r'\d', v) or '--' in v]
+            filtered_data[key] = filtered_values
+        return filtered_data
+    url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/result/mreport.aspx?type=1'
+    response=session.get(url=url)
+
+
+    summart_evaluation={}
+    categories = [
+        ['pr', 'nm', 'gs', 'pfz'],
+        ['市场类指标', '生产类指标', '财务类指标', '决策综合评价']
+    ]
+    for i, j in zip(categories[0], categories[1]):
+        url = 'http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/result/report.aspx?item='+i 
+        response = session.get(url)
+        tree=etree.HTML(response.text)
+        element= tree.xpath('//font[@style="font-size:16px"]/text()')
+        filtered_element = [text.replace('\xa0', '') for text in element]
+        summart_evaluation[j]=filtered_element
+
+    url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/result/quanzhong.aspx'
+    response=session.get(url=url)
+    tree=etree.HTML(response.text)
+    element= tree.xpath('//div[@style="font-size:16px;"]/text()')
+    filtered_element = [text.replace('\xa0', '') for text in element]
+    summart_evaluation['评价指标权重']=filtered_element
+    summart_evaluation = filter_data(summart_evaluation)
+    return JsonResponse(summart_evaluation) 
