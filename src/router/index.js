@@ -1,13 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import UserLogin from '../components/UserLogin.vue'; 
-import UserRegister from '../components/UserRegister.vue'; 
-import DecisionSimulation from '../components/DecisionSimulation.vue'; 
-import ImportantInformation from '../components/ImportantInformation.vue';
-import FirstPeriod from '../components/FirstPeriod.vue';
-import WelcomeMessage from '../components/WelcomeMessage.vue';
-import InputData from '../components/InputData.vue';
-import HistoryDecision from '../components/HistoryDecision.vue';
-import CompetitionOutcome from '../components/CompetitionOutcome.vue';
+import UserLogin from '@/components/UserLogin.vue'; 
+import UserRegister from '@/components/UserRegister.vue'; 
+import DecisionSimulation from '@/components/DecisionSimulation.vue'; 
+import ImportantInformation from '@/components/ImportantInformation.vue';
+import FirstPeriod from '@/components/FirstPeriod.vue';
+import WelcomeMessage from '@/components/WelcomeMessage.vue';
+import InputData from '@/components/InputData.vue';
+import HistoryDecision from '@/components/HistoryDecision.vue';
+import CompetitionOutcome from '@/components/CompetitionOutcome.vue';
+import MarketProduction from '@/components/MarketProduction.vue';
+import CostType from '@/components/CostType.vue';
+import CostDepartment from '@/components/CostDepartment.vue';
+import CostUnit from '@/components/CostUnit.vue';
+import ProfitLoss from '@/components/ProfitLoss.vue';
+import AfterTax from '@/components/AfterTax.vue';
+import ProfitDistribution from '@/components/ProfitDistribution.vue';
+import OperatingFinancial from '@/components/OperatingFinancial.vue';
+import BalanceSheet from '@/components/BalanceSheet.vue';
+import MarketResearch from '@/components/MarketResearch.vue';
+import MarketIndex from '@/components/MarketIndex.vue';
+import ProductionIndex from '@/components/ProductionIndex.vue';
+import FinanceIndex from '@/components/FinanceIndex.vue';
+import OverallEvaluation from '@/components/OverallEvaluation.vue';
+import IndexWeight from '@/components/IndexWeight.vue';
 
 const routes = [
     {
@@ -100,6 +115,96 @@ const routes = [
                 component: CompetitionOutcome,
                 meta: { title: '竞争结果报表' }
             },
+            {
+                path: '/company/market-production',
+                name: 'Production',
+                component: MarketProduction,
+                meta: { title: '市场生产数据报告' }
+            },
+            {
+                path: '/company/cost-type',
+                name: 'CostType',
+                component: CostType,
+                meta: { title: '产品成本类型报告' }
+            },
+            {
+                path: '/company/cost-department',
+                name: 'CostDepartment',
+                component: CostDepartment,
+                meta: { title: '成本发生部门报告' }
+            },
+            {
+                path: '/company/cost-unit',
+                name: 'CostUnit',
+                component: CostUnit,
+                meta: { title: '成本承担单位报告' }
+            },
+            {
+                path: '/company/profit-loss',
+                name: 'ProfitLoss',
+                component: ProfitLoss,
+                meta: { title: '利润亏损核算报告' }
+            },
+            {
+                path: '/company/after-tax-profit',
+                name: 'AfterTax',
+                component: AfterTax,
+                meta: { title: '税后利润核算报告' }
+            },
+            {
+                path: '/company/profit-distribution',
+                name: 'ProfitDistribution',
+                component: ProfitDistribution,
+                meta: { title: '利润分配核算报告' }
+            },
+            {
+                path: '/company/operating-financial',
+                name: 'OperatingFinancial',
+                component: OperatingFinancial,
+                meta: { title: '生产经营财务报告' }
+            },
+            {
+                path: '/company/balance-sheet',
+                name: 'BalanceSheet',
+                component: BalanceSheet,
+                meta: { title: '资产负债合计报告' }
+            },
+            {
+                path: '/company/market-research',
+                name: 'MarketResearch',
+                component: MarketResearch,
+                meta: { title: '竞争市场调研报告' }
+            },
+            {
+                path: '/evaluation/market',
+                name: 'MarketIndex',
+                component: MarketIndex,
+                meta: { title: '市场类指数报告' }
+            },
+            {
+                path: '/evaluation/production',
+                name: 'ProductionIndex',
+                component: ProductionIndex,
+                meta: { title: '生产类指数报告' }
+            },
+            {
+                path: '/evaluation/finance',
+                name: 'FinanceIndex',
+                component: FinanceIndex,
+                meta: { title: '财务类指数报告' }
+            },
+            {
+                path: '/evaluation/overall',
+                name: 'OverallEvaluation',
+                component: OverallEvaluation,
+                meta: { title: '决策综合评价' }
+            },    
+            {
+                path: '/evaluation/weight',
+                name: 'IndexWeight',
+                component: IndexWeight,
+                meta: { title: '评价指标权重' }
+            }, 
         ]
     },
 ];
