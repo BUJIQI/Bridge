@@ -26,7 +26,7 @@ import IndexWeight from '@/components/IndexWeight.vue';
 
 const routes = [
     {
-        path: '/login',
+        path: '/',
         name: 'Login',
         component: UserLogin,
         meta: { title: '登录' }
@@ -37,6 +37,7 @@ const routes = [
         component: UserRegister,
         meta: { title: '注册' }
     },
+    
     {
         path: '/decision',
         name: 'Decision',
