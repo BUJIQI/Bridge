@@ -1,11 +1,28 @@
 <template>
-  <router-view />
+  <div id="app">
+    <router-view></router-view>
+  </div>
 </template>
 
 <script>
+import { onMounted } from 'vue';
+import { useUserStore } from '@/store/user';
+
 export default {
   name: 'App',
-}
+  setup() {
+    const userStore = useUserStore(); 
+
+    onMounted(() => {
+      const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+      if (isLoggedIn) {
+        userStore.setUserInfo(JSON.parse(sessionStorage.getItem('userInfo'))); 
+      }
+    });
+
+    return {};
+  },  
+};
 </script>
 
 <style>

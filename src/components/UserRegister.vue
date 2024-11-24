@@ -1,5 +1,5 @@
 <template>
-    <div class="container mt-5">
+    <div class="container">
         <h2 class="mb-4">注册</h2>
         <form @submit.prevent="register">
             <div class="mb-3 row">
@@ -100,7 +100,7 @@ export default {
         };
         
         const goToLogin = () => {
-            router.push('/login/');
+            router.push('/');
         };
         
         return {
@@ -116,6 +116,39 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    position: absolute;
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 300px;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+}
+
+button {
+  width: 100px;
+  padding: 10px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+</style>
 
 
 
