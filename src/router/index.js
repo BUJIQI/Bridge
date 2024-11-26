@@ -4,6 +4,7 @@ import UserRegister from '@/components/UserRegister.vue';
 import DecisionSimulation from '@/components/DecisionSimulation.vue'; 
 import ImportantInformation from '@/components/ImportantInformation.vue';
 import FirstPeriod from '@/components/FirstPeriod.vue';
+import HistoryAverage from '@/components/HistoryAverage.vue';  
 import WelcomeMessage from '@/components/WelcomeMessage.vue';
 import InputData from '@/components/InputData.vue';
 import HistoryDecision from '@/components/HistoryDecision.vue';
@@ -56,6 +57,12 @@ const routes = [
                 component: FirstPeriod,
                 meta: { title: '第1周期' }
             },  
+            {
+                path: '/market/cycle/average',
+                name: 'Average',
+                component: HistoryAverage,
+                meta: { title: '历史平均' }
+            },            
             {
                 path: '/important',
                 name: 'Important',

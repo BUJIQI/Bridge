@@ -7,7 +7,7 @@
       <table class="table table-striped">
         <tbody>
           <tr v-for="(value, key) in reportData" :key="key">
-            <td>{{ key }}</td>
+            <td class="highlight">{{ key }}</td>
             <td>{{ value }}</td>
           </tr>
         </tbody>
@@ -70,13 +70,17 @@ onMounted(() => {
 }
 
 .panel-body {
-  background-color: #ebdcdc;
-    padding: 20px;
-    border-radius: 8px;
+  padding: 20px;
+  border-radius: 8px;
 }
 
 .table-striped > tbody > tr:nth-child(odd) {
   background-color: #f9f9f9;
   border-radius: 5px;
+}
+
+.highlight {
+    background-color: #f3776c;
+    color: #fff;
 }
 </style>

@@ -123,6 +123,7 @@
                     <li v-for="cycle in marketCyclesToDisplay" :key="cycle" class="nav-item">
                       <router-link class="list-link" :to="`/market/cycle/${cycle}`">第{{ cycle }}周期</router-link>
                     </li>
+                    <li class="nav-item"><router-link class="list-link" to="/market/cycle/average">历史平均</router-link></li>
                   </ul>
                 </li>
                 <li class="nav-item">
