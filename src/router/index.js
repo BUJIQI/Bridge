@@ -3,7 +3,7 @@ import UserLogin from '@/components/UserLogin.vue';
 import UserRegister from '@/components/UserRegister.vue'; 
 import DecisionSimulation from '@/components/DecisionSimulation.vue'; 
 import ImportantInformation from '@/components/ImportantInformation.vue';
-import FirstPeriod from '@/components/FirstPeriod.vue';
+import PeriodSituation from '@/components/PeriodSituation.vue';
 import HistoryAverage from '@/components/HistoryAverage.vue';  
 import WelcomeMessage from '@/components/WelcomeMessage.vue';
 import InputData from '@/components/InputData.vue';
@@ -54,9 +54,45 @@ const routes = [
             {
                 path: '/market/cycle/1',
                 name: 'Period1',
-                component: FirstPeriod,
+                component: PeriodSituation,
                 meta: { title: '第1周期' }
             },  
+            {
+                path: '/market/cycle/2',
+                name: 'Period2',
+                component: PeriodSituation,
+                meta: { title: '第2周期' }
+            }, 
+            {
+                path: '/market/cycle/3',
+                name: 'Period3',
+                component: PeriodSituation,
+                meta: { title: '第3周期' }
+            }, 
+            {
+                path: '/market/cycle/4',
+                name: 'Period4',
+                component: PeriodSituation,
+                meta: { title: '第4周期' }
+            }, 
+            {
+                path: '/market/cycle/5',
+                name: 'Period5',
+                component: PeriodSituation,
+                meta: { title: '第5周期' }
+            }, 
+            {
+                path: '/market/cycle/6',
+                name: 'Period6',
+                component: PeriodSituation,
+                meta: { title: '第6周期' }
+            }, 
+            {
+                path: '/market/cycle/7',
+                name: 'Period7',
+                component: PeriodSituation,
+                meta: { title: '第7周期' }
+            }, 
             {
                 path: '/market/cycle/average',
                 name: 'Average',
