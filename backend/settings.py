@@ -139,10 +139,10 @@ CORS_ALLOWED_ORIGINS = [
 SESSION_COOKIE_PATH = '/'                # 设置路径为根路径
 SESSION_COOKIE_DOMAIN = None             # 允许所有子域
 SESSION_COOKIE_SAMESITE = 'None'         # 允许跨站请求
-SESSION_COOKIE_SECURE = False            # 开发环境设置为 False
+SESSION_COOKIE_SECURE = True             # 仅允许 HTTPS
 SESSION_COOKIE_HTTPONLY = True           # 防止 XSS
 
 # CSRF 设置（如果使用）
 CSRF_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE =True
 CSRF_COOKIE_PATH = '/'
