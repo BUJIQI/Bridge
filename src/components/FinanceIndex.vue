@@ -47,9 +47,9 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useUserStore } from '@/store/user';
-
+import axios from 'axios';
 
 export default {
   setup() {
@@ -57,49 +57,44 @@ export default {
     const userInfo = userStore.userInfo;
 
     const FinanceData = ref([
-      {
-        type: '税前经营成果（百万元）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '周期缴纳税收（百万元）',
-        weight: 3,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '周期支付股息（百万元）',
-        weight: 10,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '总的盈亏累计（百万元）',
-        weight: 56,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '周期贷款总额（百万元）',
-        weight: 10,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '周期期末现金（百万元）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '资产负债合计（百万元）',
-        weight: 4,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-    ]);
+      '税前经营成果（百万元）',
+      '周期缴纳税收（百万元）',
+      '周期支付股息（百万元）',
+      '总的盈亏累计（百万元）',
+      '周期贷款总额（百万元）',
+      '周期期末现金（百万元）',
+      '资产负债合计（百万元）',
+    ].map((type) => ({
+      type,
+      weight: '',
+      computerValues: [],
+      enterpriseValues: [],
+    })));
+  
+    const fetchReportData = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/users/summart_evaluation/', {
+          withCredentials: true
+        });
+        
+        const FinanceDataArray = response.data['财务类指标'];
+        
+        FinanceData.value.forEach((item, index) => {
+          const baseIndex = index * 17; 
+
+          item.weight = FinanceDataArray[baseIndex];
+          item.computerValues = FinanceDataArray.slice(baseIndex + 1, baseIndex + 9); 
+          item.enterpriseValues = FinanceDataArray.slice(baseIndex + 9, baseIndex + 17);
+        });
+
+      } catch (error) {
+        console.error('获取报告数据时出错:', error);
+      }
+    };
+
+    onMounted(() => {
+      fetchReportData();
+    });
 
     return {
       userInfo,

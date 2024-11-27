@@ -47,9 +47,9 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useUserStore } from '@/store/user';
-
+import axios from 'axios';
 
 export default {
   setup() {
@@ -58,10 +58,30 @@ export default {
 
     const OverallData = ref([
       {
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
+        computerValues: [],
+        enterpriseValues: []
       },
     ]);
+
+    const fetchReportData = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/users/summart_evaluation/', {
+          withCredentials: true
+        });
+        
+        const OverallDataArray = response.data['决策综合评价'];
+
+        OverallData.value[0].computerValues = OverallDataArray.slice(0, 8);
+        OverallData.value[0].enterpriseValues = OverallDataArray.slice(8);
+
+      } catch (error) {
+        console.error('获取报告数据时出错:', error);
+      }
+    };
+
+    onMounted(() => {
+      fetchReportData();
+    });
 
     return {
       userInfo,
