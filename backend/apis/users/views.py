@@ -5,10 +5,26 @@ from django.views.decorators.csrf import csrf_exempt
 import requests
 from lxml import etree
 import re
+from django.db.models import IntegerField
+from django.db.models.functions import Cast
+
+
+# 辅助函数：提取隐藏字段
+def extract_hidden_fields(soup):
+    """提取页面中的所有隐藏字段"""
+    hidden_fields = {}
+    for hidden in soup.find_all('input', type='hidden'):
+        name = hidden.get('name')
+        value = hidden.get('value', '')
+        if name:
+            hidden_fields[name] = value
+    return hidden_fields
+
+
 
 @csrf_exempt  # 禁用 CSRF 验证，适用于开发环境
 def register(request):
-    from .models import User
+    from .models import User,Round,Cycle
     if request.method == 'POST':
         # 获取前端发送的用户注册信息
 
@@ -20,18 +36,30 @@ def register(request):
         teamname= data.get('teamname')
         pwd= data.get('pwd')
         phone= data.get('phone')
+        #email= data.get('email')
 
-
-
+        # 检查本地数据库是否已注册
+        if User.objects.filter(student_id=studentid).exists():
+            response_register={
+                'status': 'False',
+                'data': {
+                    'registertxt': '该账号已被注册'
+                }
+            }
+            return JsonResponse(response_register)
+        
         session=requests.Session()
         response_register={}
         url_register1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/default.aspx?vdir=2&vdxmc=%e5%86%b3%e7%ad%96%e6%94%af%e6%8c%81%e7%b3%bb%e7%bb%9f%e5%af%bc%e8%ae%ba&vrjslogin=True'
+        response = session.get(url=url_register1)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        hidden_fields = extract_hidden_fields(soup)
         data_register1={
-            '__EVENTTARGET':'', 
-            '__EVENTARGUMENT': '',
-            '__VIEWSTATE': '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',
-            '__VIEWSTATEGENERATOR': 'A3C0820E',
-            '__EVENTVALIDATION': '/wEdAAQzAciB/QDW6zkymZaSNIWsHZ4wi8ny7Ddjn7Rp4o1bKeH0Iu/9fZc467JXyMTUE04rU8x5SglfzmEU2KqYFKCXUPtFZlhnqU6SzCMo4bcRBiEMcQ00d/JzNIc16qX0s38=',
+            '__EVENTTARGET': hidden_fields.get('__EVENTTARGET', ''),
+            '__EVENTARGUMENT': hidden_fields.get('__EVENTARGUMENT', ''),
+            '__VIEWSTATE': hidden_fields.get('__VIEWSTATE', ''),
+            '__VIEWSTATEGENERATOR': hidden_fields.get('__VIEWSTATEGENERATOR', ''),
+            '__EVENTVALIDATION': hidden_fields.get('__EVENTVALIDATION', ''),
             'stuid':'' ,
             'mima': '',
             'ueser': '注册',
@@ -69,18 +97,33 @@ def register(request):
             response_register['data']={}
             response_register['data']['group'] = parts[1].split('组')[0]
             response_register['data']['number'] = parts[2].split('企业')[0]
-                    # 创建用户对象并保存到数据库
+            
+            # 创建用户对象并保存到数据库
             new_user = User(
-                user_class=classid,   # 对应模型中的字段
-                studentid=studentid,
+                student_id=studentid,
+                password=pwd,
                 name=name,
-                teamname=teamname,
-                pwd=pwd,
+                user_class=classid,
+                team_name=teamname,
+                #email=email,
                 phone=phone,
                 group=response_register['data']['group'],
                 number=response_register['data']['number']
             )
             new_user.save()  # 保存到数据库中
+
+            new_round =Round(
+                uid=new_user,
+            )
+            new_round.save()  # 保存到数据库中
+
+            new_cycle =Cycle(
+                uid=new_user,
+                round_id=new_round,
+                cycle_number=1,
+            )
+            new_cycle.save()  # 保存到数据库中
+
         else:
             response_register['status'] = 'False'
             response_register['data']={}
@@ -92,24 +135,45 @@ def register(request):
 
 @csrf_exempt
 def login(request):
+    from .models import User
     if request.method == 'POST':
         # 获取前端发送的登录信息
 
         data=json.loads(request.body)
 
-        username = data.get('username')
+        stuid = data.get('username')
         password = data.get('password')
+
+        # 检查本地数据库是否已注册
+        try:
+            user = User.objects.get(student_id=stuid)
+        except User.DoesNotExist:
+            response_login={
+                'status': 'False',
+                'data': {
+                    'logintxt': '账号未注册'
+                }
+            }
+            return JsonResponse(response_login)
 
         session=requests.Session()
 
+        # 将用户 UID 保存到会话中
+        user = User.objects.get(student_id=stuid)
+        request.session['uid'] = user.uid
+
         url_login1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/default.aspx?vdir=2&vdxmc=%e5%86%b3%e7%ad%96%e6%94%af%e6%8c%81%e7%b3%bb%e7%bb%9f%e5%af%bc%e8%ae%ba&vrjslogin=True'
+        response = session.get(url=url_login1)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        hidden_fields = extract_hidden_fields(soup)
+        
         data_login1={
-            '__EVENTTARGET':'', 
-            '__EVENTARGUMENT': '',
-            '__VIEWSTATE': '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',
-            '__VIEWSTATEGENERATOR':'A3C0820E',
-            '__EVENTVALIDATION': '/wEdAAQzAciB/QDW6zkymZaSNIWsHZ4wi8ny7Ddjn7Rp4o1bKeH0Iu/9fZc467JXyMTUE04rU8x5SglfzmEU2KqYFKCXUPtFZlhnqU6SzCMo4bcRBiEMcQ00d/JzNIc16qX0s38=',
-            'stuid':username,
+            '__EVENTTARGET': hidden_fields.get('__EVENTTARGET', ''),
+            '__EVENTARGUMENT': hidden_fields.get('__EVENTARGUMENT', ''),
+            '__VIEWSTATE': hidden_fields.get('__VIEWSTATE', ''),
+            '__VIEWSTATEGENERATOR': hidden_fields.get('__VIEWSTATEGENERATOR', ''),
+            '__EVENTVALIDATION': hidden_fields.get('__EVENTVALIDATION', ''),
+            'stuid':stuid,
             'mima':password,
             'login': '登录',
             'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
@@ -175,48 +239,64 @@ def login(request):
 
 @csrf_exempt
 def look1(request):
+    from .models import Round,Cycle,MarketReport
     # 从 session 中获取之前保存的 cookies
     session_cookies = request.session.get('session_cookies')
 
     # 使用 requests.Session() 复用登录状态
     session = requests.Session()
     session.cookies.update(session_cookies)
-    response_look1={}
 
-    #爬取目标网站
-    url_look1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
-    response1=session.get(url=url_look1)
-    # 解析HTML内容
-    tree=etree.HTML(response1.text)
+    uid = request.session.get('uid')
+    round_reports = Round.objects.filter(uid=uid).annotate(round_id_int=Cast('round_id', IntegerField())).order_by('-round_id_int').first()
+    cycle_reports = Cycle.objects.filter(round_id=round_reports.round_id).annotate(cycle_id_int=Cast('cycle_id', IntegerField())).order_by('-cycle_id_int').first()
+    market_reports = MarketReport.objects.filter(cycle_id=cycle_reports.cycle_id)
+    if len(market_reports):
+        # 数据存在，格式化并返回
+        response_look1 = {}
+        num=1
+        for report in market_reports:
+            if num==1:
+                response_looknow = {
+                    '标题': f'第{num}周期（创业周期）市场形势报告',
+                    '市场容量': report.market_capacity,
+                    '原材料': report.raw_materials,
+                    '附件': report.attachments,
+                    '人员费用': report.personnel_costs,
+                    '批量招标': report.bulk_tendering,
+                    '批量订购': report.bulk_ordering,
+                    '订购价格': report.ordering_price,
+                }
+                response_look1[response_looknow['标题']] = response_looknow
+                num+=1
+            else:
+                response_looknow = {
+                    '标题': f'第{num}周期市场形势报告',
+                    '市场容量': report.market_capacity,
+                    '原材料': report.raw_materials,
+                    '附件': report.attachments,
+                    '人员费用': report.personnel_costs,
+                    '批量招标': report.bulk_tendering,
+                    '批量订购': report.bulk_ordering,
+                    '订购价格': report.ordering_price,
+                }
+                response_look1[response_looknow['标题']] = response_looknow
+                num+=1                
+        # 确保至少有7个周期的数据
+        if len(response_look1) < 7:
+            for i in range(len(response_look1) + 1, 8):
+                response_look1[f'第{i}周期市场形势报告'] = '无'
+        return JsonResponse(response_look1)
 
-    # 使用XPath定位元素
-    # 例如，定位一个包含特定文本的元素
-    element1 = tree.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
-    element2 = tree.xpath('//font[@color="#000000" and @style="font-size:18px"]/text()')
-    element3 = tree.xpath('//font[@class="title"]/text()')
-    # 删除字段中的 \xa0
-    cleaned_element1 = [text.replace('\xa0', '') for text in element1]
-    cleaned_element2 = [text.replace('\xa0', '') for text in element2]
-    cleaned_element3 = [text.replace('\xa0', '') for text in element3]
-    cleaned_element1 = [element.lstrip('·') for element in cleaned_element1]
-    response_looknow={}
-    response_looknow['标题']=cleaned_element3[0]
-    for i,j in zip(cleaned_element1,cleaned_element2):
-        response_looknow[i]=j
-    response_look1[response_looknow['标题']]=response_looknow
+    else:
+        response_look1={}
 
-    while len(response_looknow['标题'])<16:
-        url_look1_switchover='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
-        data_look1_switchover={
-            '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOQ9kFgJmD2QWAgIDD2QWAgIBD2QWBAIEDxYCHgdWaXNpYmxlaBYCAgEPZBYEAgEPDxYCHgRUZXh0BTXnrKwgMSDlkajmnJ/miqXlkYrlt7LmmK/lj6/nnIvnmoTmnIDml6nmiqXlkYrvvIw8YnIvPmRkAgMPDxYCHwFlZGQCCA8WAh8AaBYCAgEPZBYCAgEPDxYCHwEFNiA8YnIvPuesrCA3IOWRqOacn+aKpeWRiuW3suaYr+WPr+eci+eahOacgOWQjuaKpeWRiu+8gWRkZBmTd+AeDzUNQa2vzCRT56lsSWQmVcW0na2NEIfHf9Tc',
-            '__VIEWSTATEGENERATOR': '94DCD150',
-            '__EVENTVALIDATION': '/wEdAAaI5UnofgfVCsO/QLIHFqLpufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zDQiHzVrlf2wb7y+XRSWNi82if6HN5I9VzZLdku/7Y22A==',
-            'ctl00$contentplaceholder1$ober': '上一周期',
-            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
-        }
-        response1=session.post(url=url_look1_switchover,data=data_look1_switchover)
+        #爬取目标网站
+        url_look1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
+        response1=session.get(url=url_look1)
         # 解析HTML内容
         tree=etree.HTML(response1.text)
+
         # 使用XPath定位元素
         # 例如，定位一个包含特定文本的元素
         element1 = tree.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
@@ -232,20 +312,66 @@ def look1(request):
         for i,j in zip(cleaned_element1,cleaned_element2):
             response_looknow[i]=j
         response_look1[response_looknow['标题']]=response_looknow
-    # 将字典项转换为列表并倒序
-    reversed_items = list(response_look1.items())[::-1]
 
-    # 将倒序后的列表转换回字典
-    response_look1 = dict(reversed_items)
-    if len(response_look1)<7:
-        for i in range(len(response_look1),7):
-            response_look1['第'+str(i+1)+'周期市场形势报告']='无'
-    return JsonResponse(response_look1)
+        while len(response_looknow['标题'])<16:
+            url_look1_switchover='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
+            response = session.get(url=url_look1_switchover)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            hidden_fields = extract_hidden_fields(soup)
+            data_look1_switchover={
+                '__VIEWSTATE': hidden_fields.get('__VIEWSTATE', ''),
+                '__VIEWSTATEGENERATOR': hidden_fields.get('__VIEWSTATEGENERATOR', ''),
+                '__EVENTVALIDATION': hidden_fields.get('__EVENTVALIDATION', ''),
+                'ctl00$contentplaceholder1$ober': '上一周期',
+                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+            }
+            response1=session.post(url=url_look1_switchover,data=data_look1_switchover)
+            # 解析HTML内容
+            tree=etree.HTML(response1.text)
+            # 使用XPath定位元素
+            # 例如，定位一个包含特定文本的元素
+            element1 = tree.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
+            element2 = tree.xpath('//font[@color="#000000" and @style="font-size:18px"]/text()')
+            element3 = tree.xpath('//font[@class="title"]/text()')
+            # 删除字段中的 \xa0
+            cleaned_element1 = [text.replace('\xa0', '') for text in element1]
+            cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+            cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+            cleaned_element1 = [element.lstrip('·') for element in cleaned_element1]
+            response_looknow={}
+            response_looknow['标题']=cleaned_element3[0]
+            for i,j in zip(cleaned_element1,cleaned_element2):
+                response_looknow[i]=j
+            response_look1[response_looknow['标题']]=response_looknow
+        # 将字典项转换为列表并倒序
+        reversed_items = list(response_look1.items())[::-1]
+
+        # 将倒序后的列表转换回字典
+        response_look1 = dict(reversed_items)
+        if len(response_look1)<7:
+            for i in range(len(response_look1),7):
+                response_look1['第'+str(i+1)+'周期市场形势报告']='无'
+        # 将数据存入数据库
+        for title, data in response_look1.items():
+            if data != '无':
+                # 创建 MarketReport 实例
+                MarketReport.objects.create(
+                    cycle_id=cycle_reports,
+                    market_capacity=data.get('市场容量', ''),
+                    raw_materials=data.get('原材料', ''),
+                    attachments=data.get('附件', ''),
+                    personnel_costs=data.get('人员费用', ''),
+                    bulk_tendering=data.get('批量招标', ''),
+                    bulk_ordering=data.get('批量订购', ''),
+                    ordering_price=data.get('订购价格', ''),
+                )
+        return JsonResponse(response_look1)
 
 
 
 @csrf_exempt
 def lookhistory(request):
+    from .models import Round,Cycle,MarketHistoryReport
     # 从 session 中获取之前保存的 cookies
     session_cookies = request.session.get('session_cookies')
 
@@ -253,55 +379,132 @@ def lookhistory(request):
     session = requests.Session()
     session.cookies.update(session_cookies)
 
-    url_lookhistory='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
-    data_lookhistory={
-        '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOWRkcH+X8uLl91V+Wwn59cMAChdkvb49cBtIUw1ctC5d2vI=',
-        '__VIEWSTATEGENERATOR': '94DCD150',
-        '__EVENTVALIDATION': '/wEdAAas194nENGdrO9KNXirw1X2ufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zArqoVeHawAFMgtV364YEwGDV0dgpUkABn/BNQJlgqepA==',
-        'ctl00$contentplaceholder1$back': '历史平均',
-        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
-    }
+    uid = request.session.get('uid')
+    round_reports = Round.objects.filter(uid=uid).annotate(round_id_int=Cast('round_id', IntegerField())).order_by('-round_id_int').first()
+    cycle_reports = Cycle.objects.filter(round_id=round_reports.round_id).annotate(cycle_id_int=Cast('cycle_id', IntegerField())).order_by('-cycle_id_int').first()
+    market_history = MarketHistoryReport.objects.filter(cycle_id=cycle_reports.cycle_id).annotate(cycle_id_int=Cast('cycle_id', IntegerField())).order_by('-cycle_id_int').first()
+    if market_history:
+        # 数据存在，格式化并返回
+        response_lookhistory = {
+            '标题': '历史平均材料价格、工资水平及创业注册资金数据',
+            '订购批量_批量范围': [
+                '0-25000',
+                '25001-45000',
+                '45001-70000',
+                '70001-'
+            ],
+            '订购批量_原材料单价（元）': [
+                market_history.zero_to_25000_mater,
+                market_history.two_fifty_one_to_45000_mater,
+                market_history.four_fifty_one_to_70000_mater,
+                market_history.seven_zero_zero_one_mater
+            ],
+            '订购批量_附件单价（元）': [
+                market_history.zero_to_25000_att,
+                market_history.two_fifty_one_to_45000_att,
+                market_history.four_fifty_one_to_70000_att,
+                market_history.seven_zero_zero_one_att
+            ],
+            '部门': [
+                '管理部门',
+                '销售部门',
+                '采购部门',
+                '生产部门',
+                '研究部门'
+            ],
+            '年薪（万元）': [
+                market_history.management,
+                market_history.sales,
+                market_history.purchase,
+                market_history.prd,
+                market_history.rnd
+            ],
+            '资金类型': [
+                '注册资金',
+                '资金储备',
+                '长期贷款',
+                '资金合计'
+            ],
+            '数额（万元）': [
+                market_history.register,
+                market_history.reserve,
+                market_history.loan,
+                market_history.total
+            ]
+        }
+        return JsonResponse(response_lookhistory)
 
-    response1=session.post(url=url_lookhistory,data=data_lookhistory)
-    # 解析返回的页面
-    soup = BeautifulSoup(response1.text, 'html.parser')
+    else:
+        url_lookhistory='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
+        data_lookhistory={
+            '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOWRkcH+X8uLl91V+Wwn59cMAChdkvb49cBtIUw1ctC5d2vI=',
+            '__VIEWSTATEGENERATOR': '94DCD150',
+            '__EVENTVALIDATION': '/wEdAAas194nENGdrO9KNXirw1X2ufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zArqoVeHawAFMgtV364YEwGDV0dgpUkABn/BNQJlgqepA==',
+            'ctl00$contentplaceholder1$back': '历史平均',
+            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+        }
 
-    # 解析HTML内容
-    tree=etree.HTML(response1.text)
+        response1=session.post(url=url_lookhistory,data=data_lookhistory)
+        # 解析返回的页面
+        soup = BeautifulSoup(response1.text, 'html.parser')
 
-    # 使用XPath定位元素
-    # 例如，定位一个包含特定文本的元素
-    element2 = tree.xpath('//font[@color="#000000" and @style="font-size: 16px"]/text()')
-    element3 = tree.xpath('//font[@class="title"]/text()')
-    # 删除字段中的 \xa0
+        # 解析HTML内容
+        tree=etree.HTML(response1.text)
 
-    cleaned_element2 = [text.replace('\xa0', '') for text in element2]
-    cleaned_element3 = [text.replace('\xa0', '') for text in element3]
-    data_list=cleaned_element2
+        # 使用XPath定位元素
+        # 例如，定位一个包含特定文本的元素
+        element2 = tree.xpath('//font[@color="#000000" and @style="font-size: 16px"]/text()')
+        element3 = tree.xpath('//font[@class="title"]/text()')
+        # 删除字段中的 \xa0
 
-    response_lookhistory={}
-    response_lookhistory['标题']=cleaned_element3[0]
+        cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+        cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+        data_list=cleaned_element2
+
+        response_lookhistory={}
+        response_lookhistory['标题']=cleaned_element3[0]
 
 
-    # Extracting order quantities and unit prices
-    response_lookhistory['订购批量_批量范围'] = data_list[0:12:3]
-    response_lookhistory['订购批量_原材料单价（元）'] = data_list[1:12:3]
-    response_lookhistory['订购批量_附件单价（元）'] = data_list[2:12:3]
+        # Extracting order quantities and unit prices
+        response_lookhistory['订购批量_批量范围'] = data_list[0:12:3]
+        response_lookhistory['订购批量_原材料单价（元）'] = data_list[1:12:3]
+        response_lookhistory['订购批量_附件单价（元）'] = data_list[2:12:3]
 
-    # Extracting department salaries
-    response_lookhistory['部门'] = data_list[12:22:2]
-    response_lookhistory['年薪（万元）'] = data_list[13:22:2]
+        # Extracting department salaries
+        response_lookhistory['部门'] = data_list[12:22:2]
+        response_lookhistory['年薪（万元）'] = data_list[13:22:2]
 
-    # Extracting fund types and amounts
-    response_lookhistory['资金类型'] = data_list[22::2]
-    response_lookhistory['数额（万元）'] = data_list[23::2]
+        # Extracting fund types and amounts
+        response_lookhistory['资金类型'] = data_list[22::2]
+        response_lookhistory['数额（万元）'] = data_list[23::2]
+
+        MarketHistoryReport.objects.create(
+            cycle_id=cycle_reports,
+            zero_to_25000_mater=response_lookhistory['订购批量_原材料单价（元）'][0],
+            zero_to_25000_att=response_lookhistory['订购批量_附件单价（元）'][0],
+            two_fifty_one_to_45000_mater=response_lookhistory['订购批量_原材料单价（元）'][1],
+            two_fifty_one_to_45000_att=response_lookhistory['订购批量_附件单价（元）'][1],
+            four_fifty_one_to_70000_mater=response_lookhistory['订购批量_原材料单价（元）'][2],
+            four_fifty_one_to_70000_att=response_lookhistory['订购批量_附件单价（元）'][2],
+            seven_zero_zero_one_mater=response_lookhistory['订购批量_原材料单价（元）'][3],
+            seven_zero_zero_one_att=response_lookhistory['订购批量_附件单价（元）'][3],
+            management=response_lookhistory['年薪（万元）'][0],
+            sales=response_lookhistory['年薪（万元）'][1],
+            purchase=response_lookhistory['年薪（万元）'][2],
+            prd=response_lookhistory['年薪（万元）'][3],
+            rnd=response_lookhistory['年薪（万元）'][4],
+            register=response_lookhistory['数额（万元）'][0],
+            reserve=response_lookhistory['数额（万元）'][1],
+            loan=response_lookhistory['数额（万元）'][2],
+            total=response_lookhistory['数额（万元）'][3],
+        )
     return JsonResponse(response_lookhistory)
 
 
 
 @csrf_exempt
 def commit_decision(request):
-
+    from .models import Evaluation,Round
     data = json.loads(request.body)
     general_market_price = data.get('general_market_price')  # 一般市场价格（元/台）
     advertising_investment = data.get('advertising_investment')  # 广告费用投入（百万元）
@@ -336,15 +539,6 @@ def commit_decision(request):
     session.cookies.update(session_cookies)
     url_update_decision_data='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/adddata/dataadd.aspx'
     response = session.get(url_update_decision_data)
-
-    def extract_hidden_fields(soup):                   #定义提取页面中的所有隐藏字段的函数
-        hidden_fields = {}
-        for hidden in soup.find_all('input', type='hidden'):
-            name = hidden.get('name')
-            value = hidden.get('value', '')
-            if name:
-                hidden_fields[name] = value
-        return hidden_fields
     
     soup = BeautifulSoup(response.text, 'html.parser')
     hidden_fields = extract_hidden_fields(soup)
@@ -446,6 +640,108 @@ def commit_decision(request):
         response_submit3 = session.post(url_sub3, data_sub3)
 
 
+        #插入评价总表数据库数据
+        tree=etree.HTML(response_submit3.text)
+
+        element1 = tree.xpath('//font[@color="#024802"]/text()')
+
+        cycle_num=int(element1[0][2])
+
+        #爬取数据
+        url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/result/mreport.aspx?type=1'
+        response=session.get(url=url)
+
+        def filter_data(data):
+            """只保留包含阿拉伯数字或'--'的数据"""
+            filtered_data = {}
+            for key, values in data.items():
+                filtered_values = [v for v in values if re.search(r'\d', v) or '--' in v]
+                filtered_data[key] = filtered_values
+            return filtered_data
+        summart_evaluation={}
+        categories = [
+            ['pr', 'nm', 'gs', 'pfz'],
+            ['市场类指标', '生产类指标', '财务类指标', '决策综合评价']
+        ]
+        for i, j in zip(categories[0], categories[1]):
+            url = 'http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/result/report.aspx?item='+i 
+            response = session.get(url)
+            tree=etree.HTML(response.text)
+            element= tree.xpath('//font[@style="font-size:16px"]/text()')
+            filtered_element = [text.replace('\xa0', '') for text in element]
+            summart_evaluation[j]=filtered_element
+
+        url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/result/quanzhong.aspx'
+        response=session.get(url=url)
+        tree=etree.HTML(response.text)
+        element= tree.xpath('//div[@style="font-size:16px;"]/text()')
+        filtered_element = [text.replace('\xa0', '') for text in element]
+        summart_evaluation['评价指标权重']=filtered_element
+        summart_evaluation = filter_data(summart_evaluation)      
+
+        with open('summart_evaluation.json', 'w', encoding='utf-8') as f:
+            # 将字典数据写入 JSON 文件，并格式化为易于阅读的形式
+            json.dump(summart_evaluation, f, ensure_ascii=False, indent=4)
+
+        #开始存入数据
+        uid = request.session.get('uid')
+        round_reports = Round.objects.filter(uid=uid).annotate(round_id_int=Cast('round_id', IntegerField())).order_by('-round_id_int').first()
+        evaluation_dic = {'市场类指标':['一般市场价格','广告费用','销售人员数量','研发投入效应','一般市场计划量','一般市场销售量','一般市场销售额','理论市场占有率','实际市场占有率'],
+                        '生产类指标':['一般市场产量','累积产品库存','生产人员数量','生产设备负荷','生产人员负荷','机器人累计数','产品质量评价','设备生产能力'],
+                        '财务类指标':['税前经营成果','周期缴纳税收','周期支付股息','总的盈亏累计','周期贷款总额','周期期末现金','资产负债合计'],
+                        }
+        for type,projects in evaluation_dic.items():
+            for i, project in enumerate(projects):
+                start_index = i * 17
+                end_index = start_index + 17
+
+                # 创建并保存Evaluation记录(计算机)
+                evaluation = Evaluation(
+                    round_id=round_reports,       # 关联到一个决策轮次
+                    project=project,             # 项目名称
+                    company='计算机',               # 企业名称
+                    cycle_number=cycle_num,                # 周期
+                    weight=float(summart_evaluation[type][start_index:end_index][0][4]),                   # 权数
+                    value=float(summart_evaluation[type][start_index:end_index][cycle_num]),                  # 值
+                    score_ranking=float(summart_evaluation[type][start_index:end_index][8])                     # 评分
+                )
+                # 保存到数据库
+                evaluation.save()
+
+                # 创建并保存Evaluation记录（本企业）
+                evaluation = Evaluation(
+                    round_id=round_reports,       # 关联到一个决策轮次
+                    project=project,             # 项目名称
+                    company='本企业',               # 企业名称
+                    cycle_number=cycle_num,                # 周期
+                    weight=float(summart_evaluation[type][start_index:end_index][0][4]),                   # 权数
+                    value=float(summart_evaluation[type][start_index:end_index][cycle_num+8]),                  # 值
+                    score_ranking=float(summart_evaluation[type][start_index:end_index][16])                     # 评分
+                )
+                # 保存到数据库
+                evaluation.save()
+        # 创建并保存Evaluation记录(计算机)
+        evaluation = Evaluation(
+            round_id=round_reports,       # 关联到一个决策轮次
+            project='决策综合评价' ,             # 项目名称
+            company='计算机',               # 企业名称
+            cycle_number=cycle_num,                # 周期
+            value=float(summart_evaluation['决策综合评价'][cycle_num-1]),                  # 值
+            score_ranking=float(summart_evaluation['决策综合评价'][7])                     #排名
+        )
+        # 保存到数据库
+        evaluation.save()
+
+        # 创建并保存Evaluation记录（本企业）
+        evaluation = Evaluation(
+            round_id=round_reports,       # 关联到一个决策轮次
+            project='决策综合评价',             # 项目名称
+            company='本企业',               # 企业名称
+            cycle_number=cycle_num,                # 周期                 
+            value=float(summart_evaluation['决策综合评价'][cycle_num+7]),                  # 值
+            score_ranking=float(summart_evaluation['决策综合评价'][15])                     # 排名
+        )
+        evaluation.save()
     else:
         soup = BeautifulSoup(response_update_decision_data.text, 'html.parser')
         response_submit_decision_data['提交结果']=soup.select_one("#contentplaceholderadd_Label8").text 
@@ -622,41 +918,173 @@ def historical_decision(request):
 
 @csrf_exempt
 def compete_outcome(request):
+    from .models import Round,Cycle,CompetitionResult
     # 从 session 中获取之前保存的 cookies
     session_cookies = request.session.get('session_cookies')
 
     # 使用 requests.Session() 复用登录状态
     session = requests.Session()
     session.cookies.update(session_cookies)
-    #爬取目标网站
-    url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/result/result.aspx?type=1'
-    response=session.get(url=url)
+
+    uid = request.session.get('uid')
+    round_reports = Round.objects.filter(uid=uid).annotate(round_id_int=Cast('round_id', IntegerField())).order_by('-round_id_int').first()
+    cycle_reports = Cycle.objects.filter(round_id=round_reports.round_id).annotate(cycle_id_int=Cast('cycle_id', IntegerField())).order_by('-cycle_id_int').first()
+
+    # 查找数据库中是否已有该周期的数据
+    competition_result = CompetitionResult.objects.filter(cycle_id=cycle_reports.cycle_id).first()
+
+    if competition_result:
+        # 如果数据库中存在数据，返回已有数据
+        response_compete_outcome = {
+            '标题': competition_result.competition_title,
+            '一般市场价格': [
+                competition_result.company_market_price,
+                competition_result.competitor_market_price
+            ],
+            '广告费用投入': [
+                competition_result.company_ad_expenses,
+                competition_result.competitor_ad_expenses
+            ],
+            '销售人员数量': [
+                competition_result.company_sales_staff,
+                competition_result.competitor_sales_staff
+            ],
+            '产品质量评价': [
+                competition_result.company_quality_rating,
+                competition_result.competitor_quality_rating
+            ],
+            '一般市场销售量': [
+                competition_result.company_market_sales_volume,
+                competition_result.competitor_market_sales_volume
+            ],
+            '一般市场销售额': [
+                competition_result.company_market_sales_revenue,
+                competition_result.competitor_market_sales_revenue
+            ],
+            '理论市场占有率': [
+                competition_result.company_theoretical_share,
+                competition_result.competitor_theoretical_share
+            ],
+            '实际市场占有率': [
+                competition_result.company_actual_share,
+                competition_result.competitor_actual_share
+            ],
+            '附加市场I销售量': [
+                competition_result.company_extra1_sales_volume,
+                competition_result.competitor_extra1_sales_volume
+            ],
+            '附加市场I销售额': [
+                competition_result.company_extra1_sales_revenue,
+                competition_result.competitor_extra1_sales_revenue
+            ],
+            '附加市场II销售量': [
+                competition_result.company_extra2_sales_volume,
+                competition_result.competitor_extra2_sales_volume
+            ],
+            '附加市场II销售额': [
+                competition_result.company_extra2_sales_revenue,
+                competition_result.competitor_extra2_sales_revenue
+            ],
+            '中标企业': [
+                competition_result.company_winning_company,
+                competition_result.competitor_winning_company
+            ],
+            '中标企业投标价格': [
+                competition_result.company_bid_price,
+                competition_result.competitor_bid_price
+            ],
+            '产品累积库存数量': [
+                competition_result.company_inventory,
+                competition_result.competitor_inventory
+            ],
+            '生产线生产能力': [
+                competition_result.company_capacity,
+                competition_result.competitor_capacity
+            ],
+            '税前经营成果': [
+                competition_result.company_profit,
+                competition_result.competitor_profit
+            ],
+            '资产负债总和': [
+                competition_result.company_assets_liabilities,
+                competition_result.competitor_assets_liabilities
+            ]
+        }
+        return JsonResponse(response_compete_outcome)
+    
+    
+    else:
+        #爬取目标网站
+        url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/result/result.aspx?type=1'
+        response=session.get(url=url)
 
 
-    # 解析HTML内容
-    tree=etree.HTML(response.text)
+        # 解析HTML内容
+        tree=etree.HTML(response.text)
 
-    # 使用XPath定位元素
-    element1 = tree.xpath('//font[@style="font-size:17px"]/text()')
-    cleaned_element1 = [text.replace('\xa0', '') for text in element1]
-    element2 = tree.xpath('//font[@style="font-size: 24px;"]/text()')
-    cleaned_element2 = [text.replace('\xa0', '') for text in element2]
-    cleaned_element1 = cleaned_element1[2:-1]
+        # 使用XPath定位元素
+        element1 = tree.xpath('//font[@style="font-size:17px"]/text()')
+        cleaned_element1 = [text.replace('\xa0', '') for text in element1]
+        element2 = tree.xpath('//font[@style="font-size: 24px;"]/text()')
+        cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+        cleaned_element1 = cleaned_element1[2:-1]
 
 
 
-    # 初始化空字典用于存储结果
-    compete_outcome = {}
-    compete_outcome['标题'] = cleaned_element2[0]
-    # 按步长4遍历列表（标签、单位、值1、值2）
-    for i in range(0, len(cleaned_element1), 4):
-        # 提取标签和值
-        label = cleaned_element1[i]         # 标签
-        value1 = cleaned_element1[i+2]      # 企业1的值
-        value2 = cleaned_element1[i+3]      # 企业2的值
-        
-        # 将标签作为键，两个值作为列表存储在字典中
-        compete_outcome[label] = [value1, value2]
+        # 初始化空字典用于存储结果
+        compete_outcome = {}
+        compete_outcome['标题'] = cleaned_element2[0]
+        # 按步长4遍历列表（标签、单位、值1、值2）
+        for i in range(0, len(cleaned_element1), 4):
+            # 提取标签和值
+            label = cleaned_element1[i]         # 标签
+            value1 = cleaned_element1[i+2]      # 企业1的值
+            value2 = cleaned_element1[i+3]      # 企业2的值
+            
+            # 将标签作为键，两个值作为列表存储在字典中
+            compete_outcome[label] = [value1, value2]
+
+        # 创建并保存竞争结果数据
+        competition_result = CompetitionResult.objects.create(
+            cycle_id=cycle_reports,
+            competition_title=compete_outcome['标题'],
+            company_market_price=compete_outcome.get('一般市场价格', [None, None])[0],
+            competitor_market_price=compete_outcome.get('一般市场价格', [None, None])[1],
+            company_ad_expenses=compete_outcome.get('广告费用投入', [None, None])[0],
+            competitor_ad_expenses=compete_outcome.get('广告费用投入', [None, None])[1],
+            company_sales_staff=compete_outcome.get('销售人员数量', [None, None])[0],
+            competitor_sales_staff=compete_outcome.get('销售人员数量', [None, None])[1],
+            company_quality_rating=compete_outcome.get('产品质量评价', [None, None])[0],
+            competitor_quality_rating=compete_outcome.get('产品质量评价', [None, None])[1],
+            company_market_sales_volume=compete_outcome.get('一般市场销售量', [None, None])[0],
+            competitor_market_sales_volume=compete_outcome.get('一般市场销售量', [None, None])[1],
+            company_market_sales_revenue=compete_outcome.get('一般市场销售额', [None, None])[0],
+            competitor_market_sales_revenue=compete_outcome.get('一般市场销售额', [None, None])[1],
+            company_theoretical_share=compete_outcome.get('理论市场占有率', [None, None])[0],
+            competitor_theoretical_share=compete_outcome.get('理论市场占有率', [None, None])[1],
+            company_actual_share=compete_outcome.get('实际市场占有率', [None, None])[0],
+            competitor_actual_share=compete_outcome.get('实际市场占有率', [None, None])[1],
+            company_extra1_sales_volume=compete_outcome.get('附加市场I销售量', [None, None])[0],
+            competitor_extra1_sales_volume=compete_outcome.get('附加市场I销售量', [None, None])[1],
+            company_extra1_sales_revenue=compete_outcome.get('附加市场I销售额', [None, None])[0],
+            competitor_extra1_sales_revenue=compete_outcome.get('附加市场I销售额', [None, None])[1],
+            company_extra2_sales_volume=compete_outcome.get('附加市场II销售量', [None, None])[0],
+            competitor_extra2_sales_volume=compete_outcome.get('附加市场II销售量', [None, None])[1],
+            company_extra2_sales_revenue=compete_outcome.get('附加市场II销售额', [None, None])[0],
+            competitor_extra2_sales_revenue=compete_outcome.get('附加市场II销售额', [None, None])[1],
+            company_winning_company=compete_outcome.get('中标企业', [None, None])[0],
+            competitor_winning_company=compete_outcome.get('中标企业', [None, None])[1],
+            company_bid_price=compete_outcome.get('中标企业投标价格', [None, None])[0],
+            competitor_bid_price=compete_outcome.get('中标企业投标价格', [None, None])[1],
+            company_inventory=compete_outcome.get('产品累积库存数量', [None, None])[0],
+            competitor_inventory=compete_outcome.get('产品累积库存数量', [None, None])[1],
+            company_capacity=compete_outcome.get('生产线生产能力', [None, None])[0],
+            competitor_capacity=compete_outcome.get('生产线生产能力', [None, None])[1],
+            company_profit=compete_outcome.get('税前经营成果', [None, None])[0],
+            competitor_profit=compete_outcome.get('税前经营成果', [None, None])[1],
+            company_assets_liabilities=compete_outcome.get('资产负债总和', [None, None])[0],
+            competitor_assets_liabilities=compete_outcome.get('资产负债总和', [None, None])[1]
+        )
     return JsonResponse(compete_outcome)  
 
 
@@ -683,6 +1111,7 @@ def enterreporting(request):
         ['assetdebt','http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/assetdebt.aspx?type=','资产负债表'],
         ['research','http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/research.aspx?type=','各企业市场营销及生产研究报告']
     ]
+    a=0
     for dictl,urll,text in report_data:
         dictl={}
         dict_data=dictl
@@ -703,40 +1132,48 @@ def enterreporting(request):
         if  cleaned_element3:  
             dict_data[cleaned_element3[0]+cleaned_element2[0]]=cleaned_element1
             n=cleaned_element2[0][2]
+            a=1
         else:
-            if text=='各企业市场营销及生产研究报告':
+            if text=='各企业市场营销及生产研究报告' and a==1:
                 dict_data['各企业市场营销及生产研究报告（第'+n+'周期）']='本周期没有订购市场和生产研究报告！'
 
-        for i in range(int(n)-1,0,-1):
-            #爬取目标网站
-            url=urll+'3&hcycleno='+str(i)
-            response=session.get(url=url)
+        if a==1:
+            for i in range(int(n)-1,0,-1):
+                #爬取目标网站
+                url=urll+'3&hcycleno='+str(i)
+                response=session.get(url=url)
 
-            # 解析HTML内容
-            tree=etree.HTML(response.text)
-            # 使用XPath定位元素
-            # 例如，定位一个包含特定文本的元素
-            element1 = tree.xpath('//font[@style="font-size:16px"]/text()')
-            element2 = tree.xpath('//font[@style="POSITION:relative;top:20px;Z-INDEX:4;font-size: 24px;font-family:隶书;"]/text()')
-            element3 = tree.xpath('//font[@style="position:relative;top:15px;Z-INDEX:4;line-height:15px; width:500px;height: 50px;font-size: 40px;font-family:隶书;"]/text()')
-            # 删除字段中的 \xa0
-            cleaned_element1 = [text.replace('\xa0', '') for text in element1]
-            cleaned_element2 = [text.replace('\xa0', '') for text in element2]
-            cleaned_element3 = [text.replace('\xa0', '') for text in element3]
-            cleaned_element1 = [item.strip() for item in cleaned_element1 if re.search(r'\d', item)]
-            if cleaned_element3:
-                if text=='各企业市场营销及生产研究报告':
-                    cleaned_element2[0]=cleaned_element2[0][0]+cleaned_element2[0][6:]
-                    dict_data[cleaned_element3[0]+cleaned_element2[0]]=cleaned_element1
-                    a=cleaned_element3[0]
-                    b=int(cleaned_element2[0][-4])-1
-                    c=cleaned_element2[0]
+                # 解析HTML内容
+                tree=etree.HTML(response.text)
+                # 使用XPath定位元素
+                # 例如，定位一个包含特定文本的元素
+                element1 = tree.xpath('//font[@style="font-size:16px"]/text()')
+                element2 = tree.xpath('//font[@style="POSITION:relative;top:20px;Z-INDEX:4;font-size: 24px;font-family:隶书;"]/text()')
+                element3 = tree.xpath('//font[@style="position:relative;top:15px;Z-INDEX:4;line-height:15px; width:500px;height: 50px;font-size: 40px;font-family:隶书;"]/text()')
+                # 删除字段中的 \xa0
+                cleaned_element1 = [text.replace('\xa0', '') for text in element1]
+                cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+                cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+                cleaned_element1 = [item.strip() for item in cleaned_element1 if re.search(r'\d', item)]
+                if cleaned_element3:
+                    if text=='各企业市场营销及生产研究报告':
+                        cleaned_element2[0]=cleaned_element2[0][0]+cleaned_element2[0][6:]
+                        dict_data[cleaned_element3[0]+cleaned_element2[0]]=cleaned_element1
+                        a=cleaned_element3[0]
+                        b=int(cleaned_element2[0][-4])-1
+                        c=cleaned_element2[0]
+                    else:
+                        dict_data[cleaned_element3[0]+cleaned_element2[0]]=cleaned_element1
+                        c=0
                 else:
-                    dict_data[cleaned_element3[0]+cleaned_element2[0]]=cleaned_element1
-            else:
-                if text=='各企业市场营销及生产研究报告':
-                    c = c[:len(c) - 4] + str(b) + c[len(c) - 3:]
-                    dict_data[a+c]='本周期没有订购市场和生产研究报告！'
+                    if text=='各企业市场营销及生产研究报告':
+                        if c==0:
+                            dict_data['各企业市场营销及生产研究报告（第'+str(int(n)-1)+'周期）']='本周期没有订购市场和生产研究报告！'
+                        else:
+                            c = c[:len(c) - 4] + str(b) + c[len(c) - 3:]
+                            dict_data[a+c]='本周期没有订购市场和生产研究报告！'
+
+
         # 将字典项转换为列表并倒序
         reversed_items = list(dict_data.items())[::-1]
         # 将倒序后的列表转换回字典
@@ -751,44 +1188,13 @@ def enterreporting(request):
 
 
 @csrf_exempt
-def summart_evaluation(request):
+def get_summart_evaluation(request):
     # 从 session 中获取之前保存的 cookies
     session_cookies = request.session.get('session_cookies')
 
     # 使用 requests.Session() 复用登录状态
     session = requests.Session()
     session.cookies.update(session_cookies)
-
-
-    def filter_data(data):
-        """只保留包含阿拉伯数字或'--'的数据"""
-        filtered_data = {}
-        for key, values in data.items():
-            filtered_values = [v for v in values if re.search(r'\d', v) or '--' in v]
-            filtered_data[key] = filtered_values
-        return filtered_data
-    url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/result/mreport.aspx?type=1'
-    response=session.get(url=url)
-
-
-    summart_evaluation={}
-    categories = [
-        ['pr', 'nm', 'gs', 'pfz'],
-        ['市场类指标', '生产类指标', '财务类指标', '决策综合评价']
-    ]
-    for i, j in zip(categories[0], categories[1]):
-        url = 'http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/result/report.aspx?item='+i 
-        response = session.get(url)
-        tree=etree.HTML(response.text)
-        element= tree.xpath('//font[@style="font-size:16px"]/text()')
-        filtered_element = [text.replace('\xa0', '') for text in element]
-        summart_evaluation[j]=filtered_element
-
-    url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/result/quanzhong.aspx'
-    response=session.get(url=url)
-    tree=etree.HTML(response.text)
-    element= tree.xpath('//div[@style="font-size:16px;"]/text()')
-    filtered_element = [text.replace('\xa0', '') for text in element]
-    summart_evaluation['评价指标权重']=filtered_element
-    summart_evaluation = filter_data(summart_evaluation)
+    with open('summart_evaluation.json', 'r', encoding='utf-8') as f:
+        summart_evaluation = json.load(f)
     return JsonResponse(summart_evaluation) 
