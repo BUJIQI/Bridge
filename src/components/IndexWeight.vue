@@ -19,67 +19,67 @@
             <tbody>               
               <tr>
                 <td>一般市场价格</td>
-                <td>0</td>
+                <td>{{ WeightData[0] }}</td>
                 <td>实际市场占有</td>
-                <td>1</td>
+                <td>{{ WeightData[1] }}</td>
                 <td>税前企业盈利</td>
-                <td>0</td>
+                <td>{{ WeightData[2] }}</td>
               </tr>
               <tr>
                 <td>广告费用投入</td>
-                <td>0</td>
+                <td>{{ WeightData[3] }}</td>
                 <td>一般市场产量</td>
-                <td>0</td>
+                <td>{{ WeightData[4] }}</td>
                 <td>周期缴纳税收</td>
-                <td>3</td>
+                <td>{{ WeightData[5] }}</td>
               </tr>
               <tr>
                 <td>销售人员数量</td>
-                <td>0</td>
+                <td>{{ WeightData[6] }}</td>
                 <td>累积产品库存</td>
-                <td>0</td>
+                <td>{{ WeightData[7] }}</td>
                 <td>机器人累计数</td>
-                <td>3</td>
+                <td>{{ WeightData[8] }}</td>
               </tr>
               <tr>
                 <td>一般市场计划</td>
-                <td>0</td>
+                <td>{{ WeightData[9] }}</td>
                 <td>生产人员数量</td>
-                <td>0</td>
+                <td>{{ WeightData[10] }}</td>
                 <td>设备生产能力</td>
-                <td>0</td>
+                <td>{{ WeightData[11] }}</td>
               </tr>
               <tr>
                 <td>一般市场销量</td>
-                <td>0</td>
+                <td>{{ WeightData[12] }}</td>
                 <td>生产设备负荷</td>
-                <td>5</td>
+                <td>{{ WeightData[13] }}</td>
                 <td>总的盈亏累计</td>
-                <td>56</td>
+                <td>{{ WeightData[14] }}</td>
               </tr>
               <tr>
                 <td>研发投入效应</td>
-                <td>0</td>
+                <td>{{ WeightData[15] }}</td>
                 <td>生产人员负荷</td>
-                <td>5</td>
+                <td>{{ WeightData[16] }}</td>
                 <td>周期贷款总额</td>
-                <td>10</td>
+                <td>{{ WeightData[17] }}</td>
               </tr>
               <tr>
                 <td>一般市场销额</td>
-                <td>0</td>
+                <td>{{ WeightData[18] }}</td>
                 <td>周期支付股息</td>
-                <td>10</td>
+                <td>{{ WeightData[19] }}</td>
                 <td>周期期末现金</td>
-                <td>0</td>
+                <td>{{ WeightData[20] }}</td>
               </tr>
               <tr>
                 <td>理论市场占有</td>
-                <td>1</td>
+                <td>{{ WeightData[21] }}</td>
                 <td>产品质量评价</td>
-                <td>2</td>
+                <td>{{ WeightData[22] }}</td>
                 <td>资产负债合计</td>
-                <td>4</td>
+                <td>{{ WeightData[23] }}</td>
               </tr>
             </tbody>
           </table>
@@ -90,17 +90,36 @@
 </template>
 
 <script>
-
+import { ref, onMounted } from 'vue';
 import { useUserStore } from '@/store/user';
-
+import axios from 'axios';
 
 export default {
   setup() {
     const userStore = useUserStore();
     const userInfo = userStore.userInfo;
+    const WeightData = ref([]);
+
+    const fetchReportData = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/users/summart_evaluation/', {
+          withCredentials: true
+        });
+        
+        WeightData.value = response.data['评价指标权重'];
+
+      } catch (error) {
+        console.error('获取报告数据时出错:', error);
+      }
+    };
+
+    onMounted(() => {
+      fetchReportData();
+    });
 
     return {
       userInfo,
+      WeightData
     };
   },
 };

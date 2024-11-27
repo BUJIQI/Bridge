@@ -33,101 +33,101 @@
               </tr>
               <tr>
                 <td>原材料</td>
-                <td>1150</td>
-                <td>920</td>
+                <td>{{ currentReportData[0] }}</td>
+                <td>直接成本</td>
               </tr>
               <tr>
                 <td>附件</td>
-                <td>1150</td>
-                <td>920</td>
+                <td>{{ currentReportData[1] }}</td>
+                <td>直接成本</td>
               </tr>
               <tr>
                 <td>生产材料</td>
-                <td>1150</td>
-                <td>920</td>
+                <td>{{ currentReportData[2] }}</td>
+                <td>直接成本</td>
               </tr>
               <tr>
                 <td colspan="3" class="subheader">人员费用</td>
               </tr>
               <tr>
                 <td>工资费用</td>
-                <td>8732</td>
-                <td>1000</td>
+                <td>{{ currentReportData[3] }}</td>
+                <td>{{ currentReportData[4] }}</td>
               </tr>
               <tr>
                 <td>人员附加费用</td>
-                <td>10.04</td>
-                <td>0.92</td>
+                <td>{{ currentReportData[5] }}</td>
+                <td>{{ currentReportData[6] }}</td>
               </tr>
               <tr>
                 <td>招聘/解雇费用</td>
-                <td>32.4</td>
-                <td>32.4</td>
+                <td>{{ currentReportData[7] }}</td>
+                <td>间接成本</td>
               </tr>
               <tr>
                 <td colspan="3" class="subheader">折旧费用</td>
               </tr>
               <tr>
                 <td>厂房</td>
-                <td>4</td>
-                <td>4</td>
+                <td>{{ currentReportData[8] }}</td>
+                <td>间接成本</td>
               </tr>
               <tr>
                 <td>生产线</td>
-                <td>4</td>
-                <td>4</td>
+                <td>{{ currentReportData[9] }}</td>
+                <td>间接成本</td>
               </tr>
               <tr>
                 <td>机器人</td>
-                <td>4</td>
-                <td>4</td>
+                <td>{{ currentReportData[10] }}</td>
+                <td>间接成本</td>
               </tr>
               <tr>
                 <td colspan="3" class="subheader">其它经营费用</td>
               </tr>
               <tr>
                 <td>其它固定费用</td>
-                <td>4</td>
-                <td>4</td>
+                <td>{{ currentReportData[11] }}</td>
+                <td>间接成本</td>
               </tr>
               <tr>
                 <td>维修保养</td>
-                <td>4</td>
-                <td>4</td>
+                <td>{{ currentReportData[12] }}</td>
+                <td>间接成本</td>
               </tr>
               <tr>
                 <td>合理化</td>
-                <td>4</td>
-                <td>4</td>
+                <td>{{ currentReportData[13] }}</td>
+                <td>间接成本</td>
               </tr>
               <tr>
                 <td>返修/废品</td>
-                <td>4</td>
-                <td>4</td>
+                <td>{{ currentReportData[14] }}</td>
+                <td>间接成本</td>
               </tr>
               <tr>
                 <td>库存费用</td>
-                <td>4</td>
-                <td>4</td>
+                <td>{{ currentReportData[15] }}</td>
+                <td>间接成本</td>
               </tr>
               <tr>
                 <td>广告费用</td>
-                <td>4</td>
-                <td>4</td>
+                <td>{{ currentReportData[16] }}</td>
+                <td>间接成本</td>
               </tr>
               <tr>
                 <td>市场研究</td>
-                <td>4</td>
-                <td>4</td>
+                <td>{{ currentReportData[17] }}</td>
+                <td>间接成本</td>
               </tr>
               <tr>
                 <td>其它研究开发费用</td>
-                <td>4</td>
-                <td>4</td>
+                <td>{{ currentReportData[18] }}</td>
+                <td>间接成本</td>
               </tr>
               <tr>
                 <td class="summary" style="text-align: left;">合计：</td>
-                <td class="summary">1150</td>          
+                <td class="summary">{{ currentReportData[19] }}</td>          
                 <td class="summary"></td>
               </tr>
             </tbody>

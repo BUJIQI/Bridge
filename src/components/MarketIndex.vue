@@ -57,61 +57,21 @@ export default {
     const userInfo = userStore.userInfo;
 
     const MarketData = ref([
-      {
-        type: '一般市场价格（元）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '广告费用（百万元）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '销售人员数量（个）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '研发投入效应（%）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '一般市场计划量（台）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '一般市场销售量（台）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '一般市场销售额（百万元）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '理论市场占有率（%）',
-        weight: 1,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '实际市场占有率（%）',
-        weight: 1,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-    ]);
+      '一般市场价格（元）',
+      '广告费用（百万元）',
+      '销售人员数量（个）',
+      '研发投入效应（%）',
+      '一般市场计划量（台）',
+      '一般市场销售量（台）',
+      '一般市场销售额（百万元）',
+      '理论市场占有率（%）',
+      '实际市场占有率（%）'
+    ].map((type) => ({
+      type,
+      weight: '',
+      computerValues: [],
+      enterpriseValues: [],
+    })));
   
     const fetchReportData = async () => {
       try {
@@ -123,7 +83,8 @@ export default {
         
         MarketData.value.forEach((item, index) => {
           const baseIndex = index * 17; 
-          
+
+          item.weight = marketDataArray[baseIndex];
           item.computerValues = marketDataArray.slice(baseIndex + 1, baseIndex + 9); 
           item.enterpriseValues = marketDataArray.slice(baseIndex + 9, baseIndex + 17);
         });
@@ -132,7 +93,6 @@ export default {
         console.error('获取报告数据时出错:', error);
       }
     };
-
 
     onMounted(() => {
       fetchReportData();

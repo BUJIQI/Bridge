@@ -47,9 +47,9 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useUserStore } from '@/store/user';
-
+import axios from 'axios';
 
 export default {
   setup() {
@@ -57,55 +57,45 @@ export default {
     const userInfo = userStore.userInfo;
 
     const ProductionData = ref([
-      {
-        type: '一般市场产量（台）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '累积产品库存（台）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '生产人员数量（个）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '生产设备负荷（%）',
-        weight: 5,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '生产人员负荷（%）',
-        weight: 5,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '机器人累计数（个）',
-        weight: 3,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '产品质量评价',
-        weight: 2,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-      {
-        type: '设备生产能力（个）',
-        weight: 0,
-        computerValues: ['', '', '', '', '', '', '', ''],
-        enterpriseValues: ['', '', '', '', '', '', '', ''],
-      },
-    ]);
+      '一般市场产量（台）',
+      '累积产品库存（台）',
+      '生产人员数量（个）',
+      '生产设备负荷（%）',
+      '生产人员负荷（%）',
+      '机器人累计数（个）',
+      '产品质量评价',
+      '设备生产能力（个）'
+    ].map((type) => ({
+      type,
+      weight: '',
+      computerValues: [],
+      enterpriseValues: [],
+    })));
+  
+    const fetchReportData = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/users/summart_evaluation/', {
+          withCredentials: true
+        });
+        
+        const ProductionDataArray = response.data['生产类指标'];
+        
+        ProductionData.value.forEach((item, index) => {
+          const baseIndex = index * 17; 
+
+          item.weight = ProductionDataArray[baseIndex];
+          item.computerValues = ProductionDataArray.slice(baseIndex + 1, baseIndex + 9); 
+          item.enterpriseValues = ProductionDataArray.slice(baseIndex + 9, baseIndex + 17);
+        });
+
+      } catch (error) {
+        console.error('获取报告数据时出错:', error);
+      }
+    };
+
+    onMounted(() => {
+      fetchReportData();
+    });
 
     return {
       userInfo,
