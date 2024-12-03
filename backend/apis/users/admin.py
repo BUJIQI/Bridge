@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import User,Round,Cycle,MarketReport,MarketHistoryReport,CompetitionResult,Evaluation
+from .models import User,Round,Cycle,MarketReport,MarketHistoryReport,CompetitionResult,Evaluation,Datakeep,DecisionForm, CompanyReportCostType,CompanyReportCostUnit,CompanyReportProfitLoss,CompanyReportPostTaxProfit,CompanyReportProfitDistribution,CompanyReportFinancial,CompanyReportBalance,CompanyReportCostDpt,CompanyReportMarketPrd,CompanyReportMarket,CompanyReportWarehouse1,CompanyReportWarehouse2,CompanyReportWarehouse3,CompanyReportPersonnel1,CompanyReportPersonnel2,CompanyReportPrd1,CompanyReportPrd2,CompanyReportPrd3
 
 admin.site.register(User)
 admin.site.register(Round)
@@ -10,4 +10,23 @@ admin.site.register(MarketReport)
 admin.site.register(MarketHistoryReport)
 admin.site.register(CompetitionResult)
 admin.site.register(Evaluation)
-
+admin.site.register(Datakeep)
+admin.site.register(DecisionForm)
+admin.site.register(CompanyReportCostType)
+admin.site.register(CompanyReportCostUnit)
+admin.site.register(CompanyReportProfitLoss)
+admin.site.register(CompanyReportPostTaxProfit)
+admin.site.register(CompanyReportProfitDistribution)
+admin.site.register(CompanyReportFinancial)
+admin.site.register(CompanyReportBalance)
+admin.site.register(CompanyReportCostDpt)
+admin.site.register(CompanyReportMarketPrd)
+admin.site.register(CompanyReportMarket)
+admin.site.register(CompanyReportWarehouse1)
+admin.site.register(CompanyReportWarehouse2)
+admin.site.register(CompanyReportWarehouse3)
+admin.site.register(CompanyReportPersonnel1)
+admin.site.register(CompanyReportPersonnel2)
+admin.site.register(CompanyReportPrd1)
+admin.site.register(CompanyReportPrd2)
+admin.site.register(CompanyReportPrd3)
