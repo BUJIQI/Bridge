@@ -27,239 +27,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td class="highlight">一般市场价格</td>
-                <td class="highlight">（元/台）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">广告费用投入</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">销售人员数量</td>
-                <td class="highlight">（人）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">销售人员费用</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">产品质量评价</td>
-                <td class="highlight">（1--5）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">产品研究费用</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">一般市场销售量</td>
-                <td class="highlight">（台）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">一般市场销售额</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">理论市场占有率</td>
-                <td class="highlight">（%）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">实际市场占有率</td>
-                <td class="highlight">（%）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">附加市场I销售量</td>
-                <td class="highlight">（台）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">附加市场I销售额</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">附加市场II销售量</td>
-                <td class="highlight">（台）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">附加市场II销售额</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">中标企业</td>
-                <td class="highlight">（打***号企业）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">中标企业投标价格</td>
-                <td class="highlight">（台/元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">原材料库存量</td>
-                <td class="highlight">（台）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">附件库存量</td>
-                <td class="highlight">（台）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">产品积累库存数量</td>
-                <td class="highlight">（台）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">机器人数量</td>
-                <td class="highlight">（个）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">研究人员数</td>
-                <td class="highlight">（个）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">一般市场计划量</td>
-                <td class="highlight">（台）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">一般市场生产量</td>
-                <td class="highlight">（台）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">维修保养系数</td>
-                <td class="highlight">（0--1）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">合理化系数</td>
-                <td class="highlight">（0--1）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">生产线生产能力</td>
-                <td class="highlight">（台/周期）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">生产人员数</td>
-                <td class="highlight">（个）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">生产线负载率</td>
-                <td class="highlight">（%）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">生产人员负载率</td>
-                <td class="highlight">（%）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">一般市场的产品成本</td>
-                <td class="highlight">（元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">税前经营成果</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">本周期亏损结转</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">本周期股息支付</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">本周期利润储备</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">本周期中期贷款</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">本周期期末现金</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">总的利润储备额</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">本周期透支贷款</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
-              </tr>
-              <tr>
-                <td class="highlight">资产负债总和</td>
-                <td class="highlight">（百万元）</td>
-                <td>1000</td>
-                <td>1000</td>
+              <tr v-for="(item, index) in reportItems" :key="index">
+                <td class="highlight">{{ item.label }}</td>
+                <td class="highlight">{{ item.unit }}</td>
+                <td>{{ currentReportData[index * 2] }}</td>
+                <td>{{ currentReportData[index * 2 + 1] }}</td>
               </tr>
             </tbody>
           </table>
@@ -288,6 +60,48 @@ export default {
     const selectedCycle = ref(userInfo.cycle - 1);
 
     const reportData = ref({});
+
+    const reportItems = ref([
+        { label: '一般市场价格', unit: '（元/台）' },
+        { label: '广告费用投入', unit: '（百万元）' },
+        { label: '销售人员数量', unit: '（人）' },
+        { label: '销售人员费用', unit: '（百万元）' },
+        { label: '产品质量评价', unit: '（1--5）' },
+        { label: '产品研究费用', unit: '（百万元）' },
+        { label: '一般市场销售量', unit: '（台）' },
+        { label: '一般市场销售额', unit: '（百万元）' },
+        { label: '理论市场占有率', unit: '（%）' },
+        { label: '实际市场占有率', unit: '（%）' },
+        { label: '附加市场I销售量', unit: '（台）' },
+        { label: '附加市场I销售额', unit: '（百万元）' },
+        { label: '附加市场II销售量', unit: '（台）' },
+        { label: '附加市场II销售额', unit: '（百万元）' },
+        { label: '中标企业', unit: '（打***号企业）' },
+        { label: '中标企业投标价格', unit: '（台/元）' },
+        { label: '原材料库存量', unit: '（台）' },
+        { label: '附件库存量', unit: '（台）' },
+        { label: '产品积累库存数量', unit: '（台）' },
+        { label: '机器人数量', unit: '（个）' },
+        { label: '研究人员数', unit: '（个）' },
+        { label: '一般市场计划量', unit: '（台）' },
+        { label: '一般市场生产量', unit: '（台）' },
+        { label: '维修保养系数', unit: '（0--1）' },
+        { label: '合理化系数', unit: '（0--1）' },
+        { label: '生产线生产能力', unit: '（台/周期）' },
+        { label: '生产人员数', unit: '（个）' },
+        { label: '生产线负载率', unit: '（%）' },
+        { label: '生产人员负载率', unit: '（%）' },
+        { label: '一般市场的产品成本', unit: '（元）' },
+        { label: '税前经营成果', unit: '（百万元）' },
+        { label: '本周期亏损结转', unit: '（百万元）' },
+        { label: '本周期股息支付', unit: '（百万元）' },
+        { label: '本周期利润储备', unit: '（百万元）' },
+        { label: '本周期中期贷款', unit: '（百万元）' },
+        { label: '本周期期末现金', unit: '（百万元）' },
+        { label: '总的利润储备额', unit: '（百万元）' },
+        { label: '本周期透支贷款', unit: '（百万元）' },
+        { label: '资产负债总和', unit: '（百万元）' },
+      ]);
 
     const fetchReportData = async () => {
       try {
@@ -320,7 +134,8 @@ export default {
       selectedCycle,
       reportData,
       updateCycle,
-      currentReportData
+      currentReportData,
+      reportItems
     };
   },
 };

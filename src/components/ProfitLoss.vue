@@ -22,7 +22,7 @@
             <thead>
               <tr>
                 <th></th>
-                <th>百万元</th>
+                <th style="border-right: 1px solid #ddd;">百万元</th>
                 <th></th>
                 <th>百万元</th>
               </tr>
@@ -30,55 +30,55 @@
             <tbody>
               <tr class="highlight">
                 <td>销售收入</td>
-                <td>8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[0] }}</td>
                 <td>销售收入</td>
-                <td>1000</td>
+                <td>{{ currentReportData[1] }}</td>
               </tr>
               <tr>
                 <td>+/- 产品库存变化</td>
-                <td>8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[2] }}</td>
                 <td rowspan="2">- 销售产品制造成本</td>
-                <td rowspan="2">1000</td>
+                <td rowspan="2">{{ currentReportData[3] }}</td>
               </tr>
               <tr>
                 <td>- 材料费用</td>
-                <td>8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[4] }}</td>
               </tr>
               <tr>
                 <td>- 人员费用</td>
-                <td></td>
+                <td style="border-right: 1px solid #ddd;"></td>
                 <td rowspan="2">- 销售费用</td>
-                <td rowspan="2">1000</td>
+                <td rowspan="2">{{ currentReportData[5] }}</td>
               </tr>
               <tr>
                 <td>- 工资</td>
-                <td>8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[6] }}</td>
               </tr>
               <tr>
                 <td>- 人员附加费用</td>
-                <td>8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[7] }}</td>
                 <td rowspan="2">- 研究开发费用</td>
-                <td rowspan="2">1000</td>
+                <td rowspan="2">{{ currentReportData[8] }}</td>
               </tr>
               <tr>
                 <td>- 其它人员费用</td>
-                <td>8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[9] }}</td>
               </tr>
               <tr>
                 <td>- 折旧</td>
-                <td>8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[10] }}</td>
                 <td rowspan="2">- 管理费用</td>
-                <td rowspan="2">1000</td>
+                <td rowspan="2">{{ currentReportData[11] }}</td>
               </tr>
               <tr>
                 <td>- 其它经营费用</td>
-                <td>8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[12] }}</td>
               </tr>
               <tr class="highlight">
                 <td>= 生产经营成果</td>
-                <td>8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[13] }}</td>
                 <td>= 生产经营成果</td>
-                <td>1000</td>
+                <td>{{ currentReportData[14] }}</td>
               </tr>
             </tbody>
           </table>

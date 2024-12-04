@@ -299,6 +299,8 @@ export default {
                         withCredentials: true
                         });
                     const submitResult = response.data;
+                    const userStore = useUserStore();
+                    userStore.setUserInfo(submitResult['提交后周期']);
 
                     if (submitResult['提交结果'] === '决策数据已经成功递交') {
                         Swal.fire('成功', '决策数据已经成功递交，可前往查看竞争结果报表', 'success');
@@ -335,6 +337,11 @@ export default {
 .mode-selection {
     display: flex;
     align-items: center;
+}
+
+.mode-selection button{
+    border: none;
+    padding: 5px;
 }
 
 .mode-selection button.active {
@@ -402,10 +409,12 @@ export default {
 
 .custom-button {
     background-color: #e74c3c; 
-    color: white;                
+    color: white;     
+    padding: 10px;           
     margin-left: 40px;
     margin-right: 40px;         
-    border-radius: 5px;        
+    border-radius: 5px;  
+    border: none;      
     cursor: pointer;             
     transition: background-color 0.3s, transform 0.2s; 
 }

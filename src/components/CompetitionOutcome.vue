@@ -1,5 +1,7 @@
 <template>
-    <div class="panel panel-default mt-3">
+  <div class="no-report-message" v-if="userInfo.cycle <= 1">尚未进行过决策，无结果可查看</div>
+  <div v-else>  
+    <div class="panel panel-default mt-3" v-if="userInfo.cycle > 1">
       <div class="panel-heading">
         <h3 class="panel-title">各企业主要竞争结果数据表（第{{ userInfo?.cycle-1 }}周期）</h3>
       </div>
@@ -23,6 +25,7 @@
         </table>
       </div>
     </div>
+  </div>
 </template>
 
 <script>
@@ -86,6 +89,17 @@ export default {
 </script>
 
 <style scoped>
+.no-report-message {
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  height: calc(100vh - 100px); 
+  font-size: 50px; 
+  color: #333; 
+  font-weight: bold; 
+  text-align: center;
+}
+
 .panel {
   margin-top: 20px;
   border-radius: 8px;
