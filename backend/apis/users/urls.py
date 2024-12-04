@@ -8,7 +8,7 @@ urlpatterns = [
     path('lookhistory/', views.lookhistory, name='lookhistory'),
     path('commit_decision/', views.commit_decision, name='commit_decision'),
     path('historical_decision/', views.historical_decision, name='historical_decision'),
-    path('compete_outcome/', views.compete_outcome, name='compete_outcome'),
+    path('compete_outcome/', views.compete_outcome_fun, name='compete_outcome'),
     path('enterreporting/', views.enterreporting, name='enterreporting'),
     path('summart_evaluation/', views.get_summart_evaluation, name='summart_evaluation'),
 ]
