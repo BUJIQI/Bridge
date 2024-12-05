@@ -297,13 +297,13 @@ export default {
                 try {
                     const response = await axios.post('http://127.0.0.1:8000/users/commit_decision/', this.formData, {
                         withCredentials: true
-                        });
-                    const submitResult = response.data;
-                    const userStore = useUserStore();
-                    userStore.setUserInfo(submitResult['提交后周期']);
-
+                    });
+                    const submitResult = response.data;                   
+                    sessionStorage.setItem('newcycle', submitResult['提交后周期']);
                     if (submitResult['提交结果'] === '决策数据已经成功递交') {
-                        Swal.fire('成功', '决策数据已经成功递交，可前往查看竞争结果报表', 'success');
+                        Swal.fire('成功', '决策数据已经成功递交，可前往查看竞争结果报表', 'success').then(() => {
+                            window.location.reload(); // 自动刷新页面
+                        });
                     } else {
                         Swal.fire('失败', submitResult['提交结果'], 'error');
                     }
@@ -315,7 +315,6 @@ export default {
                 Swal.fire('已取消', '您的决策数据未提交', 'info');
             }
         }
-
     }
 }
 </script>

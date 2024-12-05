@@ -1,5 +1,5 @@
 <template>
-  <div class="no-report-message" v-if="userInfo.cycle <= 1">尚未进行过决策，无报告可查看</div>
+  <div class="no-report-message" v-if="userInfo.cycle <= 2">无报告可查看</div>
   <div v-else>  
     <div class="panel panel-default mt-3" v-if="userInfo.cycle > 1">
       <div class="panel-heading">
