@@ -219,9 +219,12 @@
                 </div>
             </section>
 
+            <div v-if="isLoading" class="loading-indicator">
+                正在提交，请稍候...
+            </div>            
             <div class="button-group">
                 <button class="custom-button" @click="makeBudgetDecision">预算决策</button>
-                <button class="custom-button" @click="submitDecision" :disabled="!isOwnEnterprise" :class="{ 'disabled-button': !isOwnEnterprise }">提交决策</button>
+                <button class="custom-button" @click="submitDecision" :disabled="!isOwnEnterprise || isLoading" :class="{ 'disabled-button': !isOwnEnterprise || isLoading }">提交决策</button>
             </div>
         </div>
     </div>
@@ -238,6 +241,7 @@ export default {
         const userStore = useUserStore();
         const userInfo = userStore.userInfo;
         const isOwnEnterprise = ref(true);
+        const isLoading = ref(false);
 
         // 定义初始输入数据
         const formData = ref({
@@ -270,6 +274,7 @@ export default {
         return {
             userInfo,
             isOwnEnterprise,
+            isLoading,
             formData,
         };
     },
@@ -294,6 +299,7 @@ export default {
             });
 
             if (result.isConfirmed) {
+                this.isLoading = true;
                 try {
                     const response = await axios.post('http://127.0.0.1:8000/users/commit_decision/', this.formData, {
                         withCredentials: true
@@ -310,6 +316,8 @@ export default {
                 } catch (error) {
                     console.error('提交决策时发生错误:', error);
                     Swal.fire('错误', '提交决策时发生错误，请重试。', 'error');
+                } finally {
+                    this.isLoading = false; // 结束加载
                 }
             } else {
                 Swal.fire('已取消', '您的决策数据未提交', 'info');
@@ -346,6 +354,15 @@ export default {
 .mode-selection button.active {
     background-color: rgba(176, 63, 63, 0.733);
     color: white;
+}
+
+.loading-indicator {
+    margin-top: 20px; 
+    font-size: 16px; 
+    color: #e74c3c; 
+    text-align: center; /* 可以考虑让文本居中 */
+    display: block; /* 确保是块级元素 */ 
+    visibility: visible; /* 确保是可见的 */
 }
 
 .panel-body {
