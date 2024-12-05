@@ -9,7 +9,7 @@ class User(models.Model):
     name = models.CharField(max_length=50, verbose_name='学生姓名')  # 学生姓名
     user_class = models.CharField(max_length=50, verbose_name='班级')  # 班级
     team_name = models.CharField(max_length=50, verbose_name='队名')  # 队名
-    #email = models.EmailField(unique=True, verbose_name='邮箱')  # 邮箱，唯一约束
+    email = models.EmailField(null=True,blank=True, verbose_name='邮箱')  # 邮箱
     phone = models.CharField(max_length=15, verbose_name='电话')  # 电话
     group = models.IntegerField(verbose_name='组号')  # 组号
     number = models.IntegerField(verbose_name='企业编号')  # 企业编号
@@ -730,7 +730,8 @@ class CompanyReportMarketPrd(models.Model):
     company_compute = models.CharField(max_length=255, verbose_name='企业/计算机')
     market_price = models.CharField(max_length=255, verbose_name='一般市场价格')
     ad_expenses = models.CharField(max_length=255, verbose_name='广告费用投入')
-    sales_staff = models.CharField(max_length=255, verbose_name='销售人员数量')
+    num_staff = models.CharField(max_length=255, verbose_name='销售人员数量')
+    sales_staff = models.CharField(max_length=255, verbose_name='销售人员费用')
     product_rating = models.CharField(max_length=255, verbose_name='产品质量评价')
     product_expense = models.CharField(max_length=255, verbose_name='产品研究费用')
     market_sales_volume = models.CharField(max_length=255, verbose_name='一般市场销售量')
