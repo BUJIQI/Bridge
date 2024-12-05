@@ -36,7 +36,7 @@ def register(request):
         teamname= data.get('teamname')
         pwd= data.get('pwd')
         phone= data.get('phone')
-        #email= data.get('email')
+        email= data.get('email')
 
         # 检查本地数据库是否已注册
         if User.objects.filter(student_id=studentid).exists():
@@ -105,7 +105,7 @@ def register(request):
                 name=name,
                 user_class=classid,
                 team_name=teamname,
-                #email=email,
+                email=email,
                 phone=phone,
                 group=response_register['data']['group'],
                 number=response_register['data']['number']
@@ -623,7 +623,7 @@ def commit_decision(request):
         url_sub2 = 'http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/select.aspx'
         response_sub2 = session.post(url_sub2, data_sub2)
 
-
+        
         #递交决策数据第三次post请求
         soup_sub3 = BeautifulSoup(response_sub2.text, 'html.parser')
         hidden_fields_sub3 = extract_hidden_fields(soup_sub3)
@@ -656,7 +656,7 @@ def commit_decision(request):
         
         #插入新的周期数据
         newcycle=Cycle.update_and_insert_cycle(cycle_reports,user_reports,round_reports,cycle_num)
-
+       
         # 1.1
         # 1.1
         # 1.1
@@ -667,7 +667,7 @@ def commit_decision(request):
         response1=session.get(url=url_look1)
         # 解析HTML内容
         tree=etree.HTML(response1.text)
-
+        
         # 使用XPath定位元素
         # 例如，定位一个包含特定文本的元素
         element1 = tree.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
@@ -683,7 +683,7 @@ def commit_decision(request):
         for i,j in zip(cleaned_element1,cleaned_element2):
             response_looknow[i]=j
         response_look1[response_looknow['标题']]=response_looknow
-
+        
         while len(response_looknow['标题'])<16:
             url_look1_switchover='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
             data_look1_switchover={
@@ -693,14 +693,14 @@ def commit_decision(request):
                 'ctl00$contentplaceholder1$ober': '上一周期',
                 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
             }
-            response1=session.post(url=url_look1_switchover,data=data_look1_switchover)
+            response11=session.post(url=url_look1_switchover,data=data_look1_switchover)
             # 解析HTML内容
-            tree=etree.HTML(response1.text)
+            tree1=etree.HTML(response11.text)
             # 使用XPath定位元素
             # 例如，定位一个包含特定文本的元素
-            element1 = tree.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
-            element2 = tree.xpath('//font[@color="#000000" and @style="font-size:18px"]/text()')
-            element3 = tree.xpath('//font[@class="title"]/text()')
+            element1 = tree1.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
+            element2 = tree1.xpath('//font[@color="#000000" and @style="font-size:18px"]/text()')
+            element3 = tree1.xpath('//font[@class="title"]/text()')
             # 删除字段中的 \xa0
             cleaned_element1 = [text.replace('\xa0', '') for text in element1]
             cleaned_element2 = [text.replace('\xa0', '') for text in element2]
@@ -713,7 +713,7 @@ def commit_decision(request):
             response_look1[response_looknow['标题']]=response_looknow
         # 将字典项转换为列表并倒序
         reversed_items = list(response_look1.items())[::-1]
-
+        
         # 将倒序后的列表转换回字典
         response_look1 = dict(reversed_items)
         if len(response_look1)<7:
@@ -736,7 +736,7 @@ def commit_decision(request):
                     ordering_price=data.get('订购价格', ''),
                 )
                 break
-
+                       
         # 1.2
         # 1.2
         # 1.2
@@ -1090,8 +1090,11 @@ def commit_decision(request):
             ['assetdebt','http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/assetdebt.aspx?type=','资产负债表'],
             ['research','http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/report/research.aspx?type=','各企业市场营销及生产研究报告']
         ]
-        a=0
+
+        reporthaved_state=0 #是否有报告，0为没有，1为有
+
         for dictl,urll,text in report_data:
+            #当前周期的报告处理
             dictl={}
             dict_data=dictl
             url=urll+'1'
@@ -1104,23 +1107,27 @@ def commit_decision(request):
             element2 = tree.xpath('//font[@style="POSITION:relative;top:20px;Z-INDEX:4;font-size: 24px;font-family:隶书;"]/text()')
             element3 = tree.xpath('//font[@style="position:relative;top:15px;Z-INDEX:4;line-height:15px; width:500px;height: 50px;font-size: 40px;font-family:隶书;"]/text()')
             # 删除字段中的 \xa0
-            cleaned_element1 = [text.replace('\xa0', '') for text in element1]
-            cleaned_element2 = [text.replace('\xa0', '') for text in element2]
-            cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+            cleaned_element1 = [text.replace('\xa0', '') for text in element1]   #数据 如：['1150', '0', '840', '19873', '0']
+            cleaned_element2 = [text.replace('\xa0', '') for text in element2]   #周期数 如：['（第4周期）']
+            cleaned_element3 = [text.replace('\xa0', '') for text in element3]   #报告名称 如：['市场生产数据报告']
             cleaned_element1 = [item.strip() for item in cleaned_element1 
                 if (re.search(r'\d', item) or item == "---"or item == " ---"or item == " -"or item == "***") 
-                and item not in ["生产线负载率100%时生产能力", "(0--1)","(1--5)"]]
+                and item not in ["生产线负载率100%时生产能力", "(0--1)","(1--5)"]] #数据（再次清洗后） 如：['1150', '0', '840', '19873', '0']
+
+            #判断当前周期是否有报告
             if  cleaned_element3:
                 if len(cleaned_element2[0])>8:
                     cleaned_element2[0]=cleaned_element2[0][0]+cleaned_element2[0][6:]  
                 dict_data[cleaned_element3[0]+cleaned_element2[0]]=cleaned_element1
                 n=cleaned_element2[0][-4]
-                a=1
+                reporthaved_state=1
             else:
-                if text=='各企业市场营销及生产研究报告' and a==1:
+                if text=='各企业市场营销及生产研究报告' and reporthaved_state==1:
                     dict_data['各企业市场营销及生产研究报告（第'+n+'周期）']='本周期没有订购市场和生产研究报告！'
 
-            if a==1:
+            cyclenumi=int(n)-1 #记录循环的周期数
+            if reporthaved_state==1:
+                #历史周期的报告处理
                 for i in range(int(n)-1,0,-1):
                     #爬取目标网站
                     url=urll+'3&hcycleno='+str(i)
@@ -1134,32 +1141,20 @@ def commit_decision(request):
                     element2 = tree.xpath('//font[@style="POSITION:relative;top:20px;Z-INDEX:4;font-size: 24px;font-family:隶书;"]/text()')
                     element3 = tree.xpath('//font[@style="position:relative;top:15px;Z-INDEX:4;line-height:15px; width:500px;height: 50px;font-size: 40px;font-family:隶书;"]/text()')
                     # 删除字段中的 \xa0
-                    cleaned_element1 = [text.replace('\xa0', '') for text in element1]
-                    cleaned_element2 = [text.replace('\xa0', '') for text in element2]
-                    cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+                    cleaned_element1 = [text.replace('\xa0', '') for text in element1]   #数据 如：['1150', '0', '840', '19873', '0']
+                    cleaned_element2 = [text.replace('\xa0', '') for text in element2]   #周期数 如：['（第4周期）']
+                    cleaned_element3 = [text.replace('\xa0', '') for text in element3]   #报告名称 如：['市场生产数据报告']
                     cleaned_element1 = [item.strip() for item in cleaned_element1 
-                        if (re.search(r'\d', item) or item == "---"or item == " ---"or item == " -"or item == "***") 
-                        and item not in ["生产线负载率100%时生产能力", "(0--1)","(1--5)"]]
+                    if (re.search(r'\d', item) or item == "---"or item == " ---"or item == " -"or item == "***") 
+                    and item not in ["生产线负载率100%时生产能力", "(0--1)","(1--5)"]]     #数据（再次清洗后） 如：['1150', '0', '840', '19873', '0']
                     
                     if cleaned_element3:
-                        if text=='各企业市场营销及生产研究报告':
-                            cleaned_element2[0]=cleaned_element2[0][0]+cleaned_element2[0][6:]
-                            dict_data[cleaned_element3[0]+cleaned_element2[0]]=cleaned_element1
-                            a=cleaned_element3[0]
-                            b=int(cleaned_element2[0][-4])-1
-                            c=cleaned_element2[0]
-                        else:
-                            dict_data[cleaned_element3[0]+cleaned_element2[0]]=cleaned_element1
-                            c=0
+                        if len(cleaned_element2[0])>8:    #第一周期的各企业市场营销及生产研究报告标题长度大于8，需要截取
+                            cleaned_element2[0]=cleaned_element2[0][0]+cleaned_element2[0][6:] 
+                        dict_data[cleaned_element3[0]+cleaned_element2[0]]=cleaned_element1
                     else:
-                        if text=='各企业市场营销及生产研究报告':
-                            if c==0:
-                                dict_data['各企业市场营销及生产研究报告（第'+str(int(n)-1)+'周期）']='本周期没有订购市场和生产研究报告！'
-                            else:
-                                c = c[:len(c) - 4] + str(b) + c[len(c) - 3:]
-                                dict_data[a+c]='本周期没有订购市场和生产研究报告！'
-
-
+                        dict_data['各企业市场营销及生产研究报告（第'+str(cyclenumi)+'周期）']='本周期没有订购市场和生产研究报告！'
+                    cyclenumi-=1
             # 将字典项转换为列表并倒序
             reversed_items = list(dict_data.items())[::-1]
             # 将倒序后的列表转换回字典
@@ -1487,10 +1482,11 @@ def commit_decision(request):
             for i in range(0,2):
                 company_report_MarketPrd = CompanyReportMarketPrd.objects.create(
                     cycle_id=cycle_reports,  # 关联周期
-                    company_compute=CompanyReportMarketResearchdate[0+i],  # 企业/计算机
-                    market_price=CompanyReportMarketResearchdate[2+i],  # 一般市场价格
-                    ad_expenses=CompanyReportMarketResearchdate[4+i],  # 广告费用投入
-                    sales_staff=CompanyReportMarketResearchdate[6+i],  # 销售人员数量
+                    company_compute= "本企业" if i == 0 else "计算机",  # 本企业/计算机
+                    market_price=CompanyReportMarketResearchdate[0+i],   # 一般市场价格
+                    ad_expenses=CompanyReportMarketResearchdate[2+i],   # 广告费用投入
+                    num_staff=CompanyReportMarketResearchdate[4+i],  # 销售人员数量
+                    sales_staff=CompanyReportMarketResearchdate[6+i],  # 销售人员费用
                     product_rating=CompanyReportMarketResearchdate[8+i],  # 产品质量评价
                     product_expense=CompanyReportMarketResearchdate[10+i],  # 产品研究费用
                     market_sales_volume=CompanyReportMarketResearchdate[12+i],  # 一般市场销售量
