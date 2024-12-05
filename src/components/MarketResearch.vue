@@ -1,9 +1,9 @@
 <template>
-  <div class="no-report-message" v-if="userInfo.cycle <= 2">无报告可查看</div>
-  <div v-else>  
-    <div class="panel panel-default mt-3" v-if="userInfo.cycle > 1">
+    <div class="no-report-message" v-if="userInfo.cycle <= 1">尚未进行过决策，无报告可查看</div>
+    <div v-else>
+    <div class="panel panel-default mt-3">
       <div class="panel-heading">
-        <h3 class="panel-title">各企业市场营销及生产研究报告（第{{ selectedCycle }}周期）</h3>
+        <h3 class="panel-title" v-if="currentReportData !== '本周期没有订购市场和生产研究报告！'">各企业市场营销及生产研究报告（第{{ selectedCycle }}周期）</h3>
         <div class="cycle-selection" style="float: right;">
           <span>选择周期：</span>
           <select v-model="selectedCycle" @change="updateCycle">
@@ -16,6 +16,8 @@
           </select>
         </div>
       </div>
+      <div class="no-report-message" v-if="currentReportData === '本周期没有订购市场和生产研究报告！'">本周期没有订购市场和生产研究报告</div>
+      <div v-else> 
       <div class="panel-body">
         <div class="table-container">
           <table>
@@ -36,6 +38,7 @@
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   </div>
@@ -169,6 +172,7 @@ export default {
   .cycle-selection {
       display: flex;
       align-items: center;
+      margin-left: auto;
   }
 
   .cycle-selection select {
