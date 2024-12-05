@@ -38,6 +38,12 @@
                     <input type="tel" id="phone" v-model="phone" class="form-control" required>
                 </div>
             </div>
+            <div class="mb-3 row">
+                <label for="email" class="col-sm-3 col-form-label">邮箱:</label>
+                <div class="col-sm-9">
+                    <input type="email" id="email" v-model="email" class="form-control" required>
+                </div>
+            </div>
             <div class="button-container text-center">
                 <button type="button" class="btn btn-secondary me-2" @click="goToLogin">返回登录</button>
                 <button type="submit" class="btn btn-primary" id="register-btn">注册</button>
@@ -61,6 +67,7 @@ export default {
         const teamName = ref('');
         const password = ref('');
         const phone = ref('');
+        const email = ref('');
         
         const register = async () => {
             const payload = {
@@ -69,10 +76,13 @@ export default {
                 name: name.value,
                 teamname: teamName.value,
                 pwd: password.value,
-                phone: phone.value
+                phone: phone.value,
+                email: email.value
             };
             try {
-                const response = await axios.post('http://127.0.0.1:8000/users/register/', payload);
+                const response = await axios.post('http://127.0.0.1:8000/users/register/', payload, {
+                    withCredentials: true,
+                });
                 if (response.data.status === 'True') {
                     const group = response.data.data.group;
                     const number = response.data.data.number;

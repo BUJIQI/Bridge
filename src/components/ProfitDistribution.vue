@@ -28,27 +28,27 @@
             <tbody>
               <tr class="highlight">
                 <td>周期结余/周期亏损</td>
-                <td>8732</td>
+                <td>{{ currentReportData[0] }}</td>
               </tr>
               <tr>
                 <td>- 前周期亏损结转</td>
-                <td>8732</td>
+                <td>{{ currentReportData[1] }}</td>
               </tr>
               <tr>
                 <td>- 本周期利润储备</td>
-                <td>8732</td>
+                <td>{{ currentReportData[2] }}</td>
               </tr>
               <tr class="highlight">
                 <td>= 资金平衡利润/资金平衡亏损</td>
-                <td>1000</td>
+                <td>{{ currentReportData[3] }}</td>
               </tr>
               <tr>
                 <td>- 股息</td>
-                <td>8732</td>
+                <td>{{ currentReportData[4] }}</td>
               </tr>
               <tr class="highlight">
                 <td>= 本周期亏损结转</td>
-                <td>8732</td>
+                <td>{{ currentReportData[5] }}</td>
               </tr>
             </tbody>
           </table>

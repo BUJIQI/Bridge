@@ -34,129 +34,129 @@
             <tbody>
               <tr>
                 <td>原材料</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[0] }}</td>
+                <td>{{ currentReportData[1] }}</td>
+                <td>{{ currentReportData[2] }}</td>
+                <td>{{ currentReportData[3] }}</td>
               </tr>
               <tr>
                 <td>+ 附件</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[4] }}</td>
+                <td>{{ currentReportData[5] }}</td>
+                <td>{{ currentReportData[6] }}</td>
+                <td>{{ currentReportData[7] }}</td>
               </tr>
               <tr>
                 <td>+ 生产材料</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[8] }}</td>
+                <td>{{ currentReportData[9] }}</td>
+                <td>{{ currentReportData[10] }}</td>
+                <td>{{ currentReportData[11] }}</td>
               </tr>
               <tr>
                 <td>= 材料直接费用</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[12] }}</td>
+                <td>{{ currentReportData[13] }}</td>
+                <td>{{ currentReportData[14] }}</td>
+                <td>{{ currentReportData[15] }}</td>
               </tr>
               <tr>
                 <td>+ 材料间接费用</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[16] }}</td>
+                <td>{{ currentReportData[17] }}</td>
+                <td>{{ currentReportData[18] }}</td>
+                <td>{{ currentReportData[19] }}</td>
               </tr>
               <tr class="highlight">
                 <td>= 材料成本</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[20] }}</td>
+                <td>{{ currentReportData[21] }}</td>
+                <td>{{ currentReportData[22] }}</td>
+                <td>{{ currentReportData[23] }}</td>
               </tr>
               <tr>
                 <td>加工直接费用</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[24] }}</td>
+                <td>{{ currentReportData[25] }}</td>
+                <td>{{ currentReportData[26] }}</td>
+                <td>{{ currentReportData[27] }}</td>
               </tr>
               <tr>
                 <td>+ 加工间接费用</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[28] }}</td>
+                <td>{{ currentReportData[29] }}</td>
+                <td>{{ currentReportData[30] }}</td>
+                <td>{{ currentReportData[31] }}</td>
               </tr>
               <tr class="highlight">
                 <td>= 加工成本</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[32] }}</td>
+                <td>{{ currentReportData[33] }}</td>
+                <td>{{ currentReportData[34] }}</td>
+                <td>{{ currentReportData[35] }}</td>
               </tr>
               <tr class="highlight">
                 <td>= 制造成本</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[36] }}</td>
+                <td>{{ currentReportData[37] }}</td>
+                <td>{{ currentReportData[38] }}</td>
+                <td>{{ currentReportData[39] }}</td>
               </tr>
               <tr>
                 <td>+ 研究开发费用</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[40] }}</td>
+                <td>{{ currentReportData[41] }}</td>
+                <td>{{ currentReportData[42] }}</td>
+                <td>{{ currentReportData[43] }}</td>
               </tr>
               <tr>
                 <td>+ 销售费用</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[44] }}</td>
+                <td>{{ currentReportData[45] }}</td>
+                <td>{{ currentReportData[46] }}</td>
+                <td>{{ currentReportData[47] }}</td>
               </tr>
               <tr>
                 <td>+ 管理费用</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[48] }}</td>
+                <td>{{ currentReportData[49] }}</td>
+                <td>{{ currentReportData[50] }}</td>
+                <td>{{ currentReportData[51] }}</td>
               </tr>
               <tr class="highlight">
                 <td>= 产品成本</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[52] }}</td>
+                <td>{{ currentReportData[53] }}</td>
+                <td>{{ currentReportData[54] }}</td>
+                <td>{{ currentReportData[55] }}</td>
               </tr>
               <tr>
                 <td>销售收入</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[56] }}</td>
+                <td>{{ currentReportData[57] }}</td>
+                <td>{{ currentReportData[58] }}</td>
+                <td>{{ currentReportData[59] }}</td>
               </tr>
               <tr>
                 <td>+/- 产品库存变化</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[60] }}</td>
+                <td>{{ currentReportData[61] }}</td>
+                <td>{{ currentReportData[62] }}</td>
+                <td>{{ currentReportData[63] }}</td>
               </tr>
               <tr class="highlight">
                 <td>= 总的经营收入</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[64] }}</td>
+                <td>{{ currentReportData[65] }}</td>
+                <td>{{ currentReportData[66] }}</td>
+                <td>{{ currentReportData[67] }}</td>
               </tr>
               <tr class="summary">
                 <td>生产经营成果</td>
-                <td>8732</td>
-                <td>1000</td>
-                <td>1000</td>
-                <td>1000</td>
+                <td>{{ currentReportData[68] }}</td>
+                <td>{{ currentReportData[69] }}</td>
+                <td>{{ currentReportData[70] }}</td>
+                <td>{{ currentReportData[71] }}</td>
               </tr>
             </tbody>
           </table>

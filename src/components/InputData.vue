@@ -219,9 +219,12 @@
                 </div>
             </section>
 
+            <div v-if="isLoading" class="loading-indicator">
+                正在提交，请稍候...
+            </div>            
             <div class="button-group">
                 <button class="custom-button" @click="makeBudgetDecision">预算决策</button>
-                <button class="custom-button" @click="submitDecision" :disabled="!isOwnEnterprise" :class="{ 'disabled-button': !isOwnEnterprise }">提交决策</button>
+                <button class="custom-button" @click="submitDecision" :disabled="!isOwnEnterprise || isLoading" :class="{ 'disabled-button': !isOwnEnterprise || isLoading }">提交决策</button>
             </div>
         </div>
     </div>
@@ -238,6 +241,7 @@ export default {
         const userStore = useUserStore();
         const userInfo = userStore.userInfo;
         const isOwnEnterprise = ref(true);
+        const isLoading = ref(false);
 
         // 定义初始输入数据
         const formData = ref({
@@ -270,6 +274,7 @@ export default {
         return {
             userInfo,
             isOwnEnterprise,
+            isLoading,
             formData,
         };
     },
@@ -294,26 +299,30 @@ export default {
             });
 
             if (result.isConfirmed) {
+                this.isLoading = true;
                 try {
                     const response = await axios.post('http://127.0.0.1:8000/users/commit_decision/', this.formData, {
                         withCredentials: true
-                        });
-                    const submitResult = response.data;
-
+                    });
+                    const submitResult = response.data;                   
+                    sessionStorage.setItem('newcycle', submitResult['提交后周期']);
                     if (submitResult['提交结果'] === '决策数据已经成功递交') {
-                        Swal.fire('成功', '决策数据已经成功递交，可前往查看竞争结果报表', 'success');
+                        Swal.fire('成功', '决策数据已经成功递交，可前往查看竞争结果报表', 'success').then(() => {
+                            window.location.reload(); // 自动刷新页面
+                        });
                     } else {
                         Swal.fire('失败', submitResult['提交结果'], 'error');
                     }
                 } catch (error) {
                     console.error('提交决策时发生错误:', error);
                     Swal.fire('错误', '提交决策时发生错误，请重试。', 'error');
+                } finally {
+                    this.isLoading = false; // 结束加载
                 }
             } else {
                 Swal.fire('已取消', '您的决策数据未提交', 'info');
             }
         }
-
     }
 }
 </script>
@@ -337,9 +346,23 @@ export default {
     align-items: center;
 }
 
+.mode-selection button{
+    border: none;
+    padding: 5px;
+}
+
 .mode-selection button.active {
     background-color: rgba(176, 63, 63, 0.733);
     color: white;
+}
+
+.loading-indicator {
+    margin-top: 20px; 
+    font-size: 16px; 
+    color: #e74c3c; 
+    text-align: center; /* 可以考虑让文本居中 */
+    display: block; /* 确保是块级元素 */ 
+    visibility: visible; /* 确保是可见的 */
 }
 
 .panel-body {
@@ -402,10 +425,12 @@ export default {
 
 .custom-button {
     background-color: #e74c3c; 
-    color: white;                
+    color: white;     
+    padding: 10px;           
     margin-left: 40px;
     margin-right: 40px;         
-    border-radius: 5px;        
+    border-radius: 5px;  
+    border: none;      
     cursor: pointer;             
     transition: background-color 0.3s, transform 0.2s; 
 }

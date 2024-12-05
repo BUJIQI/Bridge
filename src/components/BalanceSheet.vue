@@ -32,64 +32,64 @@
               </tr>
               <tr>
                 <td colspan="2" style="text-align: left; border-right: 1px solid #ddd;">实物</td>
-                <td>注册资金</td>
-                <td>1000</td>
+                <td style="text-align: left;">注册资金</td>
+                <td>{{ currentReportData[0] }}</td>
               </tr>
               <tr>
                 <td>地产和厂房</td>
-                <td style="border-right: 1px solid #ddd;">1150</td>
-                <td>资金储备</td>
-                <td>1000</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[1] }}</td>
+                <td style="text-align: left;">资金储备</td>
+                <td>{{ currentReportData[2] }}</td>
               </tr>
               <tr>
                 <td>设备和生产设施</td>
-                <td style="border-right: 1px solid #ddd;">1150</td>
-                <td>利润储备</td>
-                <td>1000</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[3] }}</td>
+                <td style="text-align: left;">利润储备</td>
+                <td>{{ currentReportData[4] }}</td>
               </tr>
               <tr>
                 <td colspan="2" class="subheader" style="border-right: 1px solid #ddd;">流动资产</td>
-                <td>前周期亏损结转</td>
-                <td>1000</td>
+                <td style="text-align: left;">前周期亏损结转</td>
+                <td>{{ currentReportData[5] }}</td>
               </tr>
               <tr>
                 <td colspan="2" style="text-align: left; border-right: 1px solid #ddd;">库存</td>
-                <td>周期结余/周期亏损</td>
-                <td>1000</td>
+                <td style="text-align: left;">周期结余/周期亏损</td>
+                <td>{{ currentReportData[6] }}</td>
               </tr>
               <tr>
                 <td>原材料和附件</td>
-                <td style="border-right: 1px solid #ddd;">10.04</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[7] }}</td>
                 <td colspan="2" class="subheader">债务</td>
               </tr>
               <tr>
                 <td>成品</td>
-                <td style="border-right: 1px solid #ddd;">32.4</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[8] }}</td>
                 <td colspan="2" style="text-align: left;">贷款</td>
               </tr>
               <tr>
                 <td style="text-align: left;">债权</td>
-                <td style="border-right: 1px solid #ddd;">4</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[9] }}</td>
                 <td>长期贷款</td>
-                <td>1000</td>
+                <td>{{ currentReportData[10] }}</td>
               </tr>
               <tr>
                 <td style="text-align: left;">有价证券</td>
-                <td style="border-right: 1px solid #ddd;">4</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[11] }}</td>
                 <td>中期贷款</td>
-                <td>1000</td>
+                <td>{{ currentReportData[12] }}</td>
               </tr>
               <tr>
                 <td style="text-align: left;">现金</td>
-                <td style="border-right: 1px solid #ddd;">4</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[13] }}</td>
                 <td>透支贷款</td>
-                <td>1000</td>
+                <td>{{ currentReportData[14] }}</td>
               </tr>
               <tr>
                 <td class="subheader">资产合计</td>
-                <td class="subheader" style="text-align: center; border-right: 1px solid #ddd;">1150</td>
+                <td class="subheader" style="text-align: center; border-right: 1px solid #ddd;">{{ currentReportData[15] }}</td>
                 <td class="subheader">负债合计</td>           
-                <td class="subheader" style="text-align: center;">1000</td>
+                <td class="subheader" style="text-align: center;">{{ currentReportData[16] }}</td>
               </tr>
             </tbody>
           </table>

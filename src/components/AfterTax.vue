@@ -28,39 +28,39 @@
             <tbody>
               <tr class="highlight">
                 <td>生产经营成果</td>
-                <td>8732</td>
+                <td>{{ currentReportData[0] }}</td>
               </tr>
               <tr>
                 <td>+ 有价证券收入</td>
-                <td>8732</td>
+                <td>{{ currentReportData[1] }}</td>
               </tr>
               <tr>
                 <td>- 利息费用和其它费用</td>
-                <td>8732</td>
+                <td>{{ currentReportData[2] }}</td>
               </tr>
               <tr class="highlight">
                 <td>= 一般经营成果</td>
-                <td>1000</td>
+                <td>{{ currentReportData[3] }}</td>
               </tr>
               <tr>
                 <td>+ 特别收入</td>
-                <td>8732</td>
+                <td>{{ currentReportData[4] }}</td>
               </tr>
               <tr>
                 <td>- 特别费用</td>
-                <td>8732</td>
+                <td>{{ currentReportData[5] }}</td>
               </tr>
               <tr class="highlight">
                 <td>= 税前经营成果</td>
-                <td>8732</td>
+                <td>{{ currentReportData[6] }}</td>
               </tr>
               <tr>
                 <td>- 税收</td>
-                <td>8732</td>
+                <td>{{ currentReportData[7] }}</td>
               </tr>
               <tr class="highlight">
                 <td>= 周期结余/周期亏损</td>
-                <td>8732</td>
+                <td>{{ currentReportData[8] }}</td>
               </tr>
             </tbody>
           </table>

@@ -30,83 +30,83 @@
             <tbody>
                 <tr class="highlight">  
                 <td>期初现金</td>
-                <td colspan="3">8732</td>
+                <td colspan="3">{{ currentReportData[0] }}</td>
               </tr>
               <tr>
                 <td>本周期产品销售收入</td>
-                <td style="border-right: 1px solid #ddd;">8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[1] }}</td>
                 <td>材料费用</td>
-                <td>1000</td>
+                <td>{{ currentReportData[2] }}</td>
               </tr>
               <tr>
                 <td>+ 前周期产品销售收入</td>
-                <td style="border-right: 1px solid #ddd;">8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[3] }}</td>
                 <td>+ 人员费用</td>
-                <td>1000</td>
+                <td>{{ currentReportData[4] }}</td>
               </tr>
               <tr>
                 <td></td>
                 <td style="border-right: 1px solid #ddd;"></td>
                 <td>+ 其它经营费用</td>
-                <td>1000</td>
+                <td>{{ currentReportData[5] }}</td>
               </tr>
               <tr>
                 <td>+ 有价证券</td>
-                <td style="border-right: 1px solid #ddd;">11</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[6] }}</td>
                 <td>+ 中期和透支贷款归还</td>
-                <td>1000</td>
+                <td>{{ currentReportData[7] }}</td>
               </tr>
               <tr>
                 <td>+ 利息收入</td>
-                <td style="border-right: 1px solid #ddd;">8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[8] }}</td>
                 <td>+ 利息费用</td>
-                <td>1000</td>
+                <td>{{ currentReportData[9] }}</td>
               </tr>
               <tr>
                 <td></td>
                 <td style="border-right: 1px solid #ddd;"></td>
                 <td>+ 购买机器人</td>
-                <td>1000</td>
+                <td>{{ currentReportData[10] }}</td>
               </tr>
               <tr>
                 <td>+ 特别收入</td>
-                <td style="border-right: 1px solid #ddd;">8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[11] }}</td>
                 <td>+ 购买生产线和厂房</td>
-                <td>1000</td>
+                <td>{{ currentReportData[12] }}</td>
               </tr>
               <tr>
                 <td>+ 生产线变卖收入</td>
-                <td style="border-right: 1px solid #ddd;">8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[13] }}</td>
                 <td>+ 购买有价证券</td>
-                <td>1000</td>
+                <td>{{ currentReportData[14] }}</td>
               </tr>
               <tr>
                 <td></td>
                 <td style="border-right: 1px solid #ddd;"></td>
                 <td>+ 税收</td>
-                <td>1000</td>
+                <td>{{ currentReportData[15] }}</td>
               </tr>
               <tr>
                 <td>+ 中期贷款</td>
-                <td style="border-right: 1px solid #ddd;">8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[16] }}</td>
                 <td>+ 股息支付（前周期）</td>
-                <td>1000</td>
+                <td>{{ currentReportData[17] }}</td>
               </tr>
               <tr>
                 <td>+ 透支贷款</td>
-                <td style="border-right: 1px solid #ddd;">8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[18] }}</td>
                 <td>+ 特别费用</td>
-                <td>1000</td>
+                <td>{{ currentReportData[19] }}</td>
               </tr>
               <tr>
                 <td>+ 现金收入合计</td>
-                <td style="border-right: 1px solid #ddd;">8732</td>
+                <td style="border-right: 1px solid #ddd;">{{ currentReportData[20] }}</td>
                 <td>+ 现金支出合计</td>
-                <td>1000</td>
+                <td>{{ currentReportData[21] }}</td>
               </tr>
               <tr class="highlight">
                 <td>期末现金</td>
-                <td colspan="3">8732</td>
+                <td colspan="3">{{ currentReportData[22] }}</td>
               </tr>
             </tbody>
           </table>
