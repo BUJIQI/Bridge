@@ -185,6 +185,8 @@
 
 <script>
 import { useUserStore } from '@/store/user';
+import axios from 'axios';
+import Swal from 'sweetalert2';
 
 export default {
   setup() {
@@ -192,6 +194,42 @@ export default {
     const userInfo = userStore.userInfo;
     const selectedHistory = (cycle) => {
             userStore.setSelectedHistory(cycle);
+    };
+
+    const reset = async () => {
+      try {
+        const response = await axios.post('http://127.0.0.1:8000/users/new_rounds/', {withCredentials: true});
+        const data = response.data;
+
+        if (data.restronundmum > 0) {
+          // 有重开次数的情况
+          Swal.fire({
+            title: '成功!',
+            text: data.state,
+            icon: 'success',
+            confirmButtonText: '确定'
+          }).then(() => {
+            userInfo.cycle = 1; // 重置周期为1
+            window.location.reload(); // 自动刷新页面
+          });
+        } else {
+          // 没有重开次数的情况
+          Swal.fire({
+            title: '已达上限!',
+            text: data.state,
+            icon: 'info',
+            confirmButtonText: '确定'
+          });
+        }
+      } catch (error) {
+        console.error('请求错误:', error);
+        Swal.fire({
+          title: '请求失败!',
+          text: '请求后台失败，请稍后重试。',
+          icon: 'error',
+          confirmButtonText: '确定'
+        });
+      }
     };
 
     // 对于历史决策，只返回当前周期之前的周期
@@ -209,6 +247,7 @@ export default {
     return {
       userInfo,
       selectedHistory,
+      reset,
       subMenuVisible: {
         makeDecision: false,
         budgetReports: false,
