@@ -44,6 +44,22 @@ class Round(models.Model):
 
     def __str__(self):
         return self.round_id
+    @classmethod
+    def update_and_insert_round(cls, round_reports, user_reports):
+        """
+        更新现有的 round 实例，并插入一条新的 round 数据。
+        """
+        # 1. 更新现有的 round 实例
+        round_reports.end_time = timezone.now()  # 获取当前时间
+        round_reports.save()  # 保存更新
+
+        # 2. 插入一条新的 round 数据
+        new_round = cls(
+            uid=user_reports,  # 外键为用户实例
+        )
+        new_round.save()  # 保存新实例
+
+        return new_round  # 返回新插入的 round 实例
     
 
 class Cycle(models.Model):

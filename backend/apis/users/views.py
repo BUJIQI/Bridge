@@ -1721,3 +1721,75 @@ def get_summart_evaluation(request):
     summart_evaluation = Datakeep.get_field_data(user_instance,summart_evaluation)
 
     return JsonResponse(summart_evaluation) 
+
+
+
+#新的一轮
+@csrf_exempt
+def new_rounds(request):
+    from .models import User, Round
+    # 从 session 中获取之前保存的 cookies
+    session_cookies = request.session.get('session_cookies')
+
+    # 使用 requests.Session() 复用登录状态
+    session = requests.Session()
+    session.cookies.update(session_cookies)
+
+    #开启新的一轮
+    url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/select.aspx'
+    response = session.get(url=url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    hidden_fields = extract_hidden_fields(soup)
+    data_newrounds1 = {
+        '__EVENTTARGET':'A2' ,
+        '__EVENTARGUMENT': '',
+        '__VIEWSTATE': hidden_fields.get('__VIEWSTATE', ''),
+        '__VIEWSTATEGENERATOR': hidden_fields.get('__VIEWSTATEGENERATOR', ''),
+        '__EVENTVALIDATION': hidden_fields.get('__EVENTVALIDATION', ''),
+    }
+    response = session.post(url=url, data=data_newrounds1)
+
+
+    #判断是否还有开启新的一轮次数
+    # 如果已经进行了 20 次新的一轮，不得重新开始
+    respond_new_rounds={}
+    if '已进行了 20 次新的一轮，不得重新开始!' in response.text:
+        respond_new_rounds['state']='已进行了 20 次新的一轮，不得重新开始!'
+        respond_new_rounds['restronundmum']='0'
+
+    # 如果还有新的一轮次数，返回剩余新的一轮次数，
+    else:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        hidden_fields = extract_hidden_fields(soup)
+        url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/select.aspx'
+        data_newrounds2 = {
+            '__EVENTTARGET':'',
+            '__EVENTARGUMENT': '',
+            '__VIEWSTATE': hidden_fields.get('__VIEWSTATE', ''),
+            '__VIEWSTATEGENERATOR': hidden_fields.get('__VIEWSTATEGENERATOR', ''),
+            '__EVENTVALIDATION': hidden_fields.get('__EVENTVALIDATION', ''),
+            'ImageButton5.x': '16',
+            'ImageButton5.y': '10',
+        }
+        response = session.post(url=url, data=data_newrounds2)
+
+        # 解析HTML内容
+        tree=etree.HTML(response.text)
+        # 使用XPath定位元素
+        # 例如，定位一个包含特定文本的元素
+        state=tree.xpath('//font[@face="隶书"]/text()')[0]
+        restronundmum= tree.xpath('//font[@face="隶书"]/text()')[1][5:8]
+        respond_new_rounds['state']=state
+        respond_new_rounds['restronundmum']=restronundmum
+
+        #获取用户·轮次实例
+        uid = request.session.get('uid')
+        user_reports = User.objects.get(uid=uid)
+        round_reports = Round.objects.filter(uid=uid).annotate(round_id_int=Cast('round_id', IntegerField())).order_by('-round_id_int').first()
+        #更新用户剩余轮次
+        user_reports.rest_rounds=int(restronundmum)
+        user_reports.save()
+        #插入新的轮次数据
+        newround_=Round.update_and_insert_cycle(round_reports,user_reports) 
+
+    return JsonResponse(respond_new_rounds) 
