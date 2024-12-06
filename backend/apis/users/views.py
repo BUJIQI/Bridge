@@ -1672,18 +1672,13 @@ def compete_outcome_fun(request):
     session = requests.Session()
     session.cookies.update(session_cookies)
 
-    # uid = request.session.get('uid')
-    # round_reports = Round.objects.filter(uid=uid).annotate(round_id_int=Cast('round_id', IntegerField())).order_by('-round_id_int').first()
-    # cycle_reports = Cycle.objects.filter(round_id=round_reports.round_id).annotate(cycle_id_int=Cast('cycle_id', IntegerField())).order_by('-cycle_id_int').first()
 
-    # # 查找数据库中是否已有该周期的数据
-    # competition_result = CompetitionResult.objects.filter(cycle_id=cycle_reports.cycle_id).first()
-
-    # if competition_result:
     uid = request.session.get('uid')
     user_instance = User.objects.get(uid=uid)
     compete_outcome="compete_outcome"
     compete_outcome = Datakeep.get_field_data(user_instance,compete_outcome)
+
+
     return JsonResponse(compete_outcome)  
 
 
@@ -1691,24 +1686,26 @@ def compete_outcome_fun(request):
 
 @csrf_exempt
 def enterreporting(request):
-    from .models import User, Datakeep
+    from .models import User, Datakeep,Round,Cycle,CompanyReportMarket
     # 从 session 中获取之前保存的 cookies
     session_cookies = request.session.get('session_cookies')
 
     # 使用 requests.Session() 复用登录状态
     session = requests.Session()
     session.cookies.update(session_cookies)
+
     uid = request.session.get('uid')
     user_instance = User.objects.get(uid=uid)
     response_enterreporting="response_enterreporting"
     response_enterreporting = Datakeep.get_field_data(user_instance,response_enterreporting)
+
     return JsonResponse(response_enterreporting)  
 
 
 
 @csrf_exempt
 def get_summart_evaluation(request):
-    from .models import User, Datakeep
+    from .models import User, Datakeep,Round,Cycle,CompanyReportMarketPrd
     # 从 session 中获取之前保存的 cookies
     session_cookies = request.session.get('session_cookies')
 
@@ -1720,6 +1717,7 @@ def get_summart_evaluation(request):
     summart_evaluation="summart_evaluation"
     summart_evaluation = Datakeep.get_field_data(user_instance,summart_evaluation)
 
+
     return JsonResponse(summart_evaluation) 
 
 
@@ -1727,10 +1725,9 @@ def get_summart_evaluation(request):
 #新的一轮
 @csrf_exempt
 def new_rounds(request):
-    from .models import User, Round
+    from .models import User, Round,Cycle
     # 从 session 中获取之前保存的 cookies
     session_cookies = request.session.get('session_cookies')
-
     # 使用 requests.Session() 复用登录状态
     session = requests.Session()
     session.cookies.update(session_cookies)
@@ -1790,6 +1787,12 @@ def new_rounds(request):
         user_reports.rest_rounds=int(restronundmum)
         user_reports.save()
         #插入新的轮次数据
-        newround_=Round.update_and_insert_round(round_reports,user_reports) 
+        newround=Round.update_and_insert_round(round_reports,user_reports)
+        new_cycle =Cycle(
+            uid=user_reports,
+            round_id=newround,
+            cycle_number=1,
+        )
+        new_cycle.save()  # 保存到数据库中 
 
-    return JsonResponse(respond_new_rounds) 
+    return JsonResponse(respond_new_rounds)
