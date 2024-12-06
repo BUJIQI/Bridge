@@ -197,38 +197,54 @@ export default {
     };
 
     const reset = async () => {
-      try {
-        const response = await axios.post('http://127.0.0.1:8000/users/new_rounds/', {withCredentials: true});
-        const data = response.data;
+      const confirmation = await Swal.fire({
+        title: '确认重置',
+        text: '您确定要重置为新的一轮吗？',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      });
 
-        if (data.restronundmum > 0) {
-          // 有重开次数的情况
+      if (confirmation.isConfirmed) {
+        try {
+          const response = await axios.get('http://127.0.0.1:8000/users/new_rounds/', {withCredentials: true});
+          const data = response.data;
+
+          if (data.restronundmum > 0) {
+            // 有重开次数的情况
+            Swal.fire({
+              title: '成功!',
+              html: `${data.state}<br>请注意剩余次数为 ${data.restronundmum} 次`,
+              icon: 'success',
+              confirmButtonText: '确定'
+            }).then(() => {
+              // 重置周期
+              const userInfoString = sessionStorage.getItem('userInfo');
+              const userInfoObject = JSON.parse(userInfoString); 
+              userInfoObject.cycle = 1; 
+              sessionStorage.setItem('userInfo', JSON.stringify(userInfoObject));
+              // 自动刷新页面
+              window.location.reload(); 
+            });
+          } else {
+            // 没有重开次数的情况
+            Swal.fire({
+              title: '已达上限!',
+              text: data.state,
+              icon: 'info',
+              confirmButtonText: '确定'
+            });
+          }
+        } catch (error) {
+          console.error('请求错误:', error);
           Swal.fire({
-            title: '成功!',
-            text: data.state,
-            icon: 'success',
-            confirmButtonText: '确定'
-          }).then(() => {
-            userInfo.cycle = 1; // 重置周期为1
-            window.location.reload(); // 自动刷新页面
-          });
-        } else {
-          // 没有重开次数的情况
-          Swal.fire({
-            title: '已达上限!',
-            text: data.state,
-            icon: 'info',
+            title: '请求失败!',
+            text: '请求后台失败，请稍后重试。',
+            icon: 'error',
             confirmButtonText: '确定'
           });
         }
-      } catch (error) {
-        console.error('请求错误:', error);
-        Swal.fire({
-          title: '请求失败!',
-          text: '请求后台失败，请稍后重试。',
-          icon: 'error',
-          confirmButtonText: '确定'
-        });
       }
     };
 
