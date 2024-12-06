@@ -304,8 +304,13 @@ export default {
                     const response = await axios.post('http://127.0.0.1:8000/users/commit_decision/', this.formData, {
                         withCredentials: true
                     });
-                    const submitResult = response.data;                   
-                    sessionStorage.setItem('newcycle', submitResult['提交后周期']);
+                    const submitResult = response.data;     
+                    // 更新周期    
+                    const userInfoString = sessionStorage.getItem('userInfo');
+                    const userInfoObject = JSON.parse(userInfoString); 
+                    userInfoObject.cycle = submitResult['提交后周期']; 
+                    sessionStorage.setItem('userInfo', JSON.stringify(userInfoObject));
+
                     if (submitResult['提交结果'] === '决策数据已经成功递交') {
                         Swal.fire('成功', '决策数据已经成功递交，可前往查看竞争结果报表', 'success').then(() => {
                             window.location.reload(); // 自动刷新页面
