@@ -1790,6 +1790,6 @@ def new_rounds(request):
         user_reports.rest_rounds=int(restronundmum)
         user_reports.save()
         #插入新的轮次数据
-        newround_=Round.update_and_insert_cycle(round_reports,user_reports) 
+        newround_=Round.update_and_insert_round(round_reports,user_reports) 
 
     return JsonResponse(respond_new_rounds) 
