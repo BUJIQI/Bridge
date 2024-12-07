@@ -17,13 +17,8 @@ export default {
       const isLoggedIn = sessionStorage.getItem('isLoggedIn');
       if (isLoggedIn) {
         userStore.setUserInfo(JSON.parse(sessionStorage.getItem('userInfo'))); 
-        if (sessionStorage.getItem('newcycle')) {
-          userStore.userInfo.cycle = Number(sessionStorage.getItem('newcycle'));       
-        }
       }
     });
-
-    return {};
   },  
 };
 </script>
