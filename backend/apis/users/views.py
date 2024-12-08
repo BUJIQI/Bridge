@@ -375,9 +375,9 @@ def lookhistory(request):
     cycle_reports_1 = Cycle.objects.filter(round_id=round_reports.round_id).annotate(cycle_id_int=Cast('cycle_id', IntegerField())).order_by('cycle_id_int').first()
     MarketHistoryReport_now =MarketHistoryReport.objects.filter(cycle_id=cycle_reports_now.cycle_id).order_by('cycle_id')
     MarketHistoryReport_1 = MarketHistoryReport.objects.filter(cycle_id=cycle_reports_1.cycle_id).order_by('cycle_id')
- 
     if len(MarketHistoryReport_1) :
         if MarketHistoryReport_now.last().cycle_id.cycle_id[-1] == '1':
+            MarketHistoryReport_now=MarketHistoryReport_now.last()
             # 数据存在，格式化并返回
             response_lookhistory = {
                 '标题': '历史平均材料价格、工资水平及创业注册资金数据',
