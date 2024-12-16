@@ -12,4 +12,5 @@ urlpatterns = [
     path('enterreporting/', views.enterreporting, name='enterreporting'),
     path('summart_evaluation/', views.get_summart_evaluation, name='summart_evaluation'),
     path('new_rounds/', views.new_rounds, name='new_rounds'),
+    path('user_data/', views.user_data, name='user_data'),
 ]

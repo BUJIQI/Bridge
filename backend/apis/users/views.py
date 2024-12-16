@@ -7,8 +7,7 @@ from lxml import etree
 import re
 from django.db.models import IntegerField
 from django.db.models.functions import Cast
-from django.db import transaction
-
+from django.utils import timezone
 # 辅助函数：提取隐藏字段
 def extract_hidden_fields(soup, type='hidden'):
     """提取页面中的所有隐藏字段"""
@@ -143,7 +142,6 @@ def login(request):
 
         stuid = data.get('username')
         password = data.get('password')
-
         # 检查本地数据库是否已注册
         try:
             user = User.objects.get(student_id=stuid)
@@ -222,6 +220,10 @@ def login(request):
             }
             cycle_num = chinese_to_arabic.get(cycle_str, 0)  # 若未找到对应的中文数字，默认值为0
             response_login['data']['cycle'] = cycle_num
+            response_login['data']['username']=user.name
+            response_login['data']['stuid'] =user.student_id
+            response_login['data']['team_name'] =user.team_name
+            response_login['data']['user_class'] =user.user_class
             response = JsonResponse(response_login)
             response.set_cookie('sessionid', response_login['data']['sessionid'], httponly=True, secure=True)
         else:
@@ -1788,6 +1790,13 @@ def new_rounds(request):
         user_reports.save()
         #插入新的轮次数据
         newround=Round.update_and_insert_round(round_reports,user_reports)
+        #旧轮次最后周期数据进行更新
+        cycle_last=Cycle.objects.filter(round_id=round_reports.round_id).last()
+        cycle_last.has_decided = True
+        cycle_last.end_time = timezone.now()  # 获取当前时间
+        cycle_last.save()  
+
+        #插入新的周期数据
         new_cycle =Cycle(
             uid=user_reports,
             round_id=newround,
@@ -1796,3 +1805,47 @@ def new_rounds(request):
         new_cycle.save()  # 保存到数据库中 
 
     return JsonResponse(respond_new_rounds)
+
+
+@csrf_exempt
+def user_data(request):
+    from .models import Round,Cycle,Evaluation
+    # 从 session 中获取之前保存的 cookies
+    session_cookies=request.session.get('session_cookies')
+    # 使用 requests.Session() 复用登录状态
+    session=requests.Session()
+    session.cookies.update(session_cookies)
+
+    respond_userdata={}
+    #历史对局
+    respond_userdata['history_rounds']={}
+    uid = request.session.get('uid')
+    rounds=Round.objects.filter(uid=uid)
+    for round in rounds:
+        cycle=Cycle.objects.filter(round_id=round.round_id).last()
+        evaluation=Evaluation.objects.filter(round_id=round.round_id).last()
+        if cycle.end_time:
+            end_time=str(cycle.end_time)
+            respond_userdata['history_rounds'][end_time[:19]]={}
+            respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number
+            respond_userdata['history_rounds'][end_time[:19]]['末周期评分']=evaluation.value
+            respond_userdata['history_rounds'][end_time[:19]]['名次']=evaluation.score_ranking
+    if not respond_userdata['history_rounds']:
+        respond_userdata['history_rounds']='无历史对局'
+
+    #正在进行对局
+    respond_userdata['current_rounds']={}
+    rounds_current=Round.objects.filter(uid=uid).last()
+    current_cycle = Cycle.objects.filter(round_id=rounds_current.round_id).last()
+    evaluation_second_last=Evaluation.objects.filter(round_id=rounds_current.round_id).last()
+    start_time=str(current_cycle.start_time)
+    respond_userdata['current_rounds'][start_time[:19]]={}
+    respond_userdata['current_rounds'][start_time[:19]]['当前周期']=current_cycle.cycle_number
+    if evaluation_second_last:
+        respond_userdata['current_rounds'][start_time[:19]]['末周期评分']=evaluation_second_last.value
+        respond_userdata['current_rounds'][start_time[:19]]['名次']=evaluation_second_last.score_ranking
+    else:
+        respond_userdata['current_rounds'][start_time[:19]]['末周期评分']='未评分'
+        respond_userdata['current_rounds'][start_time[:19]]['名次']='未评分'
+
+    return JsonResponse(respond_userdata)
