@@ -225,6 +225,8 @@ import axios from 'axios';
 export default {
     setup() {
         const userStore = useUserStore();
+            userStore.setSelectedHistory(sessionStorage.getItem('SelectedPeriod'));
+            
         const selectedHistory = computed(() => userStore.selectedHistory);  
         const historicalDecisionData = ref({}); 
 
