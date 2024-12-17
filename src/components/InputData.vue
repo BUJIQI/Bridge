@@ -224,7 +224,11 @@
             </div>            
             <div class="button-group">
                 <button class="custom-button" @click="makeBudgetDecision">预算决策</button>
-                <button class="custom-button" @click="submitDecision" :disabled="!isOwnEnterprise || isLoading" :class="{ 'disabled-button': !isOwnEnterprise || isLoading }">提交决策</button>
+                <button class="custom-button" @click="submitDecision" 
+                        :disabled="!isOwnEnterprise || isLoading || userInfo?.cycle === 7" 
+                        :class="{ 'disabled-button': !isOwnEnterprise || isLoading || userInfo?.cycle === 7 }">
+                    提交决策
+                </button>
             </div>
         </div>
     </div>
