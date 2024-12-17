@@ -1791,10 +1791,11 @@ def new_rounds(request):
         #插入新的轮次数据
         newround=Round.update_and_insert_round(round_reports,user_reports)
         #旧轮次最后周期数据进行更新
-        cycle_last=Cycle.objects.filter(round_id=round_reports.round_id).last()
-        cycle_last.has_decided = True
-        cycle_last.end_time = timezone.now()  # 获取当前时间
-        cycle_last.save()  
+        cycle_lastset=Cycle.objects.filter(round_id=round_reports.round_id)
+        cycle_last=cycle_lastset.last()
+        if len(cycle_lastset)<7 and cycle_last.end_time==None:
+            cycle_last.end_time = timezone.localtime(timezone.now())  
+            cycle_last.save()  
 
         #插入新的周期数据
         new_cycle =Cycle(
@@ -1825,7 +1826,8 @@ def user_data(request):
         cycle=Cycle.objects.filter(round_id=round.round_id).last()
         evaluation=Evaluation.objects.filter(round_id=round.round_id).last()
         if cycle.end_time:
-            end_time=str(cycle.end_time)
+            end_time_local = timezone.localtime(cycle.end_time)
+            end_time=str(end_time_local)
             respond_userdata['history_rounds'][end_time[:19]]={}
             respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number
             respond_userdata['history_rounds'][end_time[:19]]['末周期评分']=evaluation.value
@@ -1838,7 +1840,8 @@ def user_data(request):
     rounds_current=Round.objects.filter(uid=uid).last()
     current_cycle = Cycle.objects.filter(round_id=rounds_current.round_id).last()
     evaluation_second_last=Evaluation.objects.filter(round_id=rounds_current.round_id).last()
-    start_time=str(current_cycle.start_time)
+    startlocal_time=timezone.localtime(current_cycle.start_time)
+    start_time=str(startlocal_time)
     respond_userdata['current_rounds'][start_time[:19]]={}
     respond_userdata['current_rounds'][start_time[:19]]['当前周期']=current_cycle.cycle_number
     if evaluation_second_last:
