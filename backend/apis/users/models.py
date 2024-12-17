@@ -97,15 +97,17 @@ class Cycle(models.Model):
         cycle_reports.end_time = timezone.now()  # 获取当前时间
         cycle_reports.save()  # 保存更新
 
-        # 2. 插入一条新的 Cycle 数据
-        new_cycle = cls(
-            uid=user_reports,  # 外键为用户实例
-            round_id=round_reports,  # 外键为轮次实例
-            cycle_number=cycle_num  # 新的周期编号
-        )
-        new_cycle.save()  # 保存新实例
-
-        return new_cycle  # 返回新插入的 Cycle 实例
+        if cycle_reports.cycle_number < 7:  #第七周期不需要新建周期
+            # 2. 插入一条新的 Cycle 数据
+            new_cycle = cls(
+                uid=user_reports,  # 外键为用户实例
+                round_id=round_reports,  # 外键为轮次实例
+                cycle_number=cycle_num  # 新的周期编号
+            )
+            new_cycle.save()  # 保存新实例
+            return new_cycle  # 返回新插入的 Cycle 实例
+        else:
+            return cycle_reports  # 返回原有的 Cycle 实例
 
 #1.1
 #1.1
