@@ -269,6 +269,7 @@ const router = createRouter({
 // 设置页面标题的导航守卫
 router.beforeEach((to, from, next) => {
     document.title = to.meta.title || '默认标题'; 
+    window.scrollTo(0, 0);
     next();
   });
 
