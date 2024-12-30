@@ -27,7 +27,7 @@
                 第<span class="text-danger">{{ userInfo?.group }}</span>组
                 第<span class="text-danger">{{ userInfo?.number }}</span>企业
                 <span class="text-danger">{{ userInfo?.rival }}</span>位竞争对手
-                第<span class="text-danger">{{ userInfo?.cycle }}</span>周期
+                <span v-if="userInfo?.cycle !== 8">第<span class="text-danger">{{ userInfo?.cycle }}</span>周期</span>
               </div>
             </li>
             <li class="nav-item">
