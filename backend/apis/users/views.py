@@ -641,7 +641,7 @@ def commit_decision(request):
             'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
         }
         response_submit3 = session.post(url_sub3, data_sub3)
-        response_look1={}
+        
         tree=etree.HTML(response_submit3.text)
 
         element1 = tree.xpath('//font[@color="#024802"]/text()')
@@ -658,7 +658,12 @@ def commit_decision(request):
         
         #插入新的周期数据
         newcycle=Cycle.update_and_insert_cycle(cycle_reports,user_reports,round_reports,cycle_num)
-         
+
+        #在if语句之前定义1.1，1.2用到的字典，用于后面更新datakeep时判断是否存在数据
+        response_look1={}
+        response_lookhistory={}
+
+
         state_1=1       #state_1=1表示可以继续爬取1.1和1.2
         if newcycle.cycle_number==7 and newcycle.end_time!=None:    #判断是否为最后一周期
             state_1=0
@@ -669,7 +674,8 @@ def commit_decision(request):
             # 1.1
             # 1.1
             # 1.1
-            #爬取并存入response_look1      
+            #爬取并存入response_look1    
+              
             url_look1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
             response1=session.get(url=url_look1)
             # 解析HTML内容
@@ -775,7 +781,7 @@ def commit_decision(request):
             cleaned_element3 = [text.replace('\xa0', '') for text in element3]
             data_list=cleaned_element2
 
-            response_lookhistory={}
+            
             response_lookhistory['标题']=cleaned_element3[0]
 
 
@@ -878,6 +884,74 @@ def commit_decision(request):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
             }
             response=session.post(url,data,headers=headers)
+
+
+        # 解析HTML内容
+        url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/adddata/historydataadd.aspx'
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
+        }
+        response=session.get(url,headers=headers)
+        tree=etree.HTML(response.text)
+        # 使用XPath定位元素
+
+        element1 = tree.xpath('//a[@class="light"]/text()')
+        element2 = tree.xpath('//input[starts-with(@id, "contentplaceholderadd_")]/@value')
+        element3 = tree.xpath('//option[@selected="selected"]/@value')
+        element2 =element2[0:23]
+        element1.insert(0, '一般市场价格')
+        element2.insert(3, element3[0])
+        element4 = tree.xpath('//span[@style="font-size: 36px"]/text()')
+        element4 = [text.replace('\xa0 ', '') for text in element4]
+        
+
+        response_historical_decision={}
+        response_historical_decision[element4[0]]={}
+        for i,j in zip(element1,element2):
+            response_historical_decision[element4[0]][i]=j
+
+
+        for i in range(0,7):
+            url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/adddata/historydataadd.aspx'
+            soup = BeautifulSoup(response.text, 'html.parser')
+            hidden_fields1 = extract_hidden_fields(soup,'hidden')
+            hidden_fields2 = extract_hidden_fields(soup,'text')
+            #mfd5的定位方式不同，所以单独处理
+            mfd5 = soup.find('select', id='contentplaceholderadd_mfd5')
+            mfd5_option = mfd5.find('option', selected=True)
+            mfd5_value = mfd5_option.get('value')
+            data = {
+                    '__VIEWSTATE': hidden_fields1.get('__VIEWSTATE', ''),
+                    '__VIEWSTATEGENERATOR': hidden_fields1.get('__VIEWSTATEGENERATOR', ''),
+                    '__EVENTVALIDATION': hidden_fields1.get('__EVENTVALIDATION', ''),
+                    'ctl00$contentplaceholderadd$prd5': hidden_fields2.get('ctl00$contentplaceholderadd$prd5', ''),
+                    'ctl00$contentplaceholderadd$wed5': hidden_fields2.get('ctl00$contentplaceholderadd$wed5', ''),
+                    'ctl00$contentplaceholderadd$hzd5': hidden_fields2.get('ctl00$contentplaceholderadd$hzd5', ''),
+                    'ctl00$contentplaceholderadd$mfd5': mfd5_value,
+                    'ctl00$contentplaceholderadd$fed5': hidden_fields2.get('ctl00$contentplaceholderadd$fed5', ''),
+                    'ctl00$contentplaceholderadd$fzd5': hidden_fields2.get('ctl00$contentplaceholderadd$fzd5', ''),
+                    'ctl00$contentplaceholderadd$rsd5': hidden_fields2.get('ctl00$contentplaceholderadd$rsd5', ''),
+                    'ctl00$contentplaceholderadd$zbd5': hidden_fields2.get('ctl00$contentplaceholderadd$zbd5', ''),
+                    'ctl00$contentplaceholderadd$end5': hidden_fields2.get('ctl00$contentplaceholderadd$end5', ''),
+                    'ctl00$contentplaceholderadd$eld5': hidden_fields2.get('ctl00$contentplaceholderadd$eld5', ''),
+                    'ctl00$contentplaceholderadd$vad5': hidden_fields2.get('ctl00$contentplaceholderadd$vad5', ''),
+                    'ctl00$contentplaceholderadd$pnd5': hidden_fields2.get('ctl00$contentplaceholderadd$pnd5', ''),
+                    'ctl00$contentplaceholderadd$smd5': hidden_fields2.get('ctl00$contentplaceholderadd$smd5', ''),
+                    'ctl00$contentplaceholderadd$swd5': hidden_fields2.get('ctl00$contentplaceholderadd$swd5', ''),
+                    'ctl00$contentplaceholderadd$ikd5': hidden_fields2.get('ctl00$contentplaceholderadd$ikd5', ''),
+                    'ctl00$contentplaceholderadd$rkd5': hidden_fields2.get('ctl00$contentplaceholderadd$rkd5', ''),
+                    'ctl00$contentplaceholderadd$nsd5': hidden_fields2.get('ctl00$contentplaceholderadd$nsd5', ''),
+                    'ctl00$contentplaceholderadd$nld5': hidden_fields2.get('ctl00$contentplaceholderadd$nld5', ''),
+                    'ctl00$contentplaceholderadd$rbd5': hidden_fields2.get('ctl00$contentplaceholderadd$rbd5', ''),
+                    'ctl00$contentplaceholderadd$zsd5': hidden_fields2.get('ctl00$contentplaceholderadd$zsd5', ''),
+                    'ctl00$contentplaceholderadd$mkd5': hidden_fields2.get('ctl00$contentplaceholderadd$mkd5', ''),
+                    'ctl00$contentplaceholderadd$wkd5': hidden_fields2.get('ctl00$contentplaceholderadd$wkd5', ''),
+                    'ctl00$contentplaceholderadd$gdd5': hidden_fields2.get('ctl00$contentplaceholderadd$gdd5', ''),
+                    'ctl00$contentplaceholderadd$vid5': hidden_fields2.get('ctl00$contentplaceholderadd$vid5', ''),
+                    'ctl00$contentplaceholderadd$ober': '上一周期',
+                }
+            response=session.post(url,data,headers=headers)
+
             # 解析HTML内容
             tree=etree.HTML(response.text)
             # 使用XPath定位元素
@@ -890,117 +964,56 @@ def commit_decision(request):
             element2.insert(3, element3[0])
             element4 = tree.xpath('//span[@style="font-size: 36px"]/text()')
             element4 = [text.replace('\xa0 ', '') for text in element4]
-
-
-            response_historical_decision={}
             response_historical_decision[element4[0]]={}
             for i,j in zip(element1,element2):
                 response_historical_decision[element4[0]][i]=j
+            if len(element4[0])>14:
+                break
+
+        # 将字典项转换为列表并倒序
+        reversed_items = list(response_historical_decision.items())[::-1]
+
+        # 将倒序后的列表转换回字典
+        response_historical_decision = dict(reversed_items)
+
+        if len(response_historical_decision)<7:
+            for i in range(len(response_historical_decision),7):
+                response_historical_decision['查看第'+str(i+1)+'周期决策数据']='无'
 
 
-            for i in range(0,7):
-                url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/adddata/historydataadd.aspx'
-                soup = BeautifulSoup(response.text, 'html.parser')
-                hidden_fields1 = extract_hidden_fields(soup,'hidden')
-                hidden_fields2 = extract_hidden_fields(soup,'text')
-                #mfd5的定位方式不同，所以单独处理
-                mfd5 = soup.find('select', id='contentplaceholderadd_mfd5')
-                mfd5_option = mfd5.find('option', selected=True)
-                mfd5_value = mfd5_option.get('value')
-                data = {
-                        '__VIEWSTATE': hidden_fields1.get('__VIEWSTATE', ''),
-                        '__VIEWSTATEGENERATOR': hidden_fields1.get('__VIEWSTATEGENERATOR', ''),
-                        '__EVENTVALIDATION': hidden_fields1.get('__EVENTVALIDATION', ''),
-                        'ctl00$contentplaceholderadd$prd5': hidden_fields2.get('ctl00$contentplaceholderadd$prd5', ''),
-                        'ctl00$contentplaceholderadd$wed5': hidden_fields2.get('ctl00$contentplaceholderadd$wed5', ''),
-                        'ctl00$contentplaceholderadd$hzd5': hidden_fields2.get('ctl00$contentplaceholderadd$hzd5', ''),
-                        'ctl00$contentplaceholderadd$mfd5': mfd5_value,
-                        'ctl00$contentplaceholderadd$fed5': hidden_fields2.get('ctl00$contentplaceholderadd$fed5', ''),
-                        'ctl00$contentplaceholderadd$fzd5': hidden_fields2.get('ctl00$contentplaceholderadd$fzd5', ''),
-                        'ctl00$contentplaceholderadd$rsd5': hidden_fields2.get('ctl00$contentplaceholderadd$rsd5', ''),
-                        'ctl00$contentplaceholderadd$zbd5': hidden_fields2.get('ctl00$contentplaceholderadd$zbd5', ''),
-                        'ctl00$contentplaceholderadd$end5': hidden_fields2.get('ctl00$contentplaceholderadd$end5', ''),
-                        'ctl00$contentplaceholderadd$eld5': hidden_fields2.get('ctl00$contentplaceholderadd$eld5', ''),
-                        'ctl00$contentplaceholderadd$vad5': hidden_fields2.get('ctl00$contentplaceholderadd$vad5', ''),
-                        'ctl00$contentplaceholderadd$pnd5': hidden_fields2.get('ctl00$contentplaceholderadd$pnd5', ''),
-                        'ctl00$contentplaceholderadd$smd5': hidden_fields2.get('ctl00$contentplaceholderadd$smd5', ''),
-                        'ctl00$contentplaceholderadd$swd5': hidden_fields2.get('ctl00$contentplaceholderadd$swd5', ''),
-                        'ctl00$contentplaceholderadd$ikd5': hidden_fields2.get('ctl00$contentplaceholderadd$ikd5', ''),
-                        'ctl00$contentplaceholderadd$rkd5': hidden_fields2.get('ctl00$contentplaceholderadd$rkd5', ''),
-                        'ctl00$contentplaceholderadd$nsd5': hidden_fields2.get('ctl00$contentplaceholderadd$nsd5', ''),
-                        'ctl00$contentplaceholderadd$nld5': hidden_fields2.get('ctl00$contentplaceholderadd$nld5', ''),
-                        'ctl00$contentplaceholderadd$rbd5': hidden_fields2.get('ctl00$contentplaceholderadd$rbd5', ''),
-                        'ctl00$contentplaceholderadd$zsd5': hidden_fields2.get('ctl00$contentplaceholderadd$zsd5', ''),
-                        'ctl00$contentplaceholderadd$mkd5': hidden_fields2.get('ctl00$contentplaceholderadd$mkd5', ''),
-                        'ctl00$contentplaceholderadd$wkd5': hidden_fields2.get('ctl00$contentplaceholderadd$wkd5', ''),
-                        'ctl00$contentplaceholderadd$gdd5': hidden_fields2.get('ctl00$contentplaceholderadd$gdd5', ''),
-                        'ctl00$contentplaceholderadd$vid5': hidden_fields2.get('ctl00$contentplaceholderadd$vid5', ''),
-                        'ctl00$contentplaceholderadd$ober': '上一周期',
-                    }
-                response=session.post(url,data,headers=headers)
-
-                # 解析HTML内容
-                tree=etree.HTML(response.text)
-                # 使用XPath定位元素
-
-                element1 = tree.xpath('//a[@class="light"]/text()')
-                element2 = tree.xpath('//input[starts-with(@id, "contentplaceholderadd_")]/@value')
-                element3 = tree.xpath('//option[@selected="selected"]/@value')
-                element2 =element2[0:23]
-                element1.insert(0, '一般市场价格')
-                element2.insert(3, element3[0])
-                element4 = tree.xpath('//span[@style="font-size: 36px"]/text()')
-                element4 = [text.replace('\xa0 ', '') for text in element4]
-                response_historical_decision[element4[0]]={}
-                for i,j in zip(element1,element2):
-                    response_historical_decision[element4[0]][i]=j
-                if len(element4[0])>14:
-                    break
-
-            # 将字典项转换为列表并倒序
-            reversed_items = list(response_historical_decision.items())[::-1]
-
-            # 将倒序后的列表转换回字典
-            response_historical_decision = dict(reversed_items)
-
-            if len(response_historical_decision)<7:
-                for i in range(len(response_historical_decision),7):
-                    response_historical_decision['查看第'+str(i+1)+'周期决策数据']='无'
-
-
-            # 插入数据库
-            num=1
-            for period, decision_data in response_historical_decision.items():
-                num+=1
-                if num==cycle_num:
-                    decision_form = DecisionForm.objects.create(
-                        cycle_id=cycle_reports,
-                        market_price=decision_data.get('一般市场价格', ''),
-                        ad_expense=decision_data.get('广告费用投入', ''),
-                        sales_count=decision_data.get('销售人员个数', ''),
-                        research_report=decision_data.get('市场和生产研究报告', ''),
-                        bid_price=decision_data.get('附一：投标价格', ''),
-                        special_products_count=decision_data.get('附二：特殊产品数', ''),
-                        raw_materials_qty=decision_data.get('购买原材料量', ''),
-                        attachments_qty=decision_data.get('购买附件量', ''),
-                        research_personnel_recruited=decision_data.get('科研人员招收数', ''),
-                        research_personnel_terminated=decision_data.get('科研人员辞退数', ''),
-                        improvement_cost=decision_data.get('产品改进费用', ''),
-                        market_plan_qty=decision_data.get('一般市场产品计划量', ''),
-                        production_line_investment=decision_data.get('生产线投资数', ''),
-                        production_line_sales=decision_data.get('生产线变卖数', ''),
-                        maintenance_cost=decision_data.get('维修保养费用', ''),
-                        production_investment=decision_data.get('生产合理化投资', ''),
-                        production_personnel_recruited=decision_data.get('生产人员招收数', ''),
-                        production_personnel_terminated=decision_data.get('生产人员辞退数', ''),
-                        robots_purchased=decision_data.get('购买机器人', ''),
-                        welfare_expense=decision_data.get('社会福利费用', ''),
-                        medium_loan=decision_data.get('中期贷款', ''),
-                        securities_purchase=decision_data.get('购买有价证券', ''),
-                        dividend_payment=decision_data.get('计划支付股息', ''),
-                        management_investment=decision_data.get('管理合理化投资', '')
-                    )
-                    break   
+        # 插入数据库
+        num=1
+        for period, decision_data in response_historical_decision.items():
+            num+=1
+            if num==cycle_num:
+                decision_form = DecisionForm.objects.create(
+                    cycle_id=cycle_reports,
+                    market_price=decision_data.get('一般市场价格', ''),
+                    ad_expense=decision_data.get('广告费用投入', ''),
+                    sales_count=decision_data.get('销售人员个数', ''),
+                    research_report=decision_data.get('市场和生产研究报告', ''),
+                    bid_price=decision_data.get('附一：投标价格', ''),
+                    special_products_count=decision_data.get('附二：特殊产品数', ''),
+                    raw_materials_qty=decision_data.get('购买原材料量', ''),
+                    attachments_qty=decision_data.get('购买附件量', ''),
+                    research_personnel_recruited=decision_data.get('科研人员招收数', ''),
+                    research_personnel_terminated=decision_data.get('科研人员辞退数', ''),
+                    improvement_cost=decision_data.get('产品改进费用', ''),
+                    market_plan_qty=decision_data.get('一般市场产品计划量', ''),
+                    production_line_investment=decision_data.get('生产线投资数', ''),
+                    production_line_sales=decision_data.get('生产线变卖数', ''),
+                    maintenance_cost=decision_data.get('维修保养费用', ''),
+                    production_investment=decision_data.get('生产合理化投资', ''),
+                    production_personnel_recruited=decision_data.get('生产人员招收数', ''),
+                    production_personnel_terminated=decision_data.get('生产人员辞退数', ''),
+                    robots_purchased=decision_data.get('购买机器人', ''),
+                    welfare_expense=decision_data.get('社会福利费用', ''),
+                    medium_loan=decision_data.get('中期贷款', ''),
+                    securities_purchase=decision_data.get('购买有价证券', ''),
+                    dividend_payment=decision_data.get('计划支付股息', ''),
+                    management_investment=decision_data.get('管理合理化投资', '')
+                )
+                break   
 
         # 4
         # 4
@@ -1834,9 +1847,12 @@ def user_data(request):
             end_time_local = timezone.localtime(cycle.end_time)
             end_time=str(end_time_local)
             respond_userdata['history_rounds'][end_time[:19]]={}
-            respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number
+            respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number-1
             respond_userdata['history_rounds'][end_time[:19]]['末周期评分']=evaluation.value
             respond_userdata['history_rounds'][end_time[:19]]['名次']=evaluation.score_ranking
+            if cycle.has_decided:
+                respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number
+
     if not respond_userdata['history_rounds']:
         respond_userdata['history_rounds']='无历史对局'
 
@@ -1848,7 +1864,7 @@ def user_data(request):
     startlocal_time=timezone.localtime(current_cycle.start_time)
     start_time=str(startlocal_time)
     respond_userdata['current_rounds'][start_time[:19]]={}
-    respond_userdata['current_rounds'][start_time[:19]]['当前周期']=current_cycle.cycle_number
+    respond_userdata['current_rounds'][start_time[:19]]['当前周期']=current_cycle.cycle_number-1
     if evaluation_second_last:
         respond_userdata['current_rounds'][start_time[:19]]['末周期评分']=evaluation_second_last.value
         respond_userdata['current_rounds'][start_time[:19]]['名次']=evaluation_second_last.score_ranking
