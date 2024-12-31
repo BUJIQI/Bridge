@@ -19,7 +19,30 @@ def extract_hidden_fields(soup, type='hidden'):
             hidden_fields[name] = value
     return hidden_fields
 
+#辅助函数，重新登录
+def relogin(uid):
+    from .models import User
+    session=requests.Session()
+    user=User.objects.get(uid=uid)
+    url_relogin='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/default.aspx?vdir=2&vdxmc=%e5%86%b3%e7%ad%96%e6%94%af%e6%8c%81%e7%b3%bb%e7%bb%9f%e5%af%bc%e8%ae%ba&vrjslogin=True'
+    response = session.get(url=url_relogin)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    hidden_fields = extract_hidden_fields(soup)
+    
+    data_relogin={
+        '__EVENTTARGET': hidden_fields.get('__EVENTTARGET', ''),
+        '__EVENTARGUMENT': hidden_fields.get('__EVENTARGUMENT', ''),
+        '__VIEWSTATE': hidden_fields.get('__VIEWSTATE', ''),
+        '__VIEWSTATEGENERATOR': hidden_fields.get('__VIEWSTATEGENERATOR', ''),
+        '__EVENTVALIDATION': hidden_fields.get('__EVENTVALIDATION', ''),
+        'stuid':user.student_id,
+        'mima':user.password,
+        'login': '登录',
+        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+    }
 
+    response_relogin=session.post(url=url_relogin,data=data_relogin)
+    return session.cookies.get_dict()
 
 @csrf_exempt  # 禁用 CSRF 验证，适用于开发环境
 def register(request):
@@ -133,7 +156,7 @@ def register(request):
         return HttpResponse('.....')
 
 @csrf_exempt
-def login(request):
+def user_login(request):
     from .models import User
     if request.method == 'POST':
         # 获取前端发送的登录信息
@@ -285,6 +308,12 @@ def look1(request):
         #爬取目标网站
         url_look1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
         response1=session.get(url=url_look1)
+        if '登录信息可能丢失' in response1.text:
+            session_cookies=relogin(uid)
+            request.session['session_cookies']=session_cookies
+            session.cookies.update(session_cookies)
+            response1=session.get(url=url_look1)
+
         # 解析HTML内容
         tree=etree.HTML(response1.text)
 
@@ -448,6 +477,14 @@ def lookhistory(request):
         }
 
         response1=session.post(url=url_lookhistory,data=data_lookhistory)
+
+        # 判断是否会话过期，如果有则重新登录
+        if '登录信息可能丢失' in response1.text:
+            session_cookies=relogin(uid)
+            request.session['session_cookies']=session_cookies
+            session.cookies.update(session_cookies)
+            response1=session.post(url=url_lookhistory,data=data_lookhistory)
+
         # 解析返回的页面
         soup = BeautifulSoup(response1.text, 'html.parser')
 
@@ -542,6 +579,13 @@ def commit_decision(request):
     session.cookies.update(session_cookies)
     url_update_decision_data='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/adddata/dataadd.aspx'
     response = session.get(url_update_decision_data)
+    # 判断是否会话过期，如果有则重新登录
+    if '登录信息可能丢失' in response.text:
+        uid = request.session.get('uid')
+        session_cookies=relogin(uid)
+        request.session['session_cookies']=session_cookies
+        session.cookies.update(session_cookies)
+        response = session.get(url_update_decision_data)
     
     soup = BeautifulSoup(response.text, 'html.parser')
     hidden_fields = extract_hidden_fields(soup)
@@ -1755,6 +1799,14 @@ def new_rounds(request):
     #开启新的一轮
     url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/select.aspx'
     response = session.get(url=url)
+    # 判断是否会话过期，如果有则重新登录
+    if '登录信息可能丢失' in response.text:
+        uid = request.session.get('uid')
+        session_cookies=relogin(uid)
+        request.session['session_cookies']=session_cookies
+        session.cookies.update(session_cookies)
+        response = session.get(url=url)
+
     soup = BeautifulSoup(response.text, 'html.parser')
     hidden_fields = extract_hidden_fields(soup)
     data_newrounds1 = {
@@ -1848,8 +1900,12 @@ def user_data(request):
             end_time=str(end_time_local)
             respond_userdata['history_rounds'][end_time[:19]]={}
             respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number-1
-            respond_userdata['history_rounds'][end_time[:19]]['末周期评分']=evaluation.value
-            respond_userdata['history_rounds'][end_time[:19]]['名次']=evaluation.score_ranking
+            if evaluation:
+                respond_userdata['history_rounds'][end_time[:19]]['末周期评分']=evaluation.value
+                respond_userdata['history_rounds'][end_time[:19]]['名次']=evaluation.score_ranking
+            else:
+                respond_userdata['history_rounds'][end_time[:19]]['末周期评分']='未评分'
+                respond_userdata['history_rounds'][end_time[:19]]['名次']='未评分'
             if cycle.has_decided:
                 respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number
 
