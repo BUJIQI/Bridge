@@ -141,8 +141,19 @@ SESSION_COOKIE_DOMAIN = None             # 允许所有子域
 SESSION_COOKIE_SAMESITE = 'None'         # 允许跨站请求
 SESSION_COOKIE_SECURE = True             # 仅允许 HTTPS
 SESSION_COOKIE_HTTPONLY = True           # 防止 XSS
+# 设置会话过期时间为30天（以秒为单位）
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30天
+
+# 使会话在浏览器关闭后仍然有效
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
 
 # CSRF 设置（如果使用）
 CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE =True
 CSRF_COOKIE_PATH = '/'
+
+
+
+
+AUTH_USER_MODEL = 'users.User'

@@ -3,8 +3,8 @@ from . import views
 
 urlpatterns = [
     path('register/', views.register, name='register'),
-    path('login/', views.login, name='login'),
-    path('look1/', views.look1, name='look1'),
+    path('login/', views.user_login, name='login'),
+    path('look1/', views.look_marketsituation, name='look1'),
     path('lookhistory/', views.lookhistory, name='lookhistory'),
     path('commit_decision/', views.commit_decision, name='commit_decision'),
     path('historical_decision/', views.historical_decision, name='historical_decision'),
@@ -13,4 +13,5 @@ urlpatterns = [
     path('summart_evaluation/', views.get_summart_evaluation, name='summart_evaluation'),
     path('new_rounds/', views.new_rounds, name='new_rounds'),
     path('user_data/', views.user_data, name='user_data'),
+    path('loginout/', views.user_logout, name='user_logout'),
 ]
