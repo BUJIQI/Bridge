@@ -8,6 +8,7 @@ import re
 from django.db.models import IntegerField
 from django.db.models.functions import Cast
 from django.utils import timezone
+from django.contrib.auth import authenticate, login, logout
 # 辅助函数：提取隐藏字段
 def extract_hidden_fields(soup, type='hidden'):
     """提取页面中的所有隐藏字段"""
@@ -19,7 +20,30 @@ def extract_hidden_fields(soup, type='hidden'):
             hidden_fields[name] = value
     return hidden_fields
 
+#辅助函数，重新登录
+def relogin(uid):
+    from .models import User
+    session=requests.Session()
+    user=User.objects.get(uid=uid)
+    url_relogin='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/default.aspx?vdir=2&vdxmc=%e5%86%b3%e7%ad%96%e6%94%af%e6%8c%81%e7%b3%bb%e7%bb%9f%e5%af%bc%e8%ae%ba&vrjslogin=True'
+    response = session.get(url=url_relogin)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    hidden_fields = extract_hidden_fields(soup)
+    
+    data_relogin={
+        '__EVENTTARGET': hidden_fields.get('__EVENTTARGET', ''),
+        '__EVENTARGUMENT': hidden_fields.get('__EVENTARGUMENT', ''),
+        '__VIEWSTATE': hidden_fields.get('__VIEWSTATE', ''),
+        '__VIEWSTATEGENERATOR': hidden_fields.get('__VIEWSTATEGENERATOR', ''),
+        '__EVENTVALIDATION': hidden_fields.get('__EVENTVALIDATION', ''),
+        'stuid':user.student_id,
+        'mima':user.password,
+        'login': '登录',
+        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+    }
 
+    response_relogin=session.post(url=url_relogin,data=data_relogin)
+    return session.cookies.get_dict()
 
 @csrf_exempt  # 禁用 CSRF 验证，适用于开发环境
 def register(request):
@@ -98,7 +122,8 @@ def register(request):
             response_register['data']['number'] = parts[2].split('企业')[0]
             
             # 创建用户对象并保存到数据库
-            new_user = User(
+            new_user = User.objects.create_user(
+                username=studentid,
                 student_id=studentid,
                 password=pwd,
                 name=name,
@@ -133,121 +158,147 @@ def register(request):
         return HttpResponse('.....')
 
 @csrf_exempt
-def login(request):
-    from .models import User
-    if request.method == 'POST':
-        # 获取前端发送的登录信息
+def user_login(request):
+    from .models import User,Round,Cycle
 
-        data=json.loads(request.body)
+    # 获取前端发送的登录信息
 
-        stuid = data.get('username')
-        password = data.get('password')
-        # 检查本地数据库是否已注册
-        try:
-            user = User.objects.get(student_id=stuid)
-        except User.DoesNotExist:
-            response_login={
-                'status': 'False',
-                'data': {
-                    'logintxt': '账号未注册'
-                }
-            }
-            return JsonResponse(response_login)
+    data=json.loads(request.body)
 
-        session=requests.Session()
-
-        # 将用户 UID 保存到会话中
+    stuid = data.get('username')
+    password = data.get('password')
+    # 检查本地数据库是否已注册
+    try:
         user = User.objects.get(student_id=stuid)
-        request.session['uid'] = user.uid
-
-        url_login1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/default.aspx?vdir=2&vdxmc=%e5%86%b3%e7%ad%96%e6%94%af%e6%8c%81%e7%b3%bb%e7%bb%9f%e5%af%bc%e8%ae%ba&vrjslogin=True'
-        response = session.get(url=url_login1)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        hidden_fields = extract_hidden_fields(soup)
-        
-        data_login1={
-            '__EVENTTARGET': hidden_fields.get('__EVENTTARGET', ''),
-            '__EVENTARGUMENT': hidden_fields.get('__EVENTARGUMENT', ''),
-            '__VIEWSTATE': hidden_fields.get('__VIEWSTATE', ''),
-            '__VIEWSTATEGENERATOR': hidden_fields.get('__VIEWSTATEGENERATOR', ''),
-            '__EVENTVALIDATION': hidden_fields.get('__EVENTVALIDATION', ''),
-            'stuid':stuid,
-            'mima':password,
-            'login': '登录',
-            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
-        }
-
-        response1=session.post(url=url_login1,data=data_login1)
-        # 解析返回的页面
-        soup = BeautifulSoup(response1.text, 'html.parser')
-
-        smessage = soup.find('span', {'id': 'Label4'})
-
-        response_login={}
-        # 返回登录结果给前端
-        if smessage is None:
-            # 登录成功，保存会话信息到 Django 的 session 中
-            request.session['session_cookies'] = session.cookies.get_dict()
-            response_login['status'] = 'True'
-            response_login['data'] = {}
-            #爬取目标网站
-            url_login2='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/select.aspx'
-            response2=session.get(url=url_login2)
-
-            # 解析HTML内容
-            tree=etree.HTML(response2.text)
-            # 使用XPath定位元素
-            element2= tree.xpath('//font[@color="#ff0000"]/text()')
-            # 提取第一个字符串
-            text = element2[0]
-            # 使用字符串切片方法提取数字
-            response_login['data'] = {
-            'sessionid': session.cookies.get('sessionid')  
-        }            
-            response_login['data']['group'] = int(text[text.index('第')+1:text.index('组')])
-            response_login['data']['number'] = int(text[text.index('组第')+2:text.index('企业')])
-            response_login['data']['rival'] = int(text[text.index('仅有')+2:text.index(' 位')])
-            # 提取 'cycle' 并转换为阿拉伯数字
-            cycle_str = element2[2].strip()
-            chinese_to_arabic = {
-                '一': 1,
-                '二': 2,
-                '三': 3,
-                '四': 4,
-                '五': 5,
-                '六': 6,
-                '七': 7
+    except User.DoesNotExist:
+        response_login={
+            'status': 'False',
+            'data': {
+                'logintxt': '账号未注册'
             }
-            cycle_num = chinese_to_arabic.get(cycle_str, 0)  # 若未找到对应的中文数字，默认值为0
-            response_login['data']['cycle'] = cycle_num
-            response_login['data']['username']=user.name
-            response_login['data']['stuid'] =user.student_id
-            response_login['data']['team_name'] =user.team_name
-            response_login['data']['user_class'] =user.user_class
-            response = JsonResponse(response_login)
-            response.set_cookie('sessionid', response_login['data']['sessionid'], httponly=True, secure=True)
-        else:
-            response_login['status'] = 'False'
-            response_login['data'] = {}
-            response_login['data']['logintxt'] = smessage.text
-            response = JsonResponse(response_login)
+        }
+        return JsonResponse(response_login)
 
+    #登录我自己的网站
+    user_mywed = authenticate(request, username=stuid, password=password)
+    login(request, user_mywed)
 
-        return response
+    # 创建爬虫会话
+    session=requests.Session()
 
+    # 登录目标网站
+    user = User.objects.get(student_id=stuid)
+    request.session['uid'] = user.uid
+
+    url_login1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/default.aspx?vdir=2&vdxmc=%e5%86%b3%e7%ad%96%e6%94%af%e6%8c%81%e7%b3%bb%e7%bb%9f%e5%af%bc%e8%ae%ba&vrjslogin=True'
+    response = session.get(url=url_login1)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    hidden_fields = extract_hidden_fields(soup)
+    
+    data_login1={
+        '__EVENTTARGET': hidden_fields.get('__EVENTTARGET', ''),
+        '__EVENTARGUMENT': hidden_fields.get('__EVENTARGUMENT', ''),
+        '__VIEWSTATE': hidden_fields.get('__VIEWSTATE', ''),
+        '__VIEWSTATEGENERATOR': hidden_fields.get('__VIEWSTATEGENERATOR', ''),
+        '__EVENTVALIDATION': hidden_fields.get('__EVENTVALIDATION', ''),
+        'stuid':stuid,
+        'mima':password,
+        'login': '登录',
+        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+    }
+
+    response1=session.post(url=url_login1,data=data_login1)
+    # 解析返回的页面
+    soup = BeautifulSoup(response1.text, 'html.parser')
+
+    smessage = soup.find('span', {'id': 'Label4'})
+
+    response_login={}
+    # 返回登录结果给前端
+    if smessage is None:
+        # 登录成功，保存爬虫会话信息到 Django 的 session 中
+        request.session['crawler_session_cookies'] = session.cookies.get_dict()
+        response_login['status'] = 'True'
+        response_login['data'] = {}
+        #爬取目标网站
+        url_login2='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/select.aspx'
+        response2=session.get(url=url_login2)
+
+        # 解析HTML内容
+        tree=etree.HTML(response2.text)
+        # 使用XPath定位元素
+        element2= tree.xpath('//font[@color="#ff0000"]/text()')
+        # 提取第一个字符串
+        text = element2[0]
+        # 使用字符串切片方法提取数字
+        response_login['data']['group'] = int(text[text.index('第')+1:text.index('组')])
+        response_login['data']['number'] = int(text[text.index('组第')+2:text.index('企业')])
+        response_login['data']['rival'] = int(text[text.index('仅有')+2:text.index(' 位')])
+        # 提取 'cycle' 并转换为阿拉伯数字
+        cycle_str = element2[2].strip()
+        chinese_to_arabic = {
+            '一': 1,
+            '二': 2,
+            '三': 3,
+            '四': 4,
+            '五': 5,
+            '六': 6,
+            '七': 7
+        }
+        cycle_num = chinese_to_arabic.get(cycle_str, 0)  # 若未找到对应的中文数字，默认值为0
+        if cycle_num == 7:
+            rounds_current=Round.objects.filter(uid=request.session.get('uid')).last()
+            current_cycle = Cycle.objects.filter(round_id=rounds_current.round_id).last()          
+            if current_cycle.cycle_number == 7 and current_cycle.has_decided == True:
+                cycle_num+=1
+        response_login['data']['cycle'] = cycle_num
+        response_login['data']['username']=user.name
+        response_login['data']['stuid'] =user.student_id
+        response_login['data']['team_name'] =user.team_name
+        response_login['data']['user_class'] =user.user_class
 
     else:
-        return HttpResponse('.....')
+        response_login['status'] = 'False'
+        response_login['data'] = {}
+        response_login['data']['logintxt'] = smessage.text
+
+
+
+    return JsonResponse(response_login)
+
 
 @csrf_exempt
-def look1(request):
-    from .models import User,Round,Cycle,MarketReport,Datakeep
-    # 从 session 中获取之前保存的 cookies
-    session_cookies = request.session.get('session_cookies')
+def user_logout(request):
+        # 使用 Django 的 logout 函数注销用户
+        logout(request)
+        
+        # 清理与爬虫会话相关的会话数据
+        request.session.pop('crawler_session_cookies', None)
+        request.session.pop('uid', None)
+        
+        # 返回登出成功的响应
+        response_logout = {
+            'status': 'True',
+            'data': {
+                'message': '登出成功'
+            }
+        }
+        return JsonResponse(response_logout)
 
-    # 使用 requests.Session() 复用登录状态
+
+@csrf_exempt
+def look_marketsituation(request):
+    from .models import User,Round,Cycle,MarketReport,Datakeep
+    #检查自己网站用户会话是否过期
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
+    
+    # 获取爬虫会话Cookies
+    crawler_cookies = request.session.get('crawler_session_cookies')
+
+    # 创建爬虫会话并加载Cookies
     session = requests.Session()
-    session.cookies.update(session_cookies)
+    session.cookies.update(crawler_cookies)
 
     uid = request.session.get('uid')
     round_reports = Round.objects.filter(uid=uid).annotate(round_id_int=Cast('round_id', IntegerField())).order_by('-round_id_int').first()
@@ -285,6 +336,12 @@ def look1(request):
         #爬取目标网站
         url_look1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
         response1=session.get(url=url_look1)
+        if '登录信息可能丢失' in response1.text:
+            session_cookies=relogin(uid)
+            request.session['session_cookies']=session_cookies
+            session.cookies.update(session_cookies)
+            response1=session.get(url=url_look1)
+
         # 解析HTML内容
         tree=etree.HTML(response1.text)
 
@@ -365,12 +422,17 @@ def look1(request):
 @csrf_exempt
 def lookhistory(request):
     from .models import User,Round,Cycle,MarketHistoryReport,Datakeep
-    # 从 session 中获取之前保存的 cookies
-    session_cookies = request.session.get('session_cookies')
+    #检查自己网站用户会话是否过期
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
+    
+    # 获取爬虫会话Cookies
+    crawler_cookies = request.session.get('crawler_session_cookies')
 
-    # 使用 requests.Session() 复用登录状态
+    # 创建爬虫会话并加载Cookies
     session = requests.Session()
-    session.cookies.update(session_cookies)
+    session.cookies.update(crawler_cookies)
+
     uid = request.session.get('uid')
     round_reports = Round.objects.filter(uid=uid).annotate(round_id_int=Cast('round_id', IntegerField())).order_by('-round_id_int').first()
     cycle_reports_now = Cycle.objects.filter(round_id=round_reports.round_id).annotate(cycle_id_int=Cast('cycle_id', IntegerField())).order_by('-cycle_id_int').first()
@@ -448,6 +510,14 @@ def lookhistory(request):
         }
 
         response1=session.post(url=url_lookhistory,data=data_lookhistory)
+
+        # 判断是否会话过期，如果有则重新登录
+        if '登录信息可能丢失' in response1.text:
+            session_cookies=relogin(uid)
+            request.session['session_cookies']=session_cookies
+            session.cookies.update(session_cookies)
+            response1=session.post(url=url_lookhistory,data=data_lookhistory)
+
         # 解析返回的页面
         soup = BeautifulSoup(response1.text, 'html.parser')
 
@@ -534,14 +604,26 @@ def commit_decision(request):
     planned_dividend_payment = data.get('planned_dividend_payment')  # 计划支付股息（百万元）
     management_optimization_investment = data.get('management_optimization_investment')  # 管理合理化投资（百万元）
 
-    # 从 session 中获取之前保存的 cookies
-    session_cookies = request.session.get('session_cookies')
+    #检查自己网站用户会话是否过期
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
+    
+    # 获取爬虫会话Cookies
+    crawler_cookies = request.session.get('crawler_session_cookies')
 
-    # 使用 requests.Session() 复用登录状态
+    # 创建爬虫会话并加载Cookies
     session = requests.Session()
-    session.cookies.update(session_cookies)
+    session.cookies.update(crawler_cookies)
+
     url_update_decision_data='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/adddata/dataadd.aspx'
     response = session.get(url_update_decision_data)
+    # 判断是否会话过期，如果有则重新登录
+    if '登录信息可能丢失' in response.text:
+        uid = request.session.get('uid')
+        session_cookies=relogin(uid)
+        request.session['session_cookies']=session_cookies
+        session.cookies.update(session_cookies)
+        response = session.get(url_update_decision_data)
     
     soup = BeautifulSoup(response.text, 'html.parser')
     hidden_fields = extract_hidden_fields(soup)
@@ -641,7 +723,7 @@ def commit_decision(request):
             'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
         }
         response_submit3 = session.post(url_sub3, data_sub3)
-        response_look1={}
+        
         tree=etree.HTML(response_submit3.text)
 
         element1 = tree.xpath('//font[@color="#024802"]/text()')
@@ -658,7 +740,12 @@ def commit_decision(request):
         
         #插入新的周期数据
         newcycle=Cycle.update_and_insert_cycle(cycle_reports,user_reports,round_reports,cycle_num)
-         
+
+        #在if语句之前定义1.1，1.2用到的字典，用于后面更新datakeep时判断是否存在数据
+        response_look1={}
+        response_lookhistory={}
+
+
         state_1=1       #state_1=1表示可以继续爬取1.1和1.2
         if newcycle.cycle_number==7 and newcycle.end_time!=None:    #判断是否为最后一周期
             state_1=0
@@ -669,7 +756,8 @@ def commit_decision(request):
             # 1.1
             # 1.1
             # 1.1
-            #爬取并存入response_look1      
+            #爬取并存入response_look1    
+              
             url_look1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
             response1=session.get(url=url_look1)
             # 解析HTML内容
@@ -775,7 +863,7 @@ def commit_decision(request):
             cleaned_element3 = [text.replace('\xa0', '') for text in element3]
             data_list=cleaned_element2
 
-            response_lookhistory={}
+            
             response_lookhistory['标题']=cleaned_element3[0]
 
 
@@ -878,6 +966,74 @@ def commit_decision(request):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
             }
             response=session.post(url,data,headers=headers)
+
+
+        # 解析HTML内容
+        url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/adddata/historydataadd.aspx'
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
+        }
+        response=session.get(url,headers=headers)
+        tree=etree.HTML(response.text)
+        # 使用XPath定位元素
+
+        element1 = tree.xpath('//a[@class="light"]/text()')
+        element2 = tree.xpath('//input[starts-with(@id, "contentplaceholderadd_")]/@value')
+        element3 = tree.xpath('//option[@selected="selected"]/@value')
+        element2 =element2[0:23]
+        element1.insert(0, '一般市场价格')
+        element2.insert(3, element3[0])
+        element4 = tree.xpath('//span[@style="font-size: 36px"]/text()')
+        element4 = [text.replace('\xa0 ', '') for text in element4]
+        
+
+        response_historical_decision={}
+        response_historical_decision[element4[0]]={}
+        for i,j in zip(element1,element2):
+            response_historical_decision[element4[0]][i]=j
+
+
+        for i in range(0,7):
+            url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/adddata/historydataadd.aspx'
+            soup = BeautifulSoup(response.text, 'html.parser')
+            hidden_fields1 = extract_hidden_fields(soup,'hidden')
+            hidden_fields2 = extract_hidden_fields(soup,'text')
+            #mfd5的定位方式不同，所以单独处理
+            mfd5 = soup.find('select', id='contentplaceholderadd_mfd5')
+            mfd5_option = mfd5.find('option', selected=True)
+            mfd5_value = mfd5_option.get('value')
+            data = {
+                    '__VIEWSTATE': hidden_fields1.get('__VIEWSTATE', ''),
+                    '__VIEWSTATEGENERATOR': hidden_fields1.get('__VIEWSTATEGENERATOR', ''),
+                    '__EVENTVALIDATION': hidden_fields1.get('__EVENTVALIDATION', ''),
+                    'ctl00$contentplaceholderadd$prd5': hidden_fields2.get('ctl00$contentplaceholderadd$prd5', ''),
+                    'ctl00$contentplaceholderadd$wed5': hidden_fields2.get('ctl00$contentplaceholderadd$wed5', ''),
+                    'ctl00$contentplaceholderadd$hzd5': hidden_fields2.get('ctl00$contentplaceholderadd$hzd5', ''),
+                    'ctl00$contentplaceholderadd$mfd5': mfd5_value,
+                    'ctl00$contentplaceholderadd$fed5': hidden_fields2.get('ctl00$contentplaceholderadd$fed5', ''),
+                    'ctl00$contentplaceholderadd$fzd5': hidden_fields2.get('ctl00$contentplaceholderadd$fzd5', ''),
+                    'ctl00$contentplaceholderadd$rsd5': hidden_fields2.get('ctl00$contentplaceholderadd$rsd5', ''),
+                    'ctl00$contentplaceholderadd$zbd5': hidden_fields2.get('ctl00$contentplaceholderadd$zbd5', ''),
+                    'ctl00$contentplaceholderadd$end5': hidden_fields2.get('ctl00$contentplaceholderadd$end5', ''),
+                    'ctl00$contentplaceholderadd$eld5': hidden_fields2.get('ctl00$contentplaceholderadd$eld5', ''),
+                    'ctl00$contentplaceholderadd$vad5': hidden_fields2.get('ctl00$contentplaceholderadd$vad5', ''),
+                    'ctl00$contentplaceholderadd$pnd5': hidden_fields2.get('ctl00$contentplaceholderadd$pnd5', ''),
+                    'ctl00$contentplaceholderadd$smd5': hidden_fields2.get('ctl00$contentplaceholderadd$smd5', ''),
+                    'ctl00$contentplaceholderadd$swd5': hidden_fields2.get('ctl00$contentplaceholderadd$swd5', ''),
+                    'ctl00$contentplaceholderadd$ikd5': hidden_fields2.get('ctl00$contentplaceholderadd$ikd5', ''),
+                    'ctl00$contentplaceholderadd$rkd5': hidden_fields2.get('ctl00$contentplaceholderadd$rkd5', ''),
+                    'ctl00$contentplaceholderadd$nsd5': hidden_fields2.get('ctl00$contentplaceholderadd$nsd5', ''),
+                    'ctl00$contentplaceholderadd$nld5': hidden_fields2.get('ctl00$contentplaceholderadd$nld5', ''),
+                    'ctl00$contentplaceholderadd$rbd5': hidden_fields2.get('ctl00$contentplaceholderadd$rbd5', ''),
+                    'ctl00$contentplaceholderadd$zsd5': hidden_fields2.get('ctl00$contentplaceholderadd$zsd5', ''),
+                    'ctl00$contentplaceholderadd$mkd5': hidden_fields2.get('ctl00$contentplaceholderadd$mkd5', ''),
+                    'ctl00$contentplaceholderadd$wkd5': hidden_fields2.get('ctl00$contentplaceholderadd$wkd5', ''),
+                    'ctl00$contentplaceholderadd$gdd5': hidden_fields2.get('ctl00$contentplaceholderadd$gdd5', ''),
+                    'ctl00$contentplaceholderadd$vid5': hidden_fields2.get('ctl00$contentplaceholderadd$vid5', ''),
+                    'ctl00$contentplaceholderadd$ober': '上一周期',
+                }
+            response=session.post(url,data,headers=headers)
+
             # 解析HTML内容
             tree=etree.HTML(response.text)
             # 使用XPath定位元素
@@ -890,117 +1046,56 @@ def commit_decision(request):
             element2.insert(3, element3[0])
             element4 = tree.xpath('//span[@style="font-size: 36px"]/text()')
             element4 = [text.replace('\xa0 ', '') for text in element4]
-
-
-            response_historical_decision={}
             response_historical_decision[element4[0]]={}
             for i,j in zip(element1,element2):
                 response_historical_decision[element4[0]][i]=j
+            if len(element4[0])>14:
+                break
+
+        # 将字典项转换为列表并倒序
+        reversed_items = list(response_historical_decision.items())[::-1]
+
+        # 将倒序后的列表转换回字典
+        response_historical_decision = dict(reversed_items)
+
+        if len(response_historical_decision)<7:
+            for i in range(len(response_historical_decision),7):
+                response_historical_decision['查看第'+str(i+1)+'周期决策数据']='无'
 
 
-            for i in range(0,7):
-                url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/adddata/historydataadd.aspx'
-                soup = BeautifulSoup(response.text, 'html.parser')
-                hidden_fields1 = extract_hidden_fields(soup,'hidden')
-                hidden_fields2 = extract_hidden_fields(soup,'text')
-                #mfd5的定位方式不同，所以单独处理
-                mfd5 = soup.find('select', id='contentplaceholderadd_mfd5')
-                mfd5_option = mfd5.find('option', selected=True)
-                mfd5_value = mfd5_option.get('value')
-                data = {
-                        '__VIEWSTATE': hidden_fields1.get('__VIEWSTATE', ''),
-                        '__VIEWSTATEGENERATOR': hidden_fields1.get('__VIEWSTATEGENERATOR', ''),
-                        '__EVENTVALIDATION': hidden_fields1.get('__EVENTVALIDATION', ''),
-                        'ctl00$contentplaceholderadd$prd5': hidden_fields2.get('ctl00$contentplaceholderadd$prd5', ''),
-                        'ctl00$contentplaceholderadd$wed5': hidden_fields2.get('ctl00$contentplaceholderadd$wed5', ''),
-                        'ctl00$contentplaceholderadd$hzd5': hidden_fields2.get('ctl00$contentplaceholderadd$hzd5', ''),
-                        'ctl00$contentplaceholderadd$mfd5': mfd5_value,
-                        'ctl00$contentplaceholderadd$fed5': hidden_fields2.get('ctl00$contentplaceholderadd$fed5', ''),
-                        'ctl00$contentplaceholderadd$fzd5': hidden_fields2.get('ctl00$contentplaceholderadd$fzd5', ''),
-                        'ctl00$contentplaceholderadd$rsd5': hidden_fields2.get('ctl00$contentplaceholderadd$rsd5', ''),
-                        'ctl00$contentplaceholderadd$zbd5': hidden_fields2.get('ctl00$contentplaceholderadd$zbd5', ''),
-                        'ctl00$contentplaceholderadd$end5': hidden_fields2.get('ctl00$contentplaceholderadd$end5', ''),
-                        'ctl00$contentplaceholderadd$eld5': hidden_fields2.get('ctl00$contentplaceholderadd$eld5', ''),
-                        'ctl00$contentplaceholderadd$vad5': hidden_fields2.get('ctl00$contentplaceholderadd$vad5', ''),
-                        'ctl00$contentplaceholderadd$pnd5': hidden_fields2.get('ctl00$contentplaceholderadd$pnd5', ''),
-                        'ctl00$contentplaceholderadd$smd5': hidden_fields2.get('ctl00$contentplaceholderadd$smd5', ''),
-                        'ctl00$contentplaceholderadd$swd5': hidden_fields2.get('ctl00$contentplaceholderadd$swd5', ''),
-                        'ctl00$contentplaceholderadd$ikd5': hidden_fields2.get('ctl00$contentplaceholderadd$ikd5', ''),
-                        'ctl00$contentplaceholderadd$rkd5': hidden_fields2.get('ctl00$contentplaceholderadd$rkd5', ''),
-                        'ctl00$contentplaceholderadd$nsd5': hidden_fields2.get('ctl00$contentplaceholderadd$nsd5', ''),
-                        'ctl00$contentplaceholderadd$nld5': hidden_fields2.get('ctl00$contentplaceholderadd$nld5', ''),
-                        'ctl00$contentplaceholderadd$rbd5': hidden_fields2.get('ctl00$contentplaceholderadd$rbd5', ''),
-                        'ctl00$contentplaceholderadd$zsd5': hidden_fields2.get('ctl00$contentplaceholderadd$zsd5', ''),
-                        'ctl00$contentplaceholderadd$mkd5': hidden_fields2.get('ctl00$contentplaceholderadd$mkd5', ''),
-                        'ctl00$contentplaceholderadd$wkd5': hidden_fields2.get('ctl00$contentplaceholderadd$wkd5', ''),
-                        'ctl00$contentplaceholderadd$gdd5': hidden_fields2.get('ctl00$contentplaceholderadd$gdd5', ''),
-                        'ctl00$contentplaceholderadd$vid5': hidden_fields2.get('ctl00$contentplaceholderadd$vid5', ''),
-                        'ctl00$contentplaceholderadd$ober': '上一周期',
-                    }
-                response=session.post(url,data,headers=headers)
-
-                # 解析HTML内容
-                tree=etree.HTML(response.text)
-                # 使用XPath定位元素
-
-                element1 = tree.xpath('//a[@class="light"]/text()')
-                element2 = tree.xpath('//input[starts-with(@id, "contentplaceholderadd_")]/@value')
-                element3 = tree.xpath('//option[@selected="selected"]/@value')
-                element2 =element2[0:23]
-                element1.insert(0, '一般市场价格')
-                element2.insert(3, element3[0])
-                element4 = tree.xpath('//span[@style="font-size: 36px"]/text()')
-                element4 = [text.replace('\xa0 ', '') for text in element4]
-                response_historical_decision[element4[0]]={}
-                for i,j in zip(element1,element2):
-                    response_historical_decision[element4[0]][i]=j
-                if len(element4[0])>14:
-                    break
-
-            # 将字典项转换为列表并倒序
-            reversed_items = list(response_historical_decision.items())[::-1]
-
-            # 将倒序后的列表转换回字典
-            response_historical_decision = dict(reversed_items)
-
-            if len(response_historical_decision)<7:
-                for i in range(len(response_historical_decision),7):
-                    response_historical_decision['查看第'+str(i+1)+'周期决策数据']='无'
-
-
-            # 插入数据库
-            num=1
-            for period, decision_data in response_historical_decision.items():
-                num+=1
-                if num==cycle_num:
-                    decision_form = DecisionForm.objects.create(
-                        cycle_id=cycle_reports,
-                        market_price=decision_data.get('一般市场价格', ''),
-                        ad_expense=decision_data.get('广告费用投入', ''),
-                        sales_count=decision_data.get('销售人员个数', ''),
-                        research_report=decision_data.get('市场和生产研究报告', ''),
-                        bid_price=decision_data.get('附一：投标价格', ''),
-                        special_products_count=decision_data.get('附二：特殊产品数', ''),
-                        raw_materials_qty=decision_data.get('购买原材料量', ''),
-                        attachments_qty=decision_data.get('购买附件量', ''),
-                        research_personnel_recruited=decision_data.get('科研人员招收数', ''),
-                        research_personnel_terminated=decision_data.get('科研人员辞退数', ''),
-                        improvement_cost=decision_data.get('产品改进费用', ''),
-                        market_plan_qty=decision_data.get('一般市场产品计划量', ''),
-                        production_line_investment=decision_data.get('生产线投资数', ''),
-                        production_line_sales=decision_data.get('生产线变卖数', ''),
-                        maintenance_cost=decision_data.get('维修保养费用', ''),
-                        production_investment=decision_data.get('生产合理化投资', ''),
-                        production_personnel_recruited=decision_data.get('生产人员招收数', ''),
-                        production_personnel_terminated=decision_data.get('生产人员辞退数', ''),
-                        robots_purchased=decision_data.get('购买机器人', ''),
-                        welfare_expense=decision_data.get('社会福利费用', ''),
-                        medium_loan=decision_data.get('中期贷款', ''),
-                        securities_purchase=decision_data.get('购买有价证券', ''),
-                        dividend_payment=decision_data.get('计划支付股息', ''),
-                        management_investment=decision_data.get('管理合理化投资', '')
-                    )
-                    break   
+        # 插入数据库
+        num=1
+        for period, decision_data in response_historical_decision.items():
+            num+=1
+            if num==cycle_num:
+                decision_form = DecisionForm.objects.create(
+                    cycle_id=cycle_reports,
+                    market_price=decision_data.get('一般市场价格', ''),
+                    ad_expense=decision_data.get('广告费用投入', ''),
+                    sales_count=decision_data.get('销售人员个数', ''),
+                    research_report=decision_data.get('市场和生产研究报告', ''),
+                    bid_price=decision_data.get('附一：投标价格', ''),
+                    special_products_count=decision_data.get('附二：特殊产品数', ''),
+                    raw_materials_qty=decision_data.get('购买原材料量', ''),
+                    attachments_qty=decision_data.get('购买附件量', ''),
+                    research_personnel_recruited=decision_data.get('科研人员招收数', ''),
+                    research_personnel_terminated=decision_data.get('科研人员辞退数', ''),
+                    improvement_cost=decision_data.get('产品改进费用', ''),
+                    market_plan_qty=decision_data.get('一般市场产品计划量', ''),
+                    production_line_investment=decision_data.get('生产线投资数', ''),
+                    production_line_sales=decision_data.get('生产线变卖数', ''),
+                    maintenance_cost=decision_data.get('维修保养费用', ''),
+                    production_investment=decision_data.get('生产合理化投资', ''),
+                    production_personnel_recruited=decision_data.get('生产人员招收数', ''),
+                    production_personnel_terminated=decision_data.get('生产人员辞退数', ''),
+                    robots_purchased=decision_data.get('购买机器人', ''),
+                    welfare_expense=decision_data.get('社会福利费用', ''),
+                    medium_loan=decision_data.get('中期贷款', ''),
+                    securities_purchase=decision_data.get('购买有价证券', ''),
+                    dividend_payment=decision_data.get('计划支付股息', ''),
+                    management_investment=decision_data.get('管理合理化投资', '')
+                )
+                break   
 
         # 4
         # 4
@@ -1653,12 +1748,17 @@ def commit_decision(request):
 @csrf_exempt
 def historical_decision(request):
     from .models import User, Datakeep
-    # 从 session 中获取之前保存的 cookies
-    session_cookies = request.session.get('session_cookies')
+    #检查自己网站用户会话是否过期
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
+    
+    # 获取爬虫会话Cookies
+    crawler_cookies = request.session.get('crawler_session_cookies')
 
-    # 使用 requests.Session() 复用登录状态
+    # 创建爬虫会话并加载Cookies
     session = requests.Session()
-    session.cookies.update(session_cookies)
+    session.cookies.update(crawler_cookies)
+
 
     # 从Datakeep内获取输出数据
     uid = request.session.get('uid')
@@ -1672,12 +1772,16 @@ def historical_decision(request):
 @csrf_exempt
 def compete_outcome_fun(request):
     from .models import User,Round,Cycle,CompetitionResult,Datakeep
-    # 从 session 中获取之前保存的 cookies
-    session_cookies = request.session.get('session_cookies')
+    #检查自己网站用户会话是否过期
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
+    
+    # 获取爬虫会话Cookies
+    crawler_cookies = request.session.get('crawler_session_cookies')
 
-    # 使用 requests.Session() 复用登录状态
+    # 创建爬虫会话并加载Cookies
     session = requests.Session()
-    session.cookies.update(session_cookies)
+    session.cookies.update(crawler_cookies)
 
 
     uid = request.session.get('uid')
@@ -1694,12 +1798,17 @@ def compete_outcome_fun(request):
 @csrf_exempt
 def enterreporting(request):
     from .models import User, Datakeep,Round,Cycle,CompanyReportMarket
-    # 从 session 中获取之前保存的 cookies
-    session_cookies = request.session.get('session_cookies')
+    #检查自己网站用户会话是否过期
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
+    
+    # 获取爬虫会话Cookies
+    crawler_cookies = request.session.get('crawler_session_cookies')
 
-    # 使用 requests.Session() 复用登录状态
+    # 创建爬虫会话并加载Cookies
     session = requests.Session()
-    session.cookies.update(session_cookies)
+    session.cookies.update(crawler_cookies)
+
 
     uid = request.session.get('uid')
     user_instance = User.objects.get(uid=uid)
@@ -1713,12 +1822,17 @@ def enterreporting(request):
 @csrf_exempt
 def get_summart_evaluation(request):
     from .models import User, Datakeep,Round,Cycle,CompanyReportMarketPrd
-    # 从 session 中获取之前保存的 cookies
-    session_cookies = request.session.get('session_cookies')
+    #检查自己网站用户会话是否过期
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
+    
+    # 获取爬虫会话Cookies
+    crawler_cookies = request.session.get('crawler_session_cookies')
 
-    # 使用 requests.Session() 复用登录状态
+    # 创建爬虫会话并加载Cookies
     session = requests.Session()
-    session.cookies.update(session_cookies)
+    session.cookies.update(crawler_cookies)
+
     uid = request.session.get('uid')
     user_instance = User.objects.get(uid=uid)
     summart_evaluation="summart_evaluation"
@@ -1733,15 +1847,29 @@ def get_summart_evaluation(request):
 @csrf_exempt
 def new_rounds(request):
     from .models import User, Round,Cycle
-    # 从 session 中获取之前保存的 cookies
-    session_cookies = request.session.get('session_cookies')
-    # 使用 requests.Session() 复用登录状态
+    #检查自己网站用户会话是否过期
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
+    
+    # 获取爬虫会话Cookies
+    crawler_cookies = request.session.get('crawler_session_cookies')
+
+    # 创建爬虫会话并加载Cookies
     session = requests.Session()
-    session.cookies.update(session_cookies)
+    session.cookies.update(crawler_cookies)
+
 
     #开启新的一轮
     url='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/select.aspx'
     response = session.get(url=url)
+    # 判断是否会话过期，如果有则重新登录
+    if '登录信息可能丢失' in response.text:
+        uid = request.session.get('uid')
+        session_cookies=relogin(uid)
+        request.session['session_cookies']=session_cookies
+        session.cookies.update(session_cookies)
+        response = session.get(url=url)
+
     soup = BeautifulSoup(response.text, 'html.parser')
     hidden_fields = extract_hidden_fields(soup)
     data_newrounds1 = {
@@ -1816,11 +1944,17 @@ def new_rounds(request):
 @csrf_exempt
 def user_data(request):
     from .models import Round,Cycle,Evaluation
-    # 从 session 中获取之前保存的 cookies
-    session_cookies=request.session.get('session_cookies')
-    # 使用 requests.Session() 复用登录状态
-    session=requests.Session()
-    session.cookies.update(session_cookies)
+    #检查自己网站用户会话是否过期
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
+    
+    # 获取爬虫会话Cookies
+    crawler_cookies = request.session.get('crawler_session_cookies')
+
+    # 创建爬虫会话并加载Cookies
+    session = requests.Session()
+    session.cookies.update(crawler_cookies)
+
 
     respond_userdata={}
     #历史对局
@@ -1834,9 +1968,16 @@ def user_data(request):
             end_time_local = timezone.localtime(cycle.end_time)
             end_time=str(end_time_local)
             respond_userdata['history_rounds'][end_time[:19]]={}
-            respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number
-            respond_userdata['history_rounds'][end_time[:19]]['末周期评分']=evaluation.value
-            respond_userdata['history_rounds'][end_time[:19]]['名次']=evaluation.score_ranking
+            respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number-1
+            if evaluation:
+                respond_userdata['history_rounds'][end_time[:19]]['末周期评分']=evaluation.value
+                respond_userdata['history_rounds'][end_time[:19]]['名次']=evaluation.score_ranking
+            else:
+                respond_userdata['history_rounds'][end_time[:19]]['末周期评分']='未评分'
+                respond_userdata['history_rounds'][end_time[:19]]['名次']='未评分'
+            if cycle.has_decided:
+                respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number
+
     if not respond_userdata['history_rounds']:
         respond_userdata['history_rounds']='无历史对局'
 
@@ -1848,7 +1989,7 @@ def user_data(request):
     startlocal_time=timezone.localtime(current_cycle.start_time)
     start_time=str(startlocal_time)
     respond_userdata['current_rounds'][start_time[:19]]={}
-    respond_userdata['current_rounds'][start_time[:19]]['当前周期']=current_cycle.cycle_number
+    respond_userdata['current_rounds'][start_time[:19]]['当前周期']=current_cycle.cycle_number-1
     if evaluation_second_last:
         respond_userdata['current_rounds'][start_time[:19]]['末周期评分']=evaluation_second_last.value
         respond_userdata['current_rounds'][start_time[:19]]['名次']=evaluation_second_last.score_ranking

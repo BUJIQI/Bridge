@@ -1,21 +1,23 @@
 from django.db import models
 from django.utils import timezone
 from zoneinfo import ZoneInfo 
+from django.contrib.auth.models import AbstractUser
 # Create your models here.
-class User(models.Model):
+class User(AbstractUser):
     uid = models.AutoField(primary_key=True)  # 自增用户编号
     student_id = models.CharField(max_length=20, unique=True, verbose_name='学号')  # 学号
-    password = models.CharField(max_length=128, verbose_name='密码')  # 密码，加密
     name = models.CharField(max_length=50, verbose_name='学生姓名')  # 学生姓名
     user_class = models.CharField(max_length=50, verbose_name='班级')  # 班级
     team_name = models.CharField(max_length=50, verbose_name='队名')  # 队名
-    email = models.EmailField(null=True,blank=True, verbose_name='邮箱')  # 邮箱
     phone = models.CharField(max_length=15, verbose_name='电话')  # 电话
-    group = models.IntegerField(verbose_name='组号')  # 组号
-    number = models.IntegerField(verbose_name='企业编号')  # 企业编号
-    register_time = models.DateTimeField(auto_now_add=True, verbose_name='注册时间')  # 注册时间
+    group = models.IntegerField(verbose_name='组号',null=True)  # 组号
+    number = models.IntegerField(verbose_name='企业编号',null=True)  # 企业编号
+    register_time = models.DateTimeField(auto_now_add=True, verbose_name='注册时间',null=True)  # 注册时间
     rest_rounds = models.IntegerField(null=True,blank=True,verbose_name='剩余重开机会')  # 剩余重开机会
-
+    class Meta:
+        db_table = 'my_custom_user'  
+        verbose_name = "用户"
+        verbose_name_plural = "用户"
 
     def __str__(self):
         return f"{self.uid} ({self.name})"
