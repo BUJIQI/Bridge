@@ -47,9 +47,9 @@ export default {
 
         if (response.data.status === 'True') {
           userStore.setUserInfo(response.data.data);
-          sessionStorage.setItem('isLoggedIn', 'true');
-          sessionStorage.setItem('userInfo', JSON.stringify(response.data.data));
-          router.push('/welcome');
+          localStorage.setItem('isLoggedIn', 'true');
+          localStorage.setItem('userInfo', JSON.stringify(response.data.data));
+          router.push('/');
         } else {
           Swal.fire({
             title: '提示',
@@ -68,7 +68,7 @@ export default {
 
     // 跳转到注册页面
     const goToRegister = () => {
-      router.push('/register/');
+      router.push('/register');
     };
 
     return {

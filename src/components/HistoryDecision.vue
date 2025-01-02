@@ -225,7 +225,7 @@ import axios from 'axios';
 export default {
     setup() {
         const userStore = useUserStore();
-            userStore.setSelectedHistory(sessionStorage.getItem('SelectedPeriod'));
+            userStore.setSelectedHistory(localStorage.getItem('SelectedPeriod'));
             
         const selectedHistory = computed(() => userStore.selectedHistory);  
         const historicalDecisionData = ref({}); 
@@ -261,7 +261,14 @@ export default {
 </script>
 
 <style scoped>
+.panel {
+  margin-top: 20px;
+  border-radius: 8px;
+}
+
 .panel-heading {
+    background-color: #f7f7f9;
+    padding: 15px;
     display: flex; 
     justify-content: space-between; 
     align-items: center;
@@ -296,7 +303,9 @@ export default {
 .input-group label {
     display: block;
     color: #666;
-    margin-bottom: 5px;       
+    margin-bottom: 5px;   
+    margin-top: 5px;
+    width: 170px;      
 }
 
 .input-wrapper {
@@ -305,9 +314,10 @@ export default {
     margin-left: auto;         
 }
 
-.input-wrapper input {
+.input-wrapper input,
+.input-wrapper select {
     flex: 1;               
-    padding: 8px;
+    padding: 5px;
     border: 1px solid #888;
     border-radius: 4px;
     margin-right: 5px;      

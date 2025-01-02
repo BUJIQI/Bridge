@@ -1,4 +1,6 @@
 <template>
+<div class="no-report-message" v-if="userInfo.cycle === 8">本轮七周决策已全部结束<br>可前往查看全部结果</div>
+  <div v-else>    
     <div class="panel panel-default mt-3">
         <div class="panel-heading">
             <h3 class="panel-title">第{{ userInfo?.cycle }}周期决策数据输入</h3>
@@ -225,13 +227,14 @@
             <div class="button-group">
                 <button class="custom-button" @click="makeBudgetDecision">预算决策</button>
                 <button class="custom-button" @click="submitDecision" 
-                        :disabled="!isOwnEnterprise || isLoading || userInfo?.cycle === 8" 
-                        :class="{ 'disabled-button': !isOwnEnterprise || isLoading || userInfo?.cycle === 8 }">
+                        :disabled="!isOwnEnterprise || isLoading" 
+                        :class="{ 'disabled-button': !isOwnEnterprise || isLoading }">
                     提交决策
                 </button>
             </div>
         </div>
     </div>
+  </div>
 </template>
 
 <script>
@@ -280,7 +283,7 @@ export default {
             get() {
                 return {
                     production_line_investment: userInfo?.cycle === 1 ? 2 : 0,
-                    production_staff_recruitment: userInfo?.cycle === 1 ? 30 : 0,
+                    production_staff_recruitment: userInfo?.cycle === 1 ? 30 : 4,
                     research_staff_recruitment: userInfo?.cycle === 1 ? 2 : 0
                 };
             },
@@ -335,10 +338,10 @@ export default {
                     const submitResult = response.data;   
 
                     // 更新周期    
-                    const userInfoString = sessionStorage.getItem('userInfo');
+                    const userInfoString = localStorage.getItem('userInfo');
                     const userInfoObject = JSON.parse(userInfoString); 
                     userInfoObject.cycle = submitResult['提交后周期']; 
-                    sessionStorage.setItem('userInfo', JSON.stringify(userInfoObject));
+                    localStorage.setItem('userInfo', JSON.stringify(userInfoObject));
 
                     if (submitResult['提交结果'] === '决策数据已经成功递交') {
                         Swal.fire('成功', '决策数据已经成功递交，可前往查看竞争结果报表', 'success').then(() => {
@@ -362,6 +365,17 @@ export default {
 </script>
 
 <style scoped>
+.no-report-message {
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  height: calc(100vh - 100px); 
+  font-size: 50px; 
+  color: #333; 
+  font-weight: bold; 
+  text-align: center;
+}
+
 .panel {
   margin-top: 20px;
   border-radius: 8px;
@@ -394,9 +408,9 @@ export default {
     margin-top: 20px; 
     font-size: 16px; 
     color: #e74c3c; 
-    text-align: center; /* 可以考虑让文本居中 */
-    display: block; /* 确保是块级元素 */ 
-    visibility: visible; /* 确保是可见的 */
+    text-align: center; 
+    display: block; 
+    visibility: visible; 
 }
 
 .panel-body {
