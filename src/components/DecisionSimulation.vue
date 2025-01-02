@@ -13,7 +13,7 @@
               <span class="arrow" :class="{ 'arrow-up': subMenuVisible.makeDecision, 'arrow-down': !subMenuVisible.makeDecision }"></span>
               </a>
               <ul v-if="subMenuVisible.makeDecision" class="submenu">
-                <li class="nav-item"><router-link class="list-link" to="/decison/input">输入决策数据</router-link></li>                
+                <li class="nav-item"><router-link class="list-link" to="/decision/input">输入决策数据</router-link></li>                
                 <li class="nav-item">
                   <a 
                     href="#" 
@@ -49,7 +49,7 @@
                   </a>                  
                   <ul v-if="subMenuVisible.historyDecision" class="submenu">
                     <li v-for="cycle in historyCyclesToDisplay" :key="cycle" class="nav-item">
-                      <router-link class="list-link" :to="`/market/history-data/${cycle}`" @click="selectedHistory(cycle)">第{{ cycle }}周期</router-link>
+                      <router-link class="list-link" :to="`/decision/history-decision/${cycle}`" @click="selectedHistory(cycle)">第{{ cycle }}周期</router-link>
                     </li>
                   </ul>
                 </li>
@@ -78,9 +78,9 @@
                   </a>
                   <ul v-if="subMenuVisible.marketCycle" class="submenu">
                     <li v-for="cycle in marketCyclesToDisplay" :key="cycle" class="nav-item">
-                      <router-link class="list-link" :to="`/market/cycle/${cycle}`" @click="selectedHistory(cycle)">第{{ cycle }}周期</router-link>
+                      <router-link class="list-link" :to="`/decision/cycle/${cycle}`" @click="selectedHistory(cycle)">第{{ cycle }}周期</router-link>
                     </li>
-                    <li class="nav-item"><router-link class="list-link" to="/market/cycle/average">历史平均</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/decision/cycle/average">历史平均</router-link></li>
                   </ul>
                 </li>
                 <li class="nav-item">
@@ -94,22 +94,22 @@
                   <span class="arrow" :class="{ 'arrow-up': subMenuVisible.companyData, 'arrow-down': !subMenuVisible.companyData }"></span>
                   </a>                  
                   <ul v-if="subMenuVisible.companyData" class="submenu">
-                    <li class="nav-item"><router-link class="list-link" to="/company/market-production">市场生产数据报告</router-link></li>
-                    <li class="nav-item"><router-link class="list-link" to="/company/cost-type">成本类型核算报告</router-link></li>
-                    <li class="nav-item"><router-link class="list-link" to="/company/cost-department">成本发生部门报告</router-link></li>
-                    <li class="nav-item"><router-link class="list-link" to="/company/cost-unit">成本承担单元报告</router-link></li>
-                    <li class="nav-item"><router-link class="list-link" to="/company/profit-loss">利润亏损核算报告</router-link></li>
-                    <li class="nav-item"><router-link class="list-link" to="/company/after-tax-profit">税后利润核算报告</router-link></li>
-                    <li class="nav-item"><router-link class="list-link" to="/company/profit-distribution">利润分配核算报告</router-link></li>
-                    <li class="nav-item"><router-link class="list-link" to="/company/operating-financial">生产经营财务报告</router-link></li>
-                    <li class="nav-item"><router-link class="list-link" to="/company/balance-sheet">资产负债合计报告</router-link></li>
-                    <li class="nav-item"><router-link class="list-link" to="/company/market-research">竞争市场调研报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/decision/company/market-production">市场生产数据报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/decision/company/cost-type">成本类型核算报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/decision/company/cost-department">成本发生部门报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/decision/company/cost-unit">成本承担单元报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/decision/company/profit-loss">利润亏损核算报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/decision/company/after-tax-profit">税后利润核算报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/decision/company/profit-distribution">利润分配核算报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/decision/company/operating-financial">生产经营财务报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/decision/company/balance-sheet">资产负债合计报告</router-link></li>
+                    <li class="nav-item"><router-link class="list-link" to="/decision/company/market-research">竞争市场调研报告</router-link></li>
                   </ul>
                 </li>
               </ul>
             </li>
 
-            <li class="nav-item"><router-link class="list-link" to="/outcome">竞争结果报表</router-link></li>
+            <li class="nav-item"><router-link class="list-link" to="/decision/outcome">竞争结果报表</router-link></li>
 
             <li class="nav-item">
               <a 
@@ -122,18 +122,18 @@
               <span class="arrow" :class="{ 'arrow-up': subMenuVisible.evaluation, 'arrow-down': !subMenuVisible.evaluation }"></span>
               </a>
               <ul v-if="subMenuVisible.evaluation" class="submenu">
-                <li class="nav-item"><router-link class="list-link" to="/evaluation/market">市场类指标</router-link></li>
-                <li class="nav-item"><router-link class="list-link" to="/evaluation/production">生产类指标</router-link></li>
-                <li class="nav-item"><router-link class="list-link" to="/evaluation/finance">财务类指标</router-link></li>
-                <li class="nav-item"><router-link class="list-link" to="/evaluation/overall">决策综合评价</router-link></li>
-                <li class="nav-item"><router-link class="list-link" to="/evaluation/weight">评价指标权重</router-link></li>
+                <li class="nav-item"><router-link class="list-link" to="/decision/evaluation/market">市场类指标</router-link></li>
+                <li class="nav-item"><router-link class="list-link" to="/decision/evaluation/production">生产类指标</router-link></li>
+                <li class="nav-item"><router-link class="list-link" to="/decision/evaluation/finance">财务类指标</router-link></li>
+                <li class="nav-item"><router-link class="list-link" to="/decision/evaluation/overall">决策综合评价</router-link></li>
+                <li class="nav-item"><router-link class="list-link" to="/decision/evaluation/weight">评价指标权重</router-link></li>
               </ul>
             </li>
           </ul>
     </div>
 
     <div class="col-md-9">
-      <router-view></router-view>
+      <router-view />
     </div>
   </div>
 </template>
@@ -147,7 +147,7 @@ export default {
     const userInfo = userStore.userInfo;
     const selectedHistory = (cycle) => {
             userStore.setSelectedHistory(cycle);
-            sessionStorage.setItem('SelectedPeriod', cycle);
+            localStorage.setItem('SelectedPeriod', cycle);
     };
 
     // 对于历史决策，只返回当前周期之前的周期
@@ -158,8 +158,15 @@ export default {
 
     // 对于市场周期形势，返回当前周期及之前的周期
     const marketCyclesToDisplay = [];
-    for (let i = 1; i <= userInfo.cycle; i++) {
-      marketCyclesToDisplay.push(i);
+    if (userInfo.cycle !== 8) {
+      for (let i = 1; i <= userInfo.cycle; i++) {
+        marketCyclesToDisplay.push(i);
+      }
+    } else {
+      // 当 userInfo.cycle 等于 8 时展示 1-7 周期
+      for (let i = 1; i <= 7; i++) {
+        marketCyclesToDisplay.push(i);
+      }
     }
 
     return {

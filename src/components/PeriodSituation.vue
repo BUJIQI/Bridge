@@ -24,7 +24,7 @@ import axios from 'axios';
 export default {
   setup() {
       const userStore = useUserStore();
-        userStore.setSelectedHistory(sessionStorage.getItem('SelectedPeriod'));
+        userStore.setSelectedHistory(localStorage.getItem('SelectedPeriod'));
         
       const selectedHistory = computed(() => userStore.selectedHistory);  
       const Data = ref({}); 
@@ -35,6 +35,7 @@ export default {
                   withCredentials: true
               });
               Data.value = response.data; 
+              console.log('获取周期形势数据成功:', Data.value);
           } catch (error) {
               console.error('获取周期形势数据时发生错误:', error);
           }

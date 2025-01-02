@@ -78,7 +78,6 @@ export default {
       withCredentials: true
       })
       .then(response => {
-        console.log('Response Data:', response.data); 
         this.competeOutcome = response.data;       
       })
       .catch(error => {
