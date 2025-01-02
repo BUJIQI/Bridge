@@ -351,8 +351,21 @@ export default {
                         Swal.fire('失败', submitResult['提交结果'], 'error');
                     }
                 } catch (error) {
-                    console.error('提交决策时发生错误:', error);
-                    Swal.fire('错误', '提交决策时发生错误，请重试。', 'error');
+                    if (error.response && error.response.status === 403) {
+                        // 处理403状态码
+                        Swal.fire({
+                            title: '登录状态过期',
+                            text: '当前登录状态已过期，请重新登录',
+                            icon: 'warning',
+                            confirmButtonText: '确定'
+                        }).then(() => {
+                            localStorage.clear();
+                            this.$router.push('/login');
+                        });
+                    } else {
+                        console.error('提交决策时发生错误:', error);
+                        Swal.fire('错误', '提交决策时发生错误，请重试。', 'error');
+                    }
                 } finally {
                     this.isLoading = false; // 结束加载
                 }

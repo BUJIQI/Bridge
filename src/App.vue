@@ -17,8 +17,12 @@ export default {
     const userStore = useUserStore(); 
 
     onMounted(() => {
-      const isLoggedIn = localStorage.getItem('isLoggedIn');
-      if (isLoggedIn) {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      const currentPath = router.currentRoute.value.path;
+
+      if (!isLoggedIn && currentPath !== '/login' && currentPath !== '/register') {
+        router.push('/login');
+      } else if (isLoggedIn) {
         userStore.setUserInfo(JSON.parse(localStorage.getItem('userInfo'))); 
       }
     });
