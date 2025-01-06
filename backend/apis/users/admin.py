@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import User,Round,Cycle,MarketReport,MarketHistoryReport,CompetitionResult,Evaluation,Datakeep,DecisionForm, CompanyReportCostType,CompanyReportCostUnit,CompanyReportProfitLoss,CompanyReportPostTaxProfit,CompanyReportProfitDistribution,CompanyReportFinancial,CompanyReportBalance,CompanyReportCostDpt,CompanyReportMarketPrd,CompanyReportMarket,CompanyReportWarehouse1,CompanyReportWarehouse2,CompanyReportWarehouse3,CompanyReportPersonnel1,CompanyReportPersonnel2,CompanyReportPrd1,CompanyReportPrd2,CompanyReportPrd3
+from .models import User,Round,Cycle,MarketReport,MarketHistoryReport,CompetitionResult,Evaluation,Datakeep,DecisionForm, CompanyReportCostType,CompanyReportCostUnit,CompanyReportProfitLoss,CompanyReportPostTaxProfit,CompanyReportProfitDistribution,CompanyReportFinancial,CompanyReportBalance,CompanyReportCostDpt,CompanyReportMarketPrd,CompanyReportMarket,CompanyReportWarehouse1,CompanyReportWarehouse2,CompanyReportWarehouse3,CompanyReportPersonnel1,CompanyReportPersonnel2,CompanyReportPrd1,CompanyReportPrd2,CompanyReportPrd3,Term
 
 admin.site.register(User)
 admin.site.register(Round)
@@ -30,3 +30,4 @@ admin.site.register(CompanyReportPersonnel2)
 admin.site.register(CompanyReportPrd1)
 admin.site.register(CompanyReportPrd2)
 admin.site.register(CompanyReportPrd3)
+admin.site.register(Term)
