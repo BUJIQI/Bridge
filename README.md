@@ -31,13 +31,19 @@
 ## 二、项目运行
 ### 2.1 依赖安装
 安装依赖库
+
 `pip install -r requirements.txt`
+
 `npm install`
+
 
 ## 2.2 项目运行
 后端服务运行
+
 `python manage.py runserver`
+
 前端服务运行
+
 `npm run serve`
 
 ## 三、未来计划功能
