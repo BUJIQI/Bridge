@@ -9,7 +9,41 @@ from django.db.models import IntegerField
 from django.db.models.functions import Cast
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
-from .anxiliary_function import relogin,extract_hidden_fields
+# 辅助函数：提取隐藏字段
+def extract_hidden_fields(soup, type='hidden'):
+    """提取页面中的所有隐藏字段"""
+    hidden_fields = {}
+    for hidden in soup.find_all('input', type=type):
+        name = hidden.get('name')
+        value = hidden.get('value', '')
+        if name:
+            hidden_fields[name] = value
+    return hidden_fields
+
+#辅助函数，重新登录
+def relogin(uid):
+    from .models import User
+    session=requests.Session()
+    user=User.objects.get(uid=uid)
+    url_relogin='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/default.aspx?vdir=2&vdxmc=%e5%86%b3%e7%ad%96%e6%94%af%e6%8c%81%e7%b3%bb%e7%bb%9f%e5%af%bc%e8%ae%ba&vrjslogin=True'
+    response = session.get(url=url_relogin)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    hidden_fields = extract_hidden_fields(soup)
+    
+    data_relogin={
+        '__EVENTTARGET': hidden_fields.get('__EVENTTARGET', ''),
+        '__EVENTARGUMENT': hidden_fields.get('__EVENTARGUMENT', ''),
+        '__VIEWSTATE': hidden_fields.get('__VIEWSTATE', ''),
+        '__VIEWSTATEGENERATOR': hidden_fields.get('__VIEWSTATEGENERATOR', ''),
+        '__EVENTVALIDATION': hidden_fields.get('__EVENTVALIDATION', ''),
+        'stuid':user.student_id,
+        'mima':user.password,
+        'login': '登录',
+        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+    }
+
+    response_relogin=session.post(url=url_relogin,data=data_relogin)
+    return session.cookies.get_dict()
 
 @csrf_exempt  # 禁用 CSRF 验证，适用于开发环境
 def register(request):
@@ -92,7 +126,6 @@ def register(request):
                 username=studentid,
                 student_id=studentid,
                 password=pwd,
-                unenctypted_password=pwd,
                 name=name,
                 user_class=classid,
                 team_name=teamname,
@@ -299,6 +332,7 @@ def look_marketsituation(request):
 
     else:
         response_look1={}
+
         #爬取目标网站
         url_look1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
         response1=session.get(url=url_look1)
@@ -329,11 +363,13 @@ def look_marketsituation(request):
 
         while len(response_looknow['标题'])<16:
             url_look1_switchover='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
-
+            response = session.get(url=url_look1_switchover)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            hidden_fields = extract_hidden_fields(soup)
             data_look1_switchover={
-                '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOQ9kFgJmD2QWAgIDD2QWAgIBD2QWBAIEDxYCHgdWaXNpYmxlaBYCAgEPZBYEAgEPDxYCHgRUZXh0BTXnrKwgMSDlkajmnJ/miqXlkYrlt7LmmK/lj6/nnIvnmoTmnIDml6nmiqXlkYrvvIw8YnIvPmRkAgMPDxYCHwFlZGQCCA8WAh8AaBYCAgEPZBYCAgEPDxYCHwEFNiA8YnIvPuesrCA3IOWRqOacn+aKpeWRiuW3suaYr+WPr+eci+eahOacgOWQjuaKpeWRiu+8gWRkZBmTd+AeDzUNQa2vzCRT56lsSWQmVcW0na2NEIfHf9Tc',
-                '__VIEWSTATEGENERATOR': '94DCD150',
-                '__EVENTVALIDATION': '/wEdAAaI5UnofgfVCsO/QLIHFqLpufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zDQiHzVrlf2wb7y+XRSWNi82if6HN5I9VzZLdku/7Y22A==',
+                '__VIEWSTATE': hidden_fields.get('__VIEWSTATE', ''),
+                '__VIEWSTATEGENERATOR': hidden_fields.get('__VIEWSTATEGENERATOR', ''),
+                '__EVENTVALIDATION': hidden_fields.get('__EVENTVALIDATION', ''),
                 'ctl00$contentplaceholder1$ober': '上一周期',
                 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
             }
@@ -1932,14 +1968,15 @@ def user_data(request):
             end_time_local = timezone.localtime(cycle.end_time)
             end_time=str(end_time_local)
             respond_userdata['history_rounds'][end_time[:19]]={}
-            respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number
+            respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number-1
             if evaluation:
                 respond_userdata['history_rounds'][end_time[:19]]['末周期评分']=evaluation.value
                 respond_userdata['history_rounds'][end_time[:19]]['名次']=evaluation.score_ranking
             else:
                 respond_userdata['history_rounds'][end_time[:19]]['末周期评分']='未评分'
                 respond_userdata['history_rounds'][end_time[:19]]['名次']='未评分'
-
+            if cycle.has_decided:
+                respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number
 
     if not respond_userdata['history_rounds']:
         respond_userdata['history_rounds']='无历史对局'
@@ -1952,7 +1989,7 @@ def user_data(request):
     startlocal_time=timezone.localtime(current_cycle.start_time)
     start_time=str(startlocal_time)
     respond_userdata['current_rounds'][start_time[:19]]={}
-    respond_userdata['current_rounds'][start_time[:19]]['当前周期']=current_cycle.cycle_number
+    respond_userdata['current_rounds'][start_time[:19]]['当前周期']=current_cycle.cycle_number-1
     if evaluation_second_last:
         respond_userdata['current_rounds'][start_time[:19]]['末周期评分']=evaluation_second_last.value
         respond_userdata['current_rounds'][start_time[:19]]['名次']=evaluation_second_last.score_ranking
@@ -1961,26 +1998,3 @@ def user_data(request):
         respond_userdata['current_rounds'][start_time[:19]]['名次']='未评分'
 
     return JsonResponse(respond_userdata)
-
-
-@csrf_exempt
-def import_imformation(request):
-    from .models import Term
-    #检查自己网站用户会话是否过期
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
-    respond_import_imformation={}
-    for term in Term.objects.all():
-        respond_import_imformation[term.term_name]=term.term_long
-    return JsonResponse(respond_import_imformation)
-
-@csrf_exempt
-def decision_terms_introduction(request):
-    from .models import Term
-    #检查自己网站用户会话是否过期
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
-    respond_decision_terms_introduction={}
-    for term in Term.objects.all():
-        respond_decision_terms_introduction[term.term_name]=term.term_short
-    return JsonResponse(respond_decision_terms_introduction)

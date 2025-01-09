@@ -14,6 +14,4 @@ urlpatterns = [
     path('new_rounds/', views.new_rounds, name='new_rounds'),
     path('user_data/', views.user_data, name='user_data'),
     path('loginout/', views.user_logout, name='user_logout'),
-    path('import_imformation/', views.import_imformation, name='import_imformation'),
-    path('decision_terms_introduction/', views.decision_terms_introduction, name='decision_terms_introduction'),
 ]

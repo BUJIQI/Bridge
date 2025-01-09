@@ -14,8 +14,6 @@ class User(AbstractUser):
     number = models.IntegerField(verbose_name='企业编号',null=True)  # 企业编号
     register_time = models.DateTimeField(auto_now_add=True, verbose_name='注册时间',null=True)  # 注册时间
     rest_rounds = models.IntegerField(null=True,blank=True,verbose_name='剩余重开机会')  # 剩余重开机会
-    unenctypted_password = models.CharField(max_length=128, verbose_name='不被加密的密码')  # 不被加密的密码，用于重新登陆
-
     class Meta:
         db_table = 'my_custom_user'  
         verbose_name = "用户"
@@ -794,11 +792,6 @@ class CompanyReportMarketPrd(models.Model):
         return f"各企业市场营销及生产研究报告 {self.market_prd_id} - 周期 {self.cycle_id}"
 
 
-#名词解释
-class Term(models.Model):
-    term_id=models.AutoField(primary_key=True,verbose_name='名词编号')
-    term_name=models.CharField(max_length=255,verbose_name='名词')
-    term_short=models.CharField(max_length=255,verbose_name='名词简介')
-    term_long=models.TextField(verbose_name='名词详细解释')
-    def __str__(self):
-        return f"名词解释 {self.term_id} - {self.term_name}"
+
+
+
