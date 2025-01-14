@@ -53,34 +53,8 @@
 
                 <div class="col-md-8">
                     <div class="table-container">
-                        <div class="header">正在进行的对局</div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>开始时间</th>
-                                    <th>当前周期</th>
-                                    <th>末周期评分</th>
-                                    <th>名次</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="game in ongoingGames" :key="game.id" @click="goToDecisionInput(game.id)">
-                                    <td>{{ game.startTime }}</td>
-                                    <td>{{ game.currentCycle }}</td>
-                                    <td>{{ game.finalRating === '未评分' ? '-' : game.finalRating }}</td>
-                                    <td>{{ game.rank === '未评分/2' ? '-' : game.rank }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="table-container">
                         <div class="header">
                             历史对局
-                            <div class="view-more-container" @click="viewMoreAll">
-                                查看更多
-                                <span class="arrow"></span>
-                            </div>
                         </div>
                         <table>
                             <thead>
@@ -110,14 +84,12 @@
 <script>
 import { useUserStore } from '@/store/user';
 import { ref, reactive, onMounted } from 'vue';
-import axios from '@/api/axios';
-import { useRouter } from 'vue-router';
+import axios from '@/api/axios'; 
 
 export default {
     setup() {
         const userStore = useUserStore();
         const userInfo = userStore.userInfo;
-        const router = useRouter();
         const userProfile = reactive({
             name: userInfo.username,
             studentId: userInfo.stuid,
@@ -143,7 +115,6 @@ export default {
         });
 
         const isEditing = ref(false);
-        const ongoingGames = ref([]);
         const historyGames = ref([]);
 
         const toggleEditMode = () => {
@@ -176,44 +147,23 @@ export default {
                         endCycle: details["结束周期"],
                         finalRating: details["末周期评分"],
                         rank: `${details["名次"]}/2`
-                    })).slice(0, 5);
+                    }));
                 } else {
                     historyGames.value = [];
                 }
-
-                // 处理当前周期
-                ongoingGames.value = Object.entries(data.current_rounds).map(([startTime, details]) => ({
-                    id: Date.now() + Math.random(), // 生成唯一的id
-                    startTime: startTime,
-                    currentCycle: details["当前周期"],
-                    finalRating: details["末周期评分"],
-                    rank: `${details["名次"]}/2`
-                }));
-
             } catch (error) {
                 console.error("获取用户数据失败:", error);
             }
-        });
-
-        const goToDecisionInput = (gameId) => {
-            router.push({ path: '/decision/input', query: { gameId: gameId } });
-        };
-
-        const viewMoreAll = () => {
-            router.push({ path: '/profile/all-history-games' });
-        };        
+        });    
 
         return {
             userProfile,
             editingProfile,
             isEditing,
-            ongoingGames,
             historyGames,
             toggleEditMode,
             cancelEdit,
             saveProfile,
-            goToDecisionInput,
-            viewMoreAll
         };
     }
 };
@@ -332,34 +282,5 @@ export default {
     content: "";
     display: table;
     clear: both;
-}
-
-.view-more-container {
-    float: right;
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    color:#444;
-}
-
-.arrow {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-bottom: 1.5px solid #444; 
-  border-right: 1.5px solid #444; 
-  transform: rotate(-45deg);
-  transition: transform 0.3s ease;
-  margin-left: 4px; 
-}
-
-.view-more-container:hover {
-  color: #000000;
-}
-
-.view-more-container:hover .arrow {
-  border-bottom: 1.5px solid #000000; 
-  border-right: 1.5px solid #000000; 
 }
 </style>

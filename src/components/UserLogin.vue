@@ -25,7 +25,7 @@
 
 <script>
 import { ref } from 'vue';
-import axios from 'axios';
+import axios from '@/api/axios';
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import { useUserStore } from '@/store/user';
@@ -41,7 +41,7 @@ export default {
     const login = async () => {
       const payload = { username: username.value, password: password.value };
       try {
-        const response = await axios.post('http://127.0.0.1:8000/users/login/', payload, {
+        const response = await axios.post('/users/login/', payload, {
           withCredentials: true,
         });
 
