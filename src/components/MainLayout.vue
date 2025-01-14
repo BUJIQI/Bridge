@@ -18,10 +18,10 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <router-link class="nav-link" to="/decision">决策仿真</router-link>
+              <router-link class="nav-link" :class="{ active: isActive('Decision') }" to="/decision">决策仿真</router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/important">重要信息</router-link>
+              <router-link class="nav-link" :class="{ active: isActive('Important') }" to="/important/rule">重要信息</router-link>
             </li>
             <li class="nav-item">
               <button @click="reset" class="btn btn-danger" style="padding: 5px; margin: 5px;">
@@ -43,7 +43,7 @@
               <button @click="logout" class="nav-link">注销</button>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/profile">我的资料</router-link>
+              <router-link class="nav-link" :class="{ active: isActive('Profile') }" to="/profile">我的资料</router-link>
             </li>
           </ul>
         </div>
@@ -59,8 +59,8 @@
 
 <script>
 import { useUserStore } from '@/store/user';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { useRouter, useRoute } from 'vue-router';
+import axios from '@/api/axios';
 import Swal from 'sweetalert2';
 
 export default {
@@ -68,6 +68,12 @@ export default {
     const userStore = useUserStore();
     const userInfo = userStore.userInfo;
     const router = useRouter();
+    const route = useRoute();
+
+    const isActive = (name) => {
+      return route.matched.some(record => record.name === name);
+    };
+
     const reset = async () => {
       const confirmation = await Swal.fire({
         title: '确认重置',
@@ -80,7 +86,7 @@ export default {
 
       if (confirmation.isConfirmed) {
         try {
-          const response = await axios.get('http://127.0.0.1:8000/users/new_rounds/', { withCredentials: true });
+          const response = await axios.get('/users/new_rounds/', { withCredentials: true });
           const data = response.data;
 
           if (data.restronundmum > 0) {
@@ -133,7 +139,7 @@ export default {
 
       if (confirmation.isConfirmed) {
         try {
-          const response = await axios.get('http://127.0.0.1:8000/users/loginout/', {
+          const response = await axios.get('/users/loginout/', {
             withCredentials: true 
           });
 
@@ -160,7 +166,8 @@ export default {
     return {
       userInfo,
       reset,
-      logout
+      logout,
+      isActive
     };
   },
 };
@@ -178,6 +185,10 @@ export default {
 }
 
 .nav-link:hover {
+  background-color: #3c3737;
+}
+
+.nav-link.active {
   background-color: #3c3737;
 }
 
