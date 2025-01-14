@@ -362,7 +362,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue'; 
 import { useUserStore } from '@/store/user';
-import axios from 'axios';
+import axios from '@/api/axios';
 
 export default {
   setup() {
@@ -381,7 +381,7 @@ export default {
 
     const fetchReportData = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/users/enterreporting/', {
+        const response = await axios.get('/users/enterreporting/', {
             withCredentials: true
       });
         reportData.value = response.data['市场生产数据报告'];  

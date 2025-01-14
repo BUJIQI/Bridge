@@ -54,9 +54,9 @@
 
 <script>
 import { ref } from 'vue';
-import axios from 'axios';
+import axios from '@/api/axios';
 import { useRouter } from 'vue-router';
-import Swal from 'sweetalert2'; // 引入原生 SweetAlert2
+import Swal from 'sweetalert2'; 
 
 export default {
     setup() {
@@ -80,7 +80,7 @@ export default {
                 email: email.value
             };
             try {
-                const response = await axios.post('http://127.0.0.1:8000/users/register/', payload, {
+                const response = await axios.post('/users/register/', payload, {
                     withCredentials: true,
                 });
                 if (response.data.status === 'True') {

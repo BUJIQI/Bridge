@@ -64,7 +64,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="game in ongoingGames" :key="game.id">
+                                <tr v-for="game in ongoingGames" :key="game.id" @click="goToDecisionInput(game.id)">
                                     <td>{{ game.startTime }}</td>
                                     <td>{{ game.currentCycle }}</td>
                                     <td>{{ game.finalRating === '未评分' ? '-' : game.finalRating }}</td>
@@ -95,8 +95,8 @@
                                 <tr v-for="game in historyGames" :key="game.id">
                                     <td>{{ game.endTime }}</td>
                                     <td>{{ game.endCycle }}</td>
-                                    <td>{{ game.finalRating }}</td>
-                                    <td>{{ game.rank }}</td>
+                                    <td>{{ game.finalRating === '未评分' ? '-' : game.finalRating }}</td>
+                                    <td>{{ game.rank === '未评分/2' ? '-' : game.rank }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -110,12 +110,14 @@
 <script>
 import { useUserStore } from '@/store/user';
 import { ref, reactive, onMounted } from 'vue';
-import axios from 'axios'; // 导入axios
+import axios from '@/api/axios';
+import { useRouter } from 'vue-router';
 
 export default {
     setup() {
         const userStore = useUserStore();
         const userInfo = userStore.userInfo;
+        const router = useRouter();
         const userProfile = reactive({
             name: userInfo.username,
             studentId: userInfo.stuid,
@@ -141,7 +143,6 @@ export default {
         });
 
         const isEditing = ref(false);
-
         const ongoingGames = ref([]);
         const historyGames = ref([]);
 
@@ -164,9 +165,8 @@ export default {
         // 在组件挂载时发送GET请求
         onMounted(async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:8000/users/user_data/', {withCredentials: true});
+                const response = await axios.get('/users/user_data/', {withCredentials: true});
                 const data = response.data;
-                console.log(data);
 
                 // 处理历史轮次
                 if (data.history_rounds !== "无历史对局") {
@@ -176,7 +176,7 @@ export default {
                         endCycle: details["结束周期"],
                         finalRating: details["末周期评分"],
                         rank: `${details["名次"]}/2`
-                    }));
+                    })).slice(0, 5);
                 } else {
                     historyGames.value = [];
                 }
@@ -195,9 +195,12 @@ export default {
             }
         });
 
+        const goToDecisionInput = (gameId) => {
+            router.push({ path: '/decision/input', query: { gameId: gameId } });
+        };
+
         const viewMoreAll = () => {
-            // 这里可以添加具体逻辑，比如跳转到详情页面或者弹出模态框
-            console.log('查看更多历史对局');
+            router.push({ path: '/profile/all-history-games' });
         };        
 
         return {
@@ -209,6 +212,7 @@ export default {
             toggleEditMode,
             cancelEdit,
             saveProfile,
+            goToDecisionInput,
             viewMoreAll
         };
     }
@@ -216,7 +220,6 @@ export default {
 </script>
 
 <style scoped>
-/* 根据需要添加样式 */
 .panel {
     margin-top: 20px;
     border-radius: 8px;
@@ -335,16 +338,28 @@ export default {
     float: right;
     cursor: pointer;
     font-size: 16px;
+    display: flex;
+    align-items: center;
+    color:#444;
 }
 
 .arrow {
   display: inline-block;
   width: 8px;
   height: 8px;
-  border-bottom: 2px solid #333; 
-  border-right: 2px solid #333; 
+  border-bottom: 1.5px solid #444; 
+  border-right: 1.5px solid #444; 
   transform: rotate(-45deg);
   transition: transform 0.3s ease;
-  margin-left: 8px; 
+  margin-left: 4px; 
+}
+
+.view-more-container:hover {
+  color: #000000;
+}
+
+.view-more-container:hover .arrow {
+  border-bottom: 1.5px solid #000000; 
+  border-right: 1.5px solid #000000; 
 }
 </style>
