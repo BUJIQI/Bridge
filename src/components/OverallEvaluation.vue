@@ -23,7 +23,7 @@
                 <th>5</th>
                 <th>6</th>
                 <th>7</th>
-                <th>评分</th>
+                <th>名次</th>
               </tr>
             </thead>
             <tbody>
