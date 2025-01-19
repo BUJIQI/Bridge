@@ -196,6 +196,8 @@ export default {
 <style scoped>
 .sidebar {
   padding: 40px;
+  overflow-y: auto;
+  height: 100vh;
 }
 
 .list-link {
