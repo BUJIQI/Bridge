@@ -29,7 +29,7 @@
             <tbody>
               <template v-for="(item, index) in FinanceData" :key="index">
                 <tr>
-                    <td rowspan="2">{{ item.type }}<br>权数：{{ item.weight }}</td>
+                    <td rowspan="2">{{ item.type }}<br>{{ item.weight }}</td>
                     <td>计算机</td>
                     <td v-for="(value, i) in item.computerValues" :key="i">{{ value }}</td>
                 </tr>
