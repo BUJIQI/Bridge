@@ -1,5 +1,4 @@
-django
-django-cors-headers
-lxml
-beautifulsoup4
-requests
+beautifulsoup4==4.12.3
+Django==5.0.7
+lxml==5.3.0
+Requests==2.32.3
