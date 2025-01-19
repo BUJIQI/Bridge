@@ -7,6 +7,8 @@ import MainLayout from '@/components/MainLayout.vue';
 import DecisionSimulation from '@/components/DecisionSimulation.vue'; 
 import DecisionReminder from '@/components/DecisionReminder.vue';
 import ImportantInformation from '@/components/ImportantInformation.vue';
+import BasicRule from '@/components/BasicRule.vue';
+import NounsExplanation from '@/components/NounsExplanation.vue';
 import PeriodSituation from '@/components/PeriodSituation.vue';
 import HistoryAverage from '@/components/HistoryAverage.vue';  
 import WelcomeMain from '@/components/WelcomeMain.vue';
@@ -29,6 +31,7 @@ import FinanceIndex from '@/components/FinanceIndex.vue';
 import OverallEvaluation from '@/components/OverallEvaluation.vue';
 import IndexWeight from '@/components/IndexWeight.vue';
 import UserProfile from '@/components/UserProfile.vue';
+import AllHistory from '@/components/AllHistory.vue';
 
 const routes = [
     {
@@ -53,13 +56,33 @@ const routes = [
                 path: 'important',
                 name: 'Important',
                 component: ImportantInformation,
-                meta: { title: '重要信息' }
+                meta: { title: '重要信息' },
+                children: [
+                    {
+                        path: 'rule',
+                        name: 'Rule',   
+                        component: BasicRule,
+                        meta: { title: '决策基本规则' }
+                    },
+                    {
+                        path: 'nouns/:noun',
+                        name: 'NounsExplanation',
+                        component: NounsExplanation,
+                        meta: { title: '名词解释' }
+                    },
+                ]
             },             
             {
                 path: 'profile',
                 name: 'Profile',
                 component: UserProfile,
-                meta: { title: '我的资料' }
+                meta: { title: '我的资料' },
+            },
+            {
+                path: 'profile/all-history-games',
+                name: 'AllHistory',
+                component: AllHistory,
+                meta: { title: '全部历史对局' }
             },
             {
                 path: '',
@@ -83,7 +106,7 @@ const routes = [
                         path: 'input',
                         name: 'Input',
                         component: InputData,
-                        meta: { title: '决策数据输入' }
+                        meta: { title: '输入决策数据' }
                     },  
                     {
                         path: 'history-decision/1',
@@ -131,49 +154,49 @@ const routes = [
                         path: 'cycle/1',
                         name: 'Period1',
                         component: PeriodSituation,
-                        meta: { title: '第1周期' }
+                        meta: { title: '第1周期市场形势' }
                     },  
                     {
                         path: 'cycle/2',
                         name: 'Period2',
                         component: PeriodSituation,
-                        meta: { title: '第2周期' }
+                        meta: { title: '第2周期市场形势' }
                     }, 
                     {
                         path: 'cycle/3',
                         name: 'Period3',
                         component: PeriodSituation,
-                        meta: { title: '第3周期' }
+                        meta: { title: '第3周期市场形势' }
                     }, 
                     {
                         path: 'cycle/4',
                         name: 'Period4',
                         component: PeriodSituation,
-                        meta: { title: '第4周期' }
+                        meta: { title: '第4周期市场形势' }
                     }, 
                     {
                         path: 'cycle/5',
                         name: 'Period5',
                         component: PeriodSituation,
-                        meta: { title: '第5周期' }
+                        meta: { title: '第5周期市场形势' }
                     }, 
                     {
                         path: 'cycle/6',
                         name: 'Period6',
                         component: PeriodSituation,
-                        meta: { title: '第6周期' }
+                        meta: { title: '第6周期市场形势' }
                     }, 
                     {
                         path: 'cycle/7',
                         name: 'Period7',
                         component: PeriodSituation,
-                        meta: { title: '第7周期' }
+                        meta: { title: '第7周期市场形势' }
                     }, 
                     {
                         path: 'cycle/average',
                         name: 'Average',
                         component: HistoryAverage,
-                        meta: { title: '历史平均' }
+                        meta: { title: '历史平均市场形势' }
                     }, 
                     {
                         path: 'outcome',
@@ -294,10 +317,9 @@ router.beforeEach((to, from, next) => {
         text: '当前登录状态已失效，请重新登录',
         icon: 'warning',
         confirmButtonText: '确定'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          next('/login'); // 如果用户点击确定，跳转到登录页
-        }
+      }).then(() => {
+        localStorage.clear();
+        next('/login');
       });
     } else {
       next(); // 正常访问

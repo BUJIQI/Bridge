@@ -220,7 +220,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue';
 import { useUserStore } from '@/store/user';
-import axios from 'axios';
+import axios from '@/api/axios';
 
 export default {
     setup() {
@@ -232,7 +232,7 @@ export default {
 
         const fetchHistoricalDecision = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:8000/users/historical_decision/', {
+                const response = await axios.get('/users/historical_decision/', {
                     withCredentials: true
                 });
                 historicalDecisionData.value = response.data; 

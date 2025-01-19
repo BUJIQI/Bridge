@@ -30,7 +30,7 @@
 
 <script>
 import { useUserStore } from '@/store/user';
-import axios from 'axios';
+import axios from '@/api/axios';
 
 export default {
   setup() {
@@ -74,7 +74,7 @@ export default {
     }
   },
   created() {
-    axios.get('http://127.0.0.1:8000/users/compete_outcome/', {
+    axios.get('/users/compete_outcome/', {
       withCredentials: true
       })
       .then(response => {

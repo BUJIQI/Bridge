@@ -49,7 +49,7 @@
 <script>
 import { ref, onMounted } from 'vue';
 import { useUserStore } from '@/store/user';
-import axios from 'axios';
+import axios from '@/api/axios';
 
 export default {
   setup() {
@@ -75,7 +75,7 @@ export default {
   
     const fetchReportData = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/users/summart_evaluation/', {
+        const response = await axios.get('/users/summart_evaluation/', {
           withCredentials: true
         });
         
