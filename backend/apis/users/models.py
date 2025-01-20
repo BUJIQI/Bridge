@@ -799,14 +799,6 @@ class Term(models.Model):
     term_id=models.AutoField(primary_key=True,verbose_name='名词编号')
     term_name=models.CharField(max_length=255,verbose_name='名词')
     term_short=models.CharField(max_length=255,verbose_name='名词简介')
-    term_txt1=models.TextField(verbose_name='文本一',null=True,blank=True)
-    term_emph=models.CharField(max_length=255,verbose_name='强调',null=True,blank=True)
-    term_list=models.TextField(max_length=255,verbose_name='列表',null=True,blank=True)
-    term_equation=models.TextField(max_length=255,verbose_name='公式',null=True,blank=True)
-    term_txt2=models.TextField(verbose_name='文本二',null=True,blank=True)
-    term_tablename=models.CharField(max_length=255,verbose_name='表格名称',null=True,blank=True)
-    term_tablehead=models.CharField(max_length=255,verbose_name='表头',null=True,blank=True)
-    term_tabledata=models.CharField(max_length=255,verbose_name='表数据',null=True,blank=True)
-    term_img=models.CharField(max_length=255,verbose_name='图片链接',null=True,blank=True)
+    term_long=models.TextField(verbose_name='名词详细解释')
     def __str__(self):
         return f"名词解释 {self.term_id} - {self.term_name}"

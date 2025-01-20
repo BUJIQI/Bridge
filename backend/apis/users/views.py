@@ -1971,37 +1971,23 @@ def import_imformation(request):
         return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
     respond_import_imformation={}
     for term in Term.objects.all():
-        T_name={}
-        Txt1={}
-        Txt1['文字']=term.term_txt1
-        Txt1['强调']=term.term_emph
-        T_name[term.term_name+'文本一']=Txt1
-        if term.term_list:
-            termlist=str(term.term_list)
-            termlist=termlist.split(',')
-            T_name[term.term_name+'列表']=termlist
-        else:
-            T_name[term.term_name+'列表']=term.term_list
-        T_name[term.term_name+'函数']=term.term_equation
-        T_name[term.term_name+'文本二']=term.term_txt2
-        T_name[term.term_name+'表名']=term.term_tablename
-
+        respond_import_imformation[term.term_name+'详细解释']=term.term_long
+        respond_import_imformation[term.term_name+'表名']=term.term_tablename
         if term.term_tablehead:
             termtermtablehead=str(term.term_tablehead)
             termtermtableheadlist=termtermtablehead.split(',')
-            T_name[term.term_name+'表头']=termtermtableheadlist
+            respond_import_imformation[term.term_name+'表头']=termtermtableheadlist
 
             termtermtabledata=str(term.term_tabledata)
             termtermtabledatalist=termtermtabledata.split(',')
             termtermtabledatadic={}
             for i,j in zip(termtermtableheadlist, termtermtabledatalist):
                 termtermtabledatadic[i]=j.split(' ')
-            T_name[term.term_name+'表数据']=termtermtabledatadic
+            respond_import_imformation[term.term_name+'表数据']=termtermtabledatadic
         else:
-            T_name[term.term_name+'表头']=term.term_tablehead
-            T_name[term.term_name+'表数据']=term.term_tabledata
-        T_name[term.term_name+'图片']=term.term_img
-        respond_import_imformation[term.term_name]=T_name
+            respond_import_imformation[term.term_name+'表头']=term.term_tablehead
+            respond_import_imformation[term.term_name+'表数据']=term.term_tabledata
+        respond_import_imformation[term.term_name+'图片']=term.term_img
     return JsonResponse(respond_import_imformation)
 
 @csrf_exempt
