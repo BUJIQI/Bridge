@@ -1971,23 +1971,7 @@ def import_imformation(request):
         return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
     respond_import_imformation={}
     for term in Term.objects.all():
-        respond_import_imformation[term.term_name+'详细解释']=term.term_long
-        respond_import_imformation[term.term_name+'表名']=term.term_tablename
-        if term.term_tablehead:
-            termtermtablehead=str(term.term_tablehead)
-            termtermtableheadlist=termtermtablehead.split(',')
-            respond_import_imformation[term.term_name+'表头']=termtermtableheadlist
-
-            termtermtabledata=str(term.term_tabledata)
-            termtermtabledatalist=termtermtabledata.split(',')
-            termtermtabledatadic={}
-            for i,j in zip(termtermtableheadlist, termtermtabledatalist):
-                termtermtabledatadic[i]=j.split(' ')
-            respond_import_imformation[term.term_name+'表数据']=termtermtabledatadic
-        else:
-            respond_import_imformation[term.term_name+'表头']=term.term_tablehead
-            respond_import_imformation[term.term_name+'表数据']=term.term_tabledata
-        respond_import_imformation[term.term_name+'图片']=term.term_img
+        respond_import_imformation[term.term_name]=term.term_long
     return JsonResponse(respond_import_imformation)
 
 @csrf_exempt
