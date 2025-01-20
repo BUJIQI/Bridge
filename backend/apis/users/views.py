@@ -10,7 +10,7 @@ from django.db.models.functions import Cast
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from .anxiliary_function import relogin,extract_hidden_fields
-
+from itertools import islice
 @csrf_exempt  # 禁用 CSRF 验证，适用于开发环境
 def register(request):
     from .models import User,Round,Cycle
@@ -1735,7 +1735,7 @@ def historical_decision(request):
 
 @csrf_exempt
 def compete_outcome_fun(request):
-    from .models import User,Round,Cycle,CompetitionResult,Datakeep
+    from .models import User,Datakeep
     #检查自己网站用户会话是否过期
     if not request.user.is_authenticated:
         return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
@@ -1904,7 +1904,7 @@ def new_rounds(request):
 
     return JsonResponse(respond_new_rounds)
 
-
+#用户对局等信息查看
 @csrf_exempt
 def user_data(request):
     from .models import Round,Cycle,Evaluation
@@ -1963,6 +1963,51 @@ def user_data(request):
     return JsonResponse(respond_userdata)
 
 
+
+#历史对局轮次详情查看
+@csrf_exempt
+def round_hisdistail(request):
+    from .models import Round,Evaluation
+    #检查自己网站用户会话是否过期
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
+    data=json.loads(request.body)
+    endtime= data.get('endtime')
+
+    #获取用户id
+    uid = request.session.get('uid')
+
+    #检索该用户的该轮次
+    round= Round.objects.get(uid=uid, end_time=endtime)
+    
+    #构建输出字典
+    respond_rhisdistail={}
+    respond_rhisdistail['轮次编号']=round.round_id
+
+    #周期类信息
+    allvalues = list(Evaluation.objects.filter(round_id=round.round_id, project='决策综合评价', company='本企业').values_list('value', flat=True))
+    if len(allvalues)==0:
+        respond_rhisdistail['状态']='该轮次周期未进行对决'
+        return JsonResponse(respond_rhisdistail) 
+    respond_rhisdistail['各周期评分']=allvalues
+    respond_rhisdistail['末周期']=len(allvalues)+1
+    respond_rhisdistail['末周期评分']=allvalues[-1]
+    respond_rhisdistail['末周期名次']=Evaluation.objects.get(round_id=round.round_id, project='决策综合评价', company='本企业',cycle_number=len(allvalues)).score_ranking
+
+    #指标类信息
+    allScore_rankings={}
+    evaluations=Evaluation.objects.filter(round_id=round.round_id,cycle_number=len(allvalues), company='本企业')
+    for evaluation in evaluations:
+        allScore_rankings[evaluation.project]=evaluation.score_ranking
+    respond_rhisdistail['各指标评分汇总-市场类指标']=dict(islice(allScore_rankings.items(), 9))
+    respond_rhisdistail['各指标评分汇总-生产类指标']=dict(islice(allScore_rankings.items(), 9,17))
+    respond_rhisdistail['各指标评分汇总-财务类指标']=dict(islice(allScore_rankings.items(), 17,24))      
+    return JsonResponse(respond_rhisdistail)  
+
+
+
+
+#重要信息内名词解释
 @csrf_exempt
 def import_imformation(request):
     from .models import Term
@@ -2004,6 +2049,7 @@ def import_imformation(request):
         respond_import_imformation[term.term_name]=T_name
     return JsonResponse(respond_import_imformation)
 
+#提交数据功能内的名词描述
 @csrf_exempt
 def decision_terms_introduction(request):
     from .models import Term
@@ -2014,3 +2060,4 @@ def decision_terms_introduction(request):
     for term in Term.objects.all():
         respond_decision_terms_introduction[term.term_name]=term.term_short
     return JsonResponse(respond_decision_terms_introduction)
+
