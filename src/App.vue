@@ -7,7 +7,7 @@
 <script>
 import { onMounted } from 'vue';
 import { useUserStore } from '@/store/user';
-import axios from 'axios';
+import axios from '@/api/axios';
 import router from '@/router';
 import Swal from 'sweetalert2';
 
