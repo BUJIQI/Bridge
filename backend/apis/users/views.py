@@ -11,6 +11,8 @@ from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from .anxiliary_function import relogin,extract_hidden_fields
 from itertools import islice
+import datetime
+import pytz  # 导入 pytz 库
 @csrf_exempt  # 禁用 CSRF 验证，适用于开发环境
 def register(request):
     from .models import User,Round,Cycle
@@ -1978,8 +1980,11 @@ def round_hisdistail(request):
     uid = request.session.get('uid')
 
     #检索该用户的该轮次
-    round= Round.objects.get(uid=uid, end_time=endtime)
-    
+    rounds=Round.objects.filter(uid=uid)
+    for roundin in rounds:
+        if endtime[:19]==str(timezone.localtime(roundin.end_time))[:19]:
+            round=roundin
+            
     #构建输出字典
     respond_rhisdistail={}
     respond_rhisdistail['轮次编号']=round.round_id
