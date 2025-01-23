@@ -43,7 +43,7 @@
               <button @click="logout" class="nav-link">注销</button>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" :class="{ active: isActive('Profile') }" to="/profile">我的资料</router-link>
+              <router-link class="nav-link" :class="{ active: isActive('Profile') }" to="/profile/march-summary">我的资料</router-link>
             </li>
           </ul>
         </div>

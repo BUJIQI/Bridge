@@ -31,7 +31,9 @@ import FinanceIndex from '@/components/FinanceIndex.vue';
 import OverallEvaluation from '@/components/OverallEvaluation.vue';
 import IndexWeight from '@/components/IndexWeight.vue';
 import UserProfile from '@/components/UserProfile.vue';
+import MarchSummary from '@/components/MarchSummary.vue';
 import AllHistory from '@/components/AllHistory.vue';
+import HistoryDetail from '@/components/HistoryDetail.vue';
 
 const routes = [
     {
@@ -77,12 +79,26 @@ const routes = [
                 name: 'Profile',
                 component: UserProfile,
                 meta: { title: '我的资料' },
-            },
-            {
-                path: 'profile/all-history-games',
-                name: 'AllHistory',
-                component: AllHistory,
-                meta: { title: '全部历史对局' }
+                children: [
+                    {
+                        path: 'march-summary',
+                        name: 'MarchSummary',
+                        component: MarchSummary,
+                        meta: { title: '对局概要' }
+                    },
+                    {
+                        path: 'all-history-games',
+                        name: 'AllHistory',
+                        component: AllHistory,
+                        meta: { title: '全部历史对局' }
+                    },
+                    {
+                        path: 'history-detail',
+                        name: 'HistoryDetail',
+                        component: HistoryDetail,
+                        meta: { title: '历史对局详情' }
+                    },
+                ]
             },
             {
                 path: '',
