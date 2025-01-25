@@ -33,10 +33,10 @@
             <li class="nav-item">
               <div class="info" style="border: 1px solid #ccc; padding: 5px; margin: 5px; border-radius: 20px;">
                 当前：
-                第<span class="text-danger">{{ userInfo?.group }}</span>组
-                第<span class="text-danger">{{ userInfo?.number }}</span>企业
-                <span class="text-danger">{{ userInfo?.rival }}</span>位竞争对手
-                <span v-if="userInfo?.cycle !== 8">第<span class="text-danger">{{ userInfo?.cycle }}</span>周期</span>
+                第 <span class="text-danger">{{ userInfo?.group }}</span> 组
+                第 <span class="text-danger">{{ userInfo?.number }}</span> 企业
+                共 <span class="text-danger">{{ userInfo?.rival }}</span> 位竞争对手
+                <span v-if="userInfo?.cycle !== 8">第 <span class="text-danger">{{ userInfo?.cycle }}</span> 周期</span>
               </div>
             </li>
             <li class="nav-item">

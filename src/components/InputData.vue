@@ -4,7 +4,13 @@
     <div v-else>
       <div class="panel panel-default mt-3">
         <div class="panel-heading">
-          <h3 class="panel-title">第{{ userInfo?.cycle }}周期决策数据输入</h3>
+          <h3 class="panel-title">
+            第{{ userInfo?.cycle }}周期决策数据输入
+            <el-tooltip placement="right">
+              <template #content>点击决策项目名称，<br />如“一般市场价格”，<br />获取名词解释信息。</template>
+              <Warning class="warning-icon" />
+            </el-tooltip>
+          </h3>
           <div class="mode-selection" style="float: right;">
             <span>选择模式：</span>
             <button :class="{ active: isOwnEnterprise }" @click="selectMode('own')">本企业</button>
@@ -402,6 +408,12 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.warning-icon {
+  width: 20px;
+  height: 20px;
+  color: #888888;
 }
 
 .mode-selection {
