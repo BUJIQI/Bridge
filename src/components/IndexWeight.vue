@@ -17,69 +17,11 @@
               </tr>
             </thead>
             <tbody>               
-              <tr>
-                <td>一般市场价格</td>
-                <td>{{ WeightData[0] }}</td>
-                <td>实际市场占有</td>
-                <td>{{ WeightData[1] }}</td>
-                <td>税前企业盈利</td>
-                <td>{{ WeightData[2] }}</td>
-              </tr>
-              <tr>
-                <td>广告费用投入</td>
-                <td>{{ WeightData[3] }}</td>
-                <td>一般市场产量</td>
-                <td>{{ WeightData[4] }}</td>
-                <td>周期缴纳税收</td>
-                <td>{{ WeightData[5] }}</td>
-              </tr>
-              <tr>
-                <td>销售人员数量</td>
-                <td>{{ WeightData[6] }}</td>
-                <td>累积产品库存</td>
-                <td>{{ WeightData[7] }}</td>
-                <td>机器人累计数</td>
-                <td>{{ WeightData[8] }}</td>
-              </tr>
-              <tr>
-                <td>一般市场计划</td>
-                <td>{{ WeightData[9] }}</td>
-                <td>生产人员数量</td>
-                <td>{{ WeightData[10] }}</td>
-                <td>设备生产能力</td>
-                <td>{{ WeightData[11] }}</td>
-              </tr>
-              <tr>
-                <td>一般市场销量</td>
-                <td>{{ WeightData[12] }}</td>
-                <td>生产设备负荷</td>
-                <td>{{ WeightData[13] }}</td>
-                <td>总的盈亏累计</td>
-                <td>{{ WeightData[14] }}</td>
-              </tr>
-              <tr>
-                <td>研发投入效应</td>
-                <td>{{ WeightData[15] }}</td>
-                <td>生产人员负荷</td>
-                <td>{{ WeightData[16] }}</td>
-                <td>周期贷款总额</td>
-                <td>{{ WeightData[17] }}</td>
-              </tr>
-              <tr>
-                <td>一般市场销额</td>
-                <td>{{ WeightData[18] }}</td>
-                <td>周期支付股息</td>
-                <td>{{ WeightData[19] }}</td>
-                <td>周期期末现金</td>
-                <td>{{ WeightData[20] }}</td>
-              </tr>
-              <tr>
-                <td>理论市场占有</td>
-                <td>{{ WeightData[21] }}</td>
-                <td>产品质量评价</td>
-                <td>{{ WeightData[22] }}</td>
-                <td>资产负债合计</td>
-                <td>{{ WeightData[23] }}</td>
+              <tr v-for="(item, index) in categorizedWeightData" :key="index">
+                <template v-for="(subItem, subIndex) in item" :key="subIndex">
+                  <td>{{ subItem.label || '' }}</td>
+                  <td>{{ subItem.value !== undefined ? subItem.value : '' }}</td>
+                </template>
               </tr>
             </tbody>
           </table>
@@ -90,7 +32,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useUserStore } from '@/store/user';
 import axios from '@/api/axios';
 
@@ -117,9 +59,59 @@ export default {
       fetchReportData();
     });
 
+    const categorizedWeightData = computed(() => {
+      return [
+        [
+          { label: '一般市场价格', value: WeightData.value[0] },
+          { label: '一般市场产量', value: WeightData.value[4] },
+          { label: '税前企业盈利', value: WeightData.value[2] },
+        ],
+        [
+          { label: '广告费用投入', value: WeightData.value[3] },
+          { label: '累计产品库存', value: WeightData.value[7] },
+          { label: '周期缴纳税收', value: WeightData.value[5] },
+        ],
+        [
+          { label: '销售人员数量', value: WeightData.value[6] },
+          { label: '生产人员数量', value: WeightData.value[10] },
+          { label: '周期支付股息', value: WeightData.value[19] },
+        ],
+        [
+          { label: '研发投入效应', value: WeightData.value[15] },
+          { label: '生产设备负荷', value: WeightData.value[13] },
+          { label: '总的盈亏累计', value: WeightData.value[14] },
+        ],
+        [
+          { label: '一般市场计划', value: WeightData.value[9] },
+          { label: '生产人员负荷', value: WeightData.value[16] },
+          { label: '周期贷款总额', value: WeightData.value[17] },
+        ],
+        [
+          { label: '一般市场销量', value: WeightData.value[12] },
+          { label: '机器人累计数', value: WeightData.value[8] },
+          { label: '周期期末现金', value: WeightData.value[20] },
+        ],
+        [
+          { label: '一般市场销额', value: WeightData.value[18] },
+          { label: '产品质量评价', value: WeightData.value[22] },
+          { label: '资产负债合计', value: WeightData.value[23] },
+        ],
+        [
+          { label: '理论市场占有', value: WeightData.value[21] },
+          { label: '设备生产能力', value: WeightData.value[11] },
+          { label: '', value: undefined }, // 占位符
+        ],
+        [
+          { label: '实际市场占有', value: WeightData.value[1] },
+          { label: '', value: undefined }, // 占位符
+          { label: '', value: undefined }, // 占位符
+        ],
+      ];
+    });
+
     return {
       userInfo,
-      WeightData
+      categorizedWeightData
     };
   },
 };
