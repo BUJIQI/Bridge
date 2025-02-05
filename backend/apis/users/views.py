@@ -2210,7 +2210,8 @@ def AIaided_decision_making(request):
     base_url = "https://api.moonshot.cn/v1",
     )
  
-    question = "现有一现代企业创业决策仿真系统。你作为该系统的用户需要对下一周期的进行数据决策，我将为你提供各周期市场的情况，决策各数据解释，以及你在上一周期的决策情况（如果现在是第一周期则没有上一周期的决策情况）。如下："+str(ADM)+"需要你给出下一周期个决策数据的值。只要求输出各决策数据的值，不要做多余的回答,即使缺失上一周期的决策情况，你也只输出各决策数据的值不做多余回答。中文给出。" # 用户提问
+    question = "现有一现代企业创业决策仿真系统。你需要为用户进行下一周期辅助决策，用户将为你提供之前所有周期的市场情况，决策各数据解释，以及在上一周期的决策情况（如果现在是第一周期则没有上一周期的决策情况）,注意特殊产品订购价格是市场给定的。如下："+str(ADM)+"需要你给出下一周期个决策数据的值。\
+        要求输出格式为先为用户解释各决策指标选择该数据的原因要具体到为什么选择这值（比如因为什么什么所以选择定在5000台），最后统一给出决策数据，不要做多余的回答,即使缺失上一周期的决策情况也按这个格式。中文给出。" # 用户提问
     completion = client.chat.completions.create(
         model = "moonshot-v1-32k", # 模型选择
         messages = [
@@ -2226,5 +2227,5 @@ def AIaided_decision_making(request):
     content= message_data.content
     ai_decision['decision']=content
 
-
+    print(content)
     return JsonResponse(ai_decision)
