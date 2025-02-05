@@ -17,4 +17,5 @@ urlpatterns = [
     path('import_imformation/', views.import_imformation, name='import_imformation'),
     path('decision_terms_introduction/', views.decision_terms_introduction, name='decision_terms_introduction'),
     path('round_hisdistail/',views.round_hisdistail,name='round_hisdistail'),
+    path('AIaided_decision_making/',views.AIaided_decision_making,name='AIaided_decision_making'),
 ]

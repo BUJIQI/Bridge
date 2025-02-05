@@ -11,8 +11,7 @@ from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from .anxiliary_function import relogin,extract_hidden_fields
 from itertools import islice
-import datetime
-import pytz  # 导入 pytz 库
+from openai import OpenAI
 @csrf_exempt  # 禁用 CSRF 验证，适用于开发环境
 def register(request):
     from .models import User,Round,Cycle
@@ -2066,3 +2065,166 @@ def decision_terms_introduction(request):
         respond_decision_terms_introduction[term.term_name]=term.term_short
     return JsonResponse(respond_decision_terms_introduction)
 
+#AI辅助决策
+@csrf_exempt
+def AIaided_decision_making(request):
+    from .models import Round,Cycle,MarketReport,Term,DecisionForm
+    #获取用户id
+    uid = request.session.get('uid')
+    #创建字典
+    ai_decision={}
+    ADM={}
+    rounds_current=Round.objects.filter(uid=uid).last()
+    cycles = Cycle.objects.filter(round_id=rounds_current.round_id)
+    if len(cycles)>=2:
+        cyc_second_last=Cycle.objects.filter(round_id=rounds_current.round_id).order_by('-cycle_id')[1]
+
+    for cyc in cycles:
+        #市场周期报告遍历
+        markReport=MarketReport.objects.filter(cycle_id=cyc.cycle_id)
+        if not markReport:
+            response_look1={}
+            # 获取爬虫会话Cookies
+            crawler_cookies = request.session.get('crawler_session_cookies')
+
+            # 创建爬虫会话并加载Cookies
+            session = requests.Session()
+            session.cookies.update(crawler_cookies)
+
+            uid = request.session.get('uid')
+            round_reports = Round.objects.filter(uid=uid).annotate(round_id_int=Cast('round_id', IntegerField())).order_by('-round_id_int').first()
+            cycle_reports_1 = Cycle.objects.filter(round_id=round_reports.round_id).annotate(cycle_id_int=Cast('cycle_id', IntegerField())).order_by('cycle_id_int').first()
+
+            uid = request.session.get('uid')
+            #爬取目标网站
+            url_look1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
+            response1=session.get(url=url_look1)
+            if '登录信息可能丢失' in response1.text:
+                session_cookies=relogin(uid)
+                request.session['session_cookies']=session_cookies
+                session.cookies.update(session_cookies)
+                response1=session.get(url=url_look1)
+
+            # 解析HTML内容
+            tree=etree.HTML(response1.text)
+
+            # 使用XPath定位元素
+            # 例如，定位一个包含特定文本的元素
+            element1 = tree.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
+            element2 = tree.xpath('//font[@color="#000000" and @style="font-size:18px"]/text()')
+            element3 = tree.xpath('//font[@class="title"]/text()')
+            # 删除字段中的 \xa0
+            cleaned_element1 = [text.replace('\xa0', '') for text in element1]
+            cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+            cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+            cleaned_element1 = [element.lstrip('·') for element in cleaned_element1]
+            response_looknow={}
+            response_looknow['标题']=cleaned_element3[0]
+            for i,j in zip(cleaned_element1,cleaned_element2):
+                response_looknow[i]=j
+            response_look1[response_looknow['标题']]=response_looknow
+
+            while len(response_looknow['标题'])<16:
+                url_look1_switchover='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
+
+                data_look1_switchover={
+                    '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOQ9kFgJmD2QWAgIDD2QWAgIBD2QWBAIEDxYCHgdWaXNpYmxlaBYCAgEPZBYEAgEPDxYCHgRUZXh0BTXnrKwgMSDlkajmnJ/miqXlkYrlt7LmmK/lj6/nnIvnmoTmnIDml6nmiqXlkYrvvIw8YnIvPmRkAgMPDxYCHwFlZGQCCA8WAh8AaBYCAgEPZBYCAgEPDxYCHwEFNiA8YnIvPuesrCA3IOWRqOacn+aKpeWRiuW3suaYr+WPr+eci+eahOacgOWQjuaKpeWRiu+8gWRkZBmTd+AeDzUNQa2vzCRT56lsSWQmVcW0na2NEIfHf9Tc',
+                    '__VIEWSTATEGENERATOR': '94DCD150',
+                    '__EVENTVALIDATION': '/wEdAAaI5UnofgfVCsO/QLIHFqLpufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zDQiHzVrlf2wb7y+XRSWNi82if6HN5I9VzZLdku/7Y22A==',
+                    'ctl00$contentplaceholder1$ober': '上一周期',
+                    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+                }
+                response1=session.post(url=url_look1_switchover,data=data_look1_switchover)
+                # 解析HTML内容
+                tree=etree.HTML(response1.text)
+                # 使用XPath定位元素
+                # 例如，定位一个包含特定文本的元素
+                element1 = tree.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
+                element2 = tree.xpath('//font[@color="#000000" and @style="font-size:18px"]/text()')
+                element3 = tree.xpath('//font[@class="title"]/text()')
+                # 删除字段中的 \xa0
+                cleaned_element1 = [text.replace('\xa0', '') for text in element1]
+                cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+                cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+                cleaned_element1 = [element.lstrip('·') for element in cleaned_element1]
+                response_looknow={}
+                response_looknow['标题']=cleaned_element3[0]
+                for i,j in zip(cleaned_element1,cleaned_element2):
+                    response_looknow[i]=j
+                response_look1[response_looknow['标题']]=response_looknow
+            # 将字典项转换为列表并倒序
+            reversed_items = list(response_look1.items())[::-1]
+
+            # 将倒序后的列表转换回字典
+            response_look1 = dict(reversed_items)
+            if len(response_look1)<7:
+                for i in range(len(response_look1),7):
+                    response_look1['第'+str(i+1)+'周期市场形势报告']='无'
+            # 将数据存入数据库
+
+            for title, data in response_look1.items():
+                # 创建 MarketReport 实例
+                MarketReport.objects.create(
+                    cycle_id=cycle_reports_1,
+                    market_capacity=data.get('市场容量', ''),
+                    raw_materials=data.get('原材料', ''),
+                    attachments=data.get('附件', ''),
+                    personnel_costs=data.get('人员费用', ''),
+                    bulk_tendering=data.get('批量招标', ''),
+                    bulk_ordering=data.get('批量订购', ''),
+                    ordering_price=data.get('订购价格', ''),
+                )
+                break
+        markReport=markReport.last()
+        # 打印市场报告的所有字段和值
+        n=0
+        ADM['第'+str(cyc.cycle_number)+'周期市场报告']={}
+        for field in markReport._meta.get_fields():
+            if n==2:
+                field_name = field.name
+                field_value = getattr(markReport, field_name)
+                ADM['第'+str(cyc.cycle_number)+'周期市场报告'][field_name]=field_value
+            else:
+                n+=1
+    #上一周期决策表单
+    if len(cycles)>=2:
+        ADM['上一周期决策数据']={}
+        deForm=DecisionForm.objects.get(cycle_id=cyc_second_last.cycle_id)
+        n=0
+        for field in deForm._meta.get_fields():
+            if n==3:
+                field_name = field.name
+                field_value = getattr(deForm, field_name) 
+                ADM['上一周期决策数据'][field_name]=field_value
+            else:
+                n+=1
+
+    #决策各数据解释
+    ADM['决策各数据解释']={}
+    for term in Term.objects.all():
+        ADM['决策各数据解释'][term.term_name]=term.term_short
+    
+    #AI接口
+    client = OpenAI(
+    api_key = "sk-2QoiNXdRUuJo4VDyVFHBpZPrd9TaDH7LNWIltkr2Xc8GpCAd", 
+    base_url = "https://api.moonshot.cn/v1",
+    )
+ 
+    question = "现有一现代企业创业决策仿真系统。你作为该系统的用户需要对下一周期的进行数据决策，我将为你提供各周期市场的情况，决策各数据解释，以及你在上一周期的决策情况（如果现在是第一周期则没有上一周期的决策情况）。如下："+str(ADM)+"需要你给出下一周期个决策数据的值。只要求输出各决策数据的值，不要做多余的回答,即使缺失上一周期的决策情况，你也只输出各决策数据的值不做多余回答。中文给出。" # 用户提问
+    completion = client.chat.completions.create(
+        model = "moonshot-v1-32k", # 模型选择
+        messages = [
+            {"role": "system", "content": "你是 Kimi，由 Moonshot AI 提供的人工智能助手，你更擅长中文和英文的对话。\
+                你会为用户提供安全，有帮助，准确的回答。同时，你会拒绝一切涉及恐怖主义，种族歧视，黄色暴力等问题的回答。\
+                Moonshot AI 为专有名词，不可翻译成其他语言。"
+            },
+            {"role": "user", "content": question}
+        ],
+        temperature = 0.2,
+    )
+    message_data = completion.choices[0].message
+    content= message_data.content
+    ai_decision['decision']=content
+
+
+    return JsonResponse(ai_decision)
