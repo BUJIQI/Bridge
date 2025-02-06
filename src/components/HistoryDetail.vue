@@ -1,9 +1,11 @@
 <template>
     <div class="History-Game-Detail">
         <div class="header d-flex justify-content-between align-items-center">
-            对局详情
+            <div class="d-flex align-items-center">
+                对局详情
+            </div>          
             <button class="btn btn-link btn-sm" @click="goBack">
-                <i class="fas fa-arrow-left"></i>
+                <i class="bi bi-arrow-90deg-left"></i>
                 返回
             </button>
         </div>
@@ -95,6 +97,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+
 export default {
     setup() {
         const route = useRoute();
@@ -146,13 +149,13 @@ export default {
     margin-bottom: 10px;
 }
 
-.History-Game-Detail .header button {
+.btn-link {
     font-size: 0.875rem;
     text-decoration: none;
     color: #444;
 }
 
-.History-Game-Detail .header button:hover {
+.btn-link:hover {
     color: #000000;
 }
 
