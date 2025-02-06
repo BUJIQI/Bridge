@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Swal from 'sweetalert2';
 
-import UserLogin from '@/components/UserLogin.vue'; 
-import UserRegister from '@/components/UserRegister.vue'; 
+import UserLogin from '@/components/UserLogin.vue';  
 import MainLayout from '@/components/MainLayout.vue';
 import DecisionSimulation from '@/components/DecisionSimulation.vue'; 
 import DecisionReminder from '@/components/DecisionReminder.vue';
@@ -41,12 +40,6 @@ const routes = [
         name: 'Login',
         component: UserLogin,
         meta: { title: '登录' }
-    },
-    {
-        path: '/register',
-        name: 'Register',
-        component: UserRegister,
-        meta: { title: '注册' }
     },
     {
         path: '/',
@@ -327,7 +320,7 @@ router.beforeEach((to, from, next) => {
     window.scrollTo(0, 0);
 
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    if (to.path !== '/login' && to.path !== '/register' && !isLoggedIn) {
+    if (to.path !== '/login' && !isLoggedIn) {
       Swal.fire({
         title: '登录状态失效',
         text: '当前登录状态已失效，请重新登录',

@@ -11,10 +11,15 @@
               <Warning class="warning-icon" />
             </el-tooltip>
           </h3>
-          <div class="mode-selection" style="float: right;">
-            <span>选择模式：</span>
-            <button :class="{ active: isOwnEnterprise }" @click="selectMode('own')">本企业</button>
-            <button :class="{ active: !isOwnEnterprise }" @click="selectMode('competitor')">竞争企业</button>
+          <div class="header-actions">
+            <button class="btn btn-danger btn-sm" @click="requestAIReport">
+              AI辅助决策
+            </button>
+            <div class="mode-selection">
+              <span>选择模式：</span>
+              <button :class="{ active: isOwnEnterprise }" @click="selectMode('own')">本企业</button>
+              <button :class="{ active: !isOwnEnterprise }" @click="selectMode('competitor')">竞争企业</button>
+            </div>
           </div>
         </div>
         <div class="panel-body">
@@ -77,9 +82,6 @@
             </div>
           </section>
 
-          <div v-if="isLoading" class="loading-indicator">
-            正在提交，请稍候...
-          </div>
           <div class="button-group">
             <button class="custom-button" @click="makeBudgetDecision">预算决策</button>
             <button class="custom-button" @click="submitDecision"
@@ -100,6 +102,17 @@
           </div>
         </div>
     </transition>
+
+    <!-- AI辅助决策结果 Offcanvas -->
+    <div class="offcanvas offcanvas-start" style="width: 350px;" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="aiReportOffcanvas" aria-labelledby="aiReportOffcanvasLabel">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="aiReportOffcanvasLabel">AI辅助决策结果</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body v-html-content">
+        <pre v-html="aiResult"></pre>
+      </div>
+    </div>   
   </div>
 </template>
 
@@ -108,7 +121,9 @@ import { useUserStore } from '@/store/user';
 import { ref, computed, watch } from 'vue';
 import axios from '@/api/axios';
 import Swal from 'sweetalert2';
-import { useRouter } from 'vue-router'; 
+import { useRouter } from 'vue-router';
+import * as bootstrap from 'bootstrap';
+import { marked } from 'marked';
 
 export default {
   setup() {
@@ -122,6 +137,7 @@ export default {
     const explanationTimer = ref({});
     const currentLabel = ref('');
     const router = useRouter(); 
+    const aiResult = ref('');
 
     // 定义初始输入数据
     const formData = ref({
@@ -297,6 +313,42 @@ export default {
       }
     };
 
+    const requestAIReport = async () => {
+      try {
+        // 显示SweetAlert2弹窗
+        Swal.fire({
+          title: 'AI分析结果正在生成中...',
+          allowOutsideClick: false,
+          showConfirmButton: false,
+          width: '400px',
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        const response = await axios.get('/users/AIaided_decision_making/', {
+          withCredentials: true
+        });
+        const data = response.data;
+        // 使用marked将Markdown转换为HTML
+        aiResult.value = marked(data.decision);
+
+        // 关闭SweetAlert2弹窗
+        Swal.close();
+
+        // 获取Offcanvas元素
+        const offcanvasElement = document.getElementById('aiReportOffcanvas');
+        if (offcanvasElement) {
+          // 使用getOrCreateInstance创建或获取Offcanvas实例
+          const offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
+          offcanvas.show();
+        }
+      } catch (error) {
+        console.error('请求AI辅助决策时发生错误:', error);
+        Swal.fire('错误', '请求AI辅助决策时发生错误，请重试。', 'error');
+      }
+    };
+
     return {
       userInfo,
       isOwnEnterprise,
@@ -314,7 +366,9 @@ export default {
       explanationStyle,
       explanationTimer,
       showExplanation,
-      navigateToNounsExplanation
+      navigateToNounsExplanation,
+      requestAIReport,
+      aiResult
     };
   },
 
@@ -338,12 +392,20 @@ export default {
       });
 
       if (result.isConfirmed) {
-        this.isLoading = true;
+        Swal.fire({
+          title: '正在提交决策数据，请稍候...',
+          allowOutsideClick: false,
+          showConfirmButton: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
         try {
           const response = await axios.post('/users/commit_decision/', this.formData, {
             withCredentials: true
           });
           const submitResult = response.data;
+          Swal.close();
 
           // 更新周期
           const userInfoString = localStorage.getItem('userInfo');
@@ -416,6 +478,26 @@ export default {
   color: #888888;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-danger {
+    background-color: rgb(255, 82, 82);
+    border: none;
+    margin-left: 20px;
+    font-size: 16px;
+    padding: 8px;
+    margin-right: 20px;
+}
+
+.btn-danger:hover {
+    background-color: rgb(207, 61, 61);
+    color: #ffffff;
+}
+
 .mode-selection {
   display: flex;
   align-items: center;
@@ -429,6 +511,44 @@ export default {
 .mode-selection button.active {
   background-color: rgba(176, 63, 63, 0.733);
   color: white;
+}
+
+.offcanvas-body pre {
+  white-space: pre-wrap;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  max-height: 80vh;
+  overflow-y: auto;
+  font-family: Arial, sans-serif;
+  color: #333;
+  line-height: 1.5;
+}
+
+:deep(.v-html-content h3) {
+  margin: 0;
+  padding: 0 0 0 10px;
+}
+
+:deep(.v-html-content p) {
+  margin: 0;
+  padding: 0 0 0 10px;
+}
+
+:deep(.v-html-content ol) {
+  margin: 0;
+  padding: 0 0 0 10px;
+}
+
+:deep(.v-html-content ul) {
+  margin: 0;
+  padding: 0 0 0 10px;
+}
+
+:deep(.v-html-content li) {
+  margin: 0;
+  padding: 0 0 0 10px;
 }
 
 .loading-indicator {
@@ -583,12 +703,10 @@ export default {
   color: #444;
 }
 
-/* 定义淡入动画 */
 .fade-enter-active, .fade-leave-active {
   transition: opacity 1s;
 }
 
-/* 定义淡入和淡出的状态 */
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
 }
