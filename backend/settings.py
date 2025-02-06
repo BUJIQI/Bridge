@@ -144,8 +144,8 @@ SESSION_COOKIE_HTTPONLY = True           # 防止 XSS
 # 设置会话过期时间为30天（以秒为单位）
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30天
 
-# 使会话在浏览器关闭时过期
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# # 使会话在浏览器关闭时过期
+# SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 
 # CSRF 设置（如果使用）
