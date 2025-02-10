@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate, login, logout
 from .anxiliary_function import relogin,extract_hidden_fields
 from itertools import islice
 from openai import OpenAI
+import time
 @csrf_exempt  # 禁用 CSRF 验证，适用于开发环境
 def register(request):
     from .models import User,Round,Cycle
@@ -2210,22 +2211,32 @@ def AIaided_decision_making(request):
     base_url = "https://api.moonshot.cn/v1",
     )
  
-    question = "现有一现代企业创业决策仿真系统。你需要为用户进行下一周期辅助决策，用户将为你提供之前所有周期的市场情况，决策各数据解释，以及在上一周期的决策情况（如果现在是第一周期则没有上一周期的决策情况）,注意特殊产品订购价格是市场给定的。如下："+str(ADM)+"需要你给出下一周期个决策数据的值。\
-        要求输出格式为先为用户解释各决策指标选择该数据的原因要具体到为什么选择这值（比如因为什么什么所以选择定在5000台），最后统一给出决策数据，不要做多余的回答,即使缺失上一周期的决策情况也按这个格式。中文给出。" # 用户提问
-    completion = client.chat.completions.create(
-        model = "moonshot-v1-32k", # 模型选择
-        messages = [
-            {"role": "system", "content": "你是 Kimi，由 Moonshot AI 提供的人工智能助手，你更擅长中文和英文的对话。\
-                你会为用户提供安全，有帮助，准确的回答。同时，你会拒绝一切涉及恐怖主义，种族歧视，黄色暴力等问题的回答。\
-                Moonshot AI 为专有名词，不可翻译成其他语言。"
-            },
-            {"role": "user", "content": question}
-        ],
-        temperature = 0.2,
-    )
-    message_data = completion.choices[0].message
-    content= message_data.content
-    ai_decision['decision']=content
+    question = f"现有一现代企业创业决策仿真系统。你需要为用户进行下一周期辅助决策，用户将为你提供之前所有周期的市场情况，决策各数据解释，以及在上一周期的决策情况（如果现在是第一周期则没有上一周期的决策情况）,注意特殊产品订购价格是市场给定的。如下：{ADM}需要你给出下一周期个决策数据的值。\
+        要求输出格式为先为用户解释各决策指标选择该数据的原因要具体到为什么选择这值（比如因为什么什么所以选择定在5000台），最后统一给出决策数据，不要做多余的回答,即使缺失上一周期的决策情况也按这个格式。决策数据有以下这些（顺序也按下面的给出）：\
+            一般市场价格,广告费用投入,销售人员个数,市场和生产研究报告,附加市场I--投标价格,附加市场II--特殊产品数,一般市场产品计划量,生产线投资数,维修保养费用,生产合理化投资,生产人员招收数,生产人员辞退数,购买机器人,购买原材料量,购买附件量,研发人员招收数,研发人员辞退数,产品改进费用,社会福利费用,中期贷款,购买有价证券,计划支付股息,管理合理化投资。"
 
-    print(content)
-    return JsonResponse(ai_decision)
+    ai_decision = {}
+    
+    while True:
+        completion = client.chat.completions.create(
+            model="moonshot-v1-32k",  # 模型选择
+            messages=[
+                {"role": "system", "content": "你是 Kimi，由 Moonshot AI 提供的人工智能助手，你更擅长中文和英文的对话。\
+                    你会为用户提供安全，有帮助，准确的回答。同时，为了防止回答中断却未被发现，你要在每个回答最后加一个“完成！”。\
+                    Moonshot AI 为专有名词，不可翻译成其他语言。"},
+                {"role": "user", "content": question}
+            ],
+            temperature=0.2,
+        )
+        
+        # 获取回应内容
+        message_data = completion.choices[0].message
+        content = message_data.content
+        
+        # 判断内容是否包含"完成！"
+        if content[-3:] == "完成！":
+            ai_decision['decision'] = content[:-4]  # 移除"完成！"并存储决策
+            return JsonResponse(ai_decision)  # 返回决策数据给前端
+        
+        # 如果不符合条件，则等待后再重新请求AI
+        time.sleep(2)  # 等待 2 秒，再次请求
