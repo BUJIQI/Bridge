@@ -11,16 +11,9 @@
               <Warning class="warning-icon" />
             </el-tooltip>
           </h3>
-          <div class="header-actions">
-            <button class="btn btn-danger btn-sm" @click="requestAIReport">
-              AI辅助决策
-            </button>
-            <div class="mode-selection">
-              <span>选择模式：</span>
-              <button :class="{ active: isOwnEnterprise }" @click="selectMode('own')">本企业</button>
-              <button :class="{ active: !isOwnEnterprise }" @click="selectMode('competitor')">竞争企业</button>
-            </div>
-          </div>
+          <button class="btn btn-danger btn-sm" @click="requestAIReport">
+            AI辅助决策
+          </button>
         </div>
         <div class="panel-body">
           <section class="decision-section sales">
@@ -81,12 +74,8 @@
               </div>
             </div>
           </section>
-
-          <div class="button-group">
-            <button class="custom-button" @click="makeBudgetDecision">预算决策</button>
-            <button class="custom-button" @click="submitDecision"
-                    :disabled="!isOwnEnterprise || isLoading"
-                    :class="{ 'disabled-button': !isOwnEnterprise || isLoading }">
+          <div class="custom-button">
+            <button class="decision-button" @click="submitDecision">
               提交决策
             </button>
           </div>
@@ -129,8 +118,6 @@ export default {
   setup() {
     const userStore = useUserStore();
     const userInfo = userStore.userInfo;
-    const isOwnEnterprise = ref(true);
-    const isLoading = ref(false);
     const explanations = ref({});
     const explanationVisibility = ref({});
     const explanationStyle = ref({});
@@ -351,8 +338,6 @@ export default {
 
     return {
       userInfo,
-      isOwnEnterprise,
-      isLoading,
       formData,
       dynamicFields,
       salesFields,
@@ -478,39 +463,16 @@ export default {
   color: #888888;
 }
 
-.header-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .btn-danger {
     background-color: rgb(255, 82, 82);
     border: none;
-    margin-left: 20px;
     font-size: 16px;
     padding: 8px;
-    margin-right: 20px;
 }
 
 .btn-danger:hover {
     background-color: rgb(207, 61, 61);
     color: #ffffff;
-}
-
-.mode-selection {
-  display: flex;
-  align-items: center;
-}
-
-.mode-selection button {
-  border: none;
-  padding: 5px;
-}
-
-.mode-selection button.active {
-  background-color: rgba(176, 63, 63, 0.733);
-  color: white;
 }
 
 .offcanvas-body pre {
@@ -549,15 +511,6 @@ export default {
 :deep(.v-html-content li) {
   margin: 0;
   padding: 0 0 0 10px;
-}
-
-.loading-indicator {
-  margin-top: 20px;
-  font-size: 16px;
-  color: #e74c3c;
-  text-align: center;
-  display: block;
-  visibility: visible;
 }
 
 .panel-body {
@@ -622,37 +575,29 @@ export default {
   font-size: 0.9em;
 }
 
-.button-group {
+.custom-button {
   display: flex;
   justify-content: center;
   margin-top: 20px;
 }
 
-.custom-button {
+.decision-button {
   background-color: #e74c3c; 
   color: white;     
-  padding: 10px;           
-  margin-left: 40px;
-  margin-right: 40px;         
+  padding: 10px; 
+  width: 150px;                  
   border-radius: 5px;  
   border: none;      
   cursor: pointer;             
   transition: background-color 0.3s, transform 0.2s; 
 }
 
-.custom-button:hover {
+.decision-button:hover {
   background-color: #c0392b;  
   transform: scale(1.05);      
 }
 
-.disabled-button {
-  background-color: #cccccc; 
-  color: #666666;              
-  cursor: not-allowed;        
-  pointer-events: none;        
-}
-
-.custom-button:active {
+.decision-button:active {
   transform: scale(0.95);     
 }
 

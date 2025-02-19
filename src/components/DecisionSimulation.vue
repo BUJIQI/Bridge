@@ -18,29 +18,6 @@
               <a 
                 href="#" 
                 class="list-link" 
-                @click="toggleMenu('budgetReports')"  
-                :class="{ collapsed: !subMenuVisible.budgetReports }"
-              >            
-                预算数据报告
-                <span class="arrow" :class="{ 'arrow-up': subMenuVisible.budgetReports, 'arrow-down': !subMenuVisible.budgetReports }"></span>
-              </a>
-              <ul v-if="subMenuVisible.budgetReports" class="submenu">
-                <li class="nav-item"><router-link class="list-link" :class="{ active: isActive('BudgetMarketProduction') }" to="/company/budget-market-production">市场生产数据报告</router-link></li>
-                <li class="nav-item"><router-link class="list-link" :class="{ active: isActive('BudgetCostType') }" to="/company/budget-cost-type">成本类型核算报告</router-link></li>
-                <li class="nav-item"><router-link class="list-link" :class="{ active: isActive('BudgetCostDepartment') }" to="/company/budget-cost-department">成本发生部门报告</router-link></li>
-                <li class="nav-item"><router-link class="list-link" :class="{ active: isActive('BudgetCostUnit') }" to="/company/budget-cost-unit">成本承担单元报告</router-link></li>
-                <li class="nav-item"><router-link class="list-link" :class="{ active: isActive('BudgetProfitLoss') }" to="/company/budget-profit-loss">利润亏损核算报告</router-link></li>
-                <li class="nav-item"><router-link class="list-link" :class="{ active: isActive('BudgetAfterTax') }" to="/company/budget-after-tax-profit">税后利润核算报告</router-link></li>
-                <li class="nav-item"><router-link class="list-link" :class="{ active: isActive('BudgetProfitDistribution') }" to="/company/budget-profit-distribution">利润分配核算报告</router-link></li>
-                <li class="nav-item"><router-link class="list-link" :class="{ active: isActive('BudgetOperatingFinancial') }" to="/company/budget-operating-financial">生产经营财务报告</router-link></li>
-                <li class="nav-item"><router-link class="list-link" :class="{ active: isActive('BudgetBalanceSheet') }" to="/company/budget-balance-sheet">资产负债合计报告</router-link></li>
-                <li class="nav-item"><router-link class="list-link" :class="{ active: isActive('BudgetMarketResearch') }" to="/company/budget-market-research">竞争市场调研报告</router-link></li>
-              </ul>                  
-            </li>
-            <li class="nav-item">
-              <a 
-                href="#" 
-                class="list-link" 
                 @click="toggleMenu('historyDecision')"
                 :class="{ collapsed: !subMenuVisible.historyDecision }"
               >
@@ -174,7 +151,6 @@ export default {
 
     const subMenuVisible = reactive({
       makeDecision: false,
-      budgetReports: false,
       dataReports: false,
       marketCycle: false,
       companyData: false,
@@ -183,7 +159,6 @@ export default {
 
     const activeMenu = reactive({
       makeDecision: false,
-      budgetReports: false,
       dataReports: false,
       marketCycle: false,
       companyData: false,
