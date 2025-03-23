@@ -4,7 +4,7 @@
       <div class="row h-100">
         <div class="col-md-8 left-section">
           <div class="logo">
-            <img src="@/assets/info.gif" alt="ICEDSS" />
+            <img src="@/assets/logo.gif" alt="ICEDSS" />
             <span>JCTD</span>
           </div>
           <div class="full-name">
