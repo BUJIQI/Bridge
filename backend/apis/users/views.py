@@ -2240,3 +2240,70 @@ def AIaided_decision_making(request):
         
         # 如果不符合条件，则等待后再重新请求AI
         time.sleep(2)  # 等待 2 秒，再次请求
+
+#修改密码
+@csrf_exempt
+def Change_password(request):
+    #检查自己网站用户会话是否过期
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
+    
+    # 获取爬虫会话Cookies
+    crawler_cookies = request.session.get('crawler_session_cookies')
+
+    # 创建爬虫会话并加载Cookies
+    session = requests.Session()
+    session.cookies.update(crawler_cookies)
+    data=json.loads(request.body)
+
+    original_password= data.get('original_password')
+    new_password= data.get('new_password')
+    confirm_password= data.get('confirm_password')
+
+    # 获取页面，提取 hidden 字段
+    url = 'http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/use/changepwd.aspx'
+    response = session.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    def get_hidden_value(name):
+        element = soup.find('input', {'name': name})
+        return element['value'] if element else ''
+    # 提取必要字段
+    viewstate = get_hidden_value('__VIEWSTATE')
+    eventvalidation = get_hidden_value('__EVENTVALIDATION')
+    viewstategen = get_hidden_value('__VIEWSTATEGENERATOR')
+
+    #发送post请求修改密码
+    url_cgpsword='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/use/changepwd.aspx'
+    change_password={
+        '__EVENTTARGET': 'ctl00$contentplaceholder1$btn1',
+        '__EVENTARGUMENT': '',
+        '__VIEWSTATE': viewstate,
+        '__VIEWSTATEGENERATOR': viewstategen,
+        '__EVENTVALIDATION': eventvalidation,
+        'ctl00$contentplaceholder1$oldpwd':original_password,
+        'ctl00$contentplaceholder1$newpwd1': new_password,
+        'ctl00$contentplaceholder1$newpwd2': confirm_password,
+        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+    }
+
+    response=session.post(url=url_cgpsword,data=change_password)
+    tree = etree.HTML(response.text)
+    response_change_password={}
+    try:
+        element2=tree.xpath('//*[@id="contentplaceholder1_Label5"]')[0]
+        result_text = element2.find('font').text
+        response_change_password['state']='False'
+    except IndexError:
+        
+        element = tree.xpath('//*[@id="contentplaceholder1_label1"]')[0]
+        result_text = element.find('font').text
+        response_change_password['state']='True'
+    response_change_password['text']=result_text
+
+
+    if response_change_password['state']=='True':
+        user = request.user  # 获取当前登录用户
+        user.set_password(new_password)  # 自动对新密码进行哈希处理
+        user.unenctypted_password = new_password  # 如果你确实需要记录明文密码（不推荐）
+        user.save()
+    return JsonResponse(response_change_password)
