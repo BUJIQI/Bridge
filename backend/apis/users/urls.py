@@ -19,4 +19,5 @@ urlpatterns = [
     path('round_hisdistail/',views.round_hisdistail,name='round_hisdistail'),
     path('AIaided_decision_making/',views.AIaided_decision_making,name='AIaided_decision_making'),
     path('change_password/',views.Change_password,name='Change_password'),
+    path('change_email/',views.change_email,name='change_email'),
 ]

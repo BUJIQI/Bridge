@@ -13,6 +13,7 @@ from .anxiliary_function import relogin,extract_hidden_fields
 from itertools import islice
 from openai import OpenAI
 import time
+from django.contrib.auth import update_session_auth_hash
 @csrf_exempt  # 禁用 CSRF 验证，适用于开发环境
 def register(request):
     from .models import User,Round,Cycle
@@ -148,9 +149,6 @@ def user_login(request):
         }
         return JsonResponse(response_login)
 
-    #登录我自己的网站
-    user_mywed = authenticate(request, username=stuid, password=password)
-    login(request, user_mywed)
 
     # 创建爬虫会话
     session=requests.Session()
@@ -181,10 +179,12 @@ def user_login(request):
     soup = BeautifulSoup(response1.text, 'html.parser')
 
     smessage = soup.find('span', {'id': 'Label4'})
-
     response_login={}
     # 返回登录结果给前端
     if smessage is None:
+            #登录我自己的网站
+        user_mywed = authenticate(request, username=stuid, password=password)
+        login(request, user_mywed)
         # 登录成功，保存爬虫会话信息到 Django 的 session 中
         request.session['crawler_session_cookies'] = session.cookies.get_dict()
         response_login['status'] = 'True'
@@ -225,6 +225,8 @@ def user_login(request):
         response_login['data']['stuid'] =user.student_id
         response_login['data']['team_name'] =user.team_name
         response_login['data']['user_class'] =user.user_class
+        response_login['data']['phone']=user.phone
+        response_login['data']['email']=user.email
 
     else:
         response_login['status'] = 'False'
@@ -2306,4 +2308,28 @@ def Change_password(request):
         user.set_password(new_password)  # 自动对新密码进行哈希处理
         user.unenctypted_password = new_password  # 如果你确实需要记录明文密码（不推荐）
         user.save()
+        # 关键步骤：保持登录状态
+        update_session_auth_hash(request, user)
     return JsonResponse(response_change_password)
+
+#修改邮箱
+@csrf_exempt
+def change_email(request):
+    #检查自己网站用户会话是否过期
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
+    
+    # 获取爬虫会话Cookies
+    crawler_cookies = request.session.get('crawler_session_cookies')
+
+    # 创建爬虫会话并加载Cookies
+    session = requests.Session()
+    session.cookies.update(crawler_cookies)
+    data=json.loads(request.body)
+    new_email = data.get('new_email')   
+    # 更新邮箱
+    user = request.user
+    user.email = new_email
+    user.save()
+
+    return JsonResponse({'message': '邮箱修改成功', 'new_email': new_email})
