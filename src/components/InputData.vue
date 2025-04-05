@@ -11,7 +11,7 @@
               <Warning class="warning-icon" />
             </el-tooltip>
           </h3>
-          <button class="btn btn-danger btn-sm" @click="requestAIReport">
+          <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="offcanvas" data-bs-target="#aiReportOffcanvas" aria-controls="aiReportOffcanvas">
             AI辅助决策
           </button>
         </div>
@@ -95,11 +95,12 @@
     <!-- AI辅助决策结果 Offcanvas -->
     <div class="offcanvas offcanvas-start" style="width: 350px;" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="aiReportOffcanvas" aria-labelledby="aiReportOffcanvasLabel">
       <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="aiReportOffcanvasLabel">AI辅助决策结果</h5>
+        <h5 class="offcanvas-title" id="aiReportOffcanvasLabel">AI辅助决策</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body v-html-content">
-        <pre v-html="aiResult"></pre>
+        <pre v-if="aiResult" v-html="aiResult"></pre>
+        <button class="btn btn-primary mt-3" @click="generateDecision">生成决策</button>
       </div>
     </div>   
   </div>
@@ -107,11 +108,10 @@
 
 <script>
 import { useUserStore } from '@/store/user';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import axios from '@/api/axios';
 import Swal from 'sweetalert2';
 import { useRouter } from 'vue-router';
-import * as bootstrap from 'bootstrap';
 import { marked } from 'marked';
 
 export default {
@@ -300,9 +300,8 @@ export default {
       }
     };
 
-    const requestAIReport = async () => {
+    const generateDecision = async () => {
       try {
-        // 显示SweetAlert2弹窗
         Swal.fire({
           title: 'AI分析结果正在生成中...',
           allowOutsideClick: false,
@@ -323,50 +322,24 @@ export default {
         // 关闭SweetAlert2弹窗
         Swal.close();
 
-        // 获取Offcanvas元素
-        const offcanvasElement = document.getElementById('aiReportOffcanvas');
-        if (offcanvasElement) {
-          // 使用getOrCreateInstance创建或获取Offcanvas实例
-          const offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
-          offcanvas.show();
-        }
+        // 保存到localStorage，使用用户ID作为键的一部分
+        const userId = userInfo.stuid; 
+        localStorage.setItem(`aiResult_${userId}`, aiResult.value);
       } catch (error) {
         console.error('请求AI辅助决策时发生错误:', error);
         Swal.fire('错误', '请求AI辅助决策时发生错误，请重试。', 'error');
       }
     };
 
-    return {
-      userInfo,
-      formData,
-      dynamicFields,
-      salesFields,
-      productionFields,
-      purchasingFields,
-      qualityFields,
-      financeFields,
-      units,
-      explanations,
-      explanationVisibility,
-      explanationStyle,
-      explanationTimer,
-      showExplanation,
-      navigateToNounsExplanation,
-      requestAIReport,
-      aiResult
+    const loadAiResultFromStorage = () => {
+      const userId = userInfo.stuid;
+      const storedAiResult = localStorage.getItem(`aiResult_${userId}`);
+      if (storedAiResult) {
+        aiResult.value = storedAiResult;
+      }
     };
-  },
 
-  methods: {
-    selectMode(mode) {
-      this.isOwnEnterprise = (mode === 'own');
-    },
-
-    makeBudgetDecision() {
-      alert('进行预算决策');
-    },
-
-    async submitDecision() {
+    const submitDecision = async () => {
       const result = await Swal.fire({
         title: '确认提交',
         text: '您确定要提交决策数据吗？',
@@ -386,49 +359,62 @@ export default {
           }
         });
         try {
-          const response = await axios.post('/users/commit_decision/', this.formData, {
+          const response = await axios.post('/users/commit_decision/', formData.value, {
             withCredentials: true
           });
           const submitResult = response.data;
           Swal.close();
 
-          // 更新周期
-          const userInfoString = localStorage.getItem('userInfo');
-          const userInfoObject = JSON.parse(userInfoString);
-          userInfoObject.cycle = submitResult['提交后周期'];
-          localStorage.setItem('userInfo', JSON.stringify(userInfoObject));
-
           if (submitResult['提交结果'] === '决策数据已经成功递交') {
             Swal.fire('成功', '决策数据已经成功递交，可前往查看竞争结果报表', 'success').then(() => {
+              // 更新周期
+              const userInfoString = localStorage.getItem('userInfo');
+              const userInfoObject = JSON.parse(userInfoString);
+              userInfoObject.cycle = submitResult['提交后周期'];
+              localStorage.setItem('userInfo', JSON.stringify(userInfoObject));
+               // 清空AI结果缓存
+              const userId = userInfo.stuid;
+              localStorage.removeItem(`aiResult_${userId}`); 
               window.location.reload(); // 自动刷新页面
             });
           } else {
             Swal.fire('失败', submitResult['提交结果'], 'error');
           }
         } catch (error) {
-          if (error.response && error.response.status === 403) {
-            // 处理403状态码
-            Swal.fire({
-              title: '登录状态过期',
-              text: '当前登录状态已过期，请重新登录',
-              icon: 'warning',
-              confirmButtonText: '确定'
-            }).then(() => {
-              localStorage.clear();
-              this.$router.push('/login');
-            });
-          } else {
-            console.error('提交决策时发生错误:', error);
-            Swal.fire('错误', '提交决策时发生错误，请重试。', 'error');
-          }
-        } finally {
-          this.isLoading = false; // 结束加载
+          console.error('提交决策时发生错误:', error);
+          Swal.fire('错误', '提交决策时发生错误，请重试。', 'error');
         }
       } else {
         Swal.fire('已取消', '您的决策数据未提交', 'info');
       }
-    }
-  }
+    };
+
+    // 组件挂载时加载AI结果
+    onMounted(() => {
+      loadAiResultFromStorage();
+    });
+
+    return {
+      userInfo,
+      formData,
+      dynamicFields,
+      salesFields,
+      productionFields,
+      purchasingFields,
+      qualityFields,
+      financeFields,
+      units,
+      explanations,
+      explanationVisibility,
+      explanationStyle,
+      explanationTimer,
+      showExplanation,
+      navigateToNounsExplanation,
+      generateDecision,
+      aiResult,
+      submitDecision
+    };
+  },
 }
 </script>
 
@@ -486,6 +472,19 @@ export default {
   font-family: Arial, sans-serif;
   color: #333;
   line-height: 1.5;
+  margin: 0;
+}
+
+.btn-primary {
+  background-color: #ec7676;
+  border: none;
+  font-size: 16px;
+  padding: 8px;
+  margin-bottom: 20px;
+}
+
+.btn-primary:hover {
+  background-color: #c96060;
 }
 
 :deep(.v-html-content h3) {

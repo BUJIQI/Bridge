@@ -150,7 +150,8 @@ export default {
               icon: 'success'
             });
 
-            localStorage.clear();
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userInfo');
             router.push('/login');
           }
         } catch (error) {

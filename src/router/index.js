@@ -327,7 +327,8 @@ router.beforeEach((to, from, next) => {
         icon: 'warning',
         confirmButtonText: '确定'
       }).then(() => {
-        localStorage.clear();
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userInfo');
         next('/login');
       });
     } else {
