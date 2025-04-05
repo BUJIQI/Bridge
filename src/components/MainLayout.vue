@@ -5,7 +5,7 @@
       <div class="container-fluid">
         <!-- 网页链接 -->
         <router-link class="navbar-brand" to="/" >
-          <img src="@/assets/info.gif" alt="ICEDSS" width="40" height="40">
+          <img src="@/assets/logo.gif" alt="ICEDSS" width="40" height="40">
           JCTD
         </router-link>
 
@@ -150,7 +150,8 @@ export default {
               icon: 'success'
             });
 
-            localStorage.clear();
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userInfo');
             router.push('/login');
           }
         } catch (error) {

@@ -40,7 +40,8 @@ export default {
             icon: 'warning',
             confirmButtonText: '确定'
           }).then(() => {
-            localStorage.clear();
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userInfo');
             router.push('/login');
           });
         }

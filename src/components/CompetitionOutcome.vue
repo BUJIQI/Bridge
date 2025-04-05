@@ -9,7 +9,8 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th colspan="2">项目/企业</th>
+              <th>项目</th>
+              <th>单位</th>
               <th>1</th>
               <th>2</th>
             </tr>
@@ -110,7 +111,6 @@ export default {
 }
 
 .panel-body {
-  background-color: #ebdcdc;
   padding: 20px;
   border-radius: 8px;
 }

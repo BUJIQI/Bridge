@@ -320,7 +320,8 @@ export default {
     padding: 5px;
     border: 1px solid #888;
     border-radius: 4px;
-    margin-right: 5px;      
+    margin-right: 5px;    
+    width: 200px;  
 }
 
 .input-wrapper .unit {

@@ -3,7 +3,7 @@
         <div class="header d-flex justify-content-between align-items-center">
             历史对局
             <button class="btn btn-link btn-sm" @click="goBack">
-                <i class="fas fa-arrow-left"></i>
+                <i class="bi bi-arrow-90deg-left"></i>
                 返回
             </button>
         </div>
