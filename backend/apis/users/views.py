@@ -1174,8 +1174,12 @@ def commit_decision(request):
             # 使用XPath定位元素
             # 例如，定位一个包含特定文本的元素
             element1 = tree.xpath('//font[@style="font-size:16px"]/text()')
-            element2 = tree.xpath('//font[@style="POSITION:relative;top:20px;Z-INDEX:4;font-size: 24px;font-family:隶书;"]/text()')
-            element3 = tree.xpath('//font[@style="position:relative;top:15px;Z-INDEX:4;line-height:15px; width:500px;height: 50px;font-size: 40px;font-family:隶书;"]/text()')
+            # 匹配包含“font-size: 24px”的 font 标签（第3周期）
+            element2 = tree.xpath('//font[contains(@style, "font-size: 24px") and contains(text(), "周期")]/text()')
+
+            # 匹配包含“font-size: 40px”的 font 标签（报告名称）
+            element3 = tree.xpath('//font[contains(@style, "font-size: 40px") and contains(text(), "数据报告")]/text()')
+
             # 删除字段中的 \xa0
             cleaned_element1 = [text.replace('\xa0', '') for text in element1]   #数据 如：['1150', '0', '840', '19873', '0']
             cleaned_element2 = [text.replace('\xa0', '') for text in element2]   #周期数 如：['（第4周期）']
@@ -1183,7 +1187,6 @@ def commit_decision(request):
             cleaned_element1 = [item.strip() for item in cleaned_element1 
                 if (re.search(r'\d', item) or item == "---"or item == " ---"or item == " -"or item == "***") 
                 and item not in ["生产线负载率100%时生产能力", "(0--1)","(1--5)"]] #数据（再次清洗后） 如：['1150', '0', '840', '19873', '0']
-
             #判断当前周期是否有报告
             if  cleaned_element3:
                 if len(cleaned_element2[0])>8:
