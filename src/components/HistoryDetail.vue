@@ -139,10 +139,10 @@ const chartOption = computed(() => {
                 type: 'line',
                 data: roundData.value.各周期评分, // 使用roundData.各周期评分作为数据
                 itemStyle: {
-                    color: '#f94d4d' // 设置折线颜色为红色
+                    color: '#f94d4d' 
                 },
                 lineStyle: {
-                    color: '#f94d4d' // 设置折线颜色为红色
+                    color: '#f94d4d' 
                 }
             }
         ]
@@ -206,7 +206,7 @@ onMounted(() => {
 }
 
 .badge {
-    background-color: #d34e4e;
+    background-color: #707070;
     color: #fff;
 }
 
