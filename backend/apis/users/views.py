@@ -234,7 +234,6 @@ def user_login(request):
         response_login['data']['logintxt'] = smessage.text
 
 
-
     return JsonResponse(response_login)
 
 
@@ -382,7 +381,6 @@ def look_marketsituation(request):
                 ordering_price=data.get('订购价格', ''),
             )
             break
-
         return JsonResponse(response_look1)
 
 
@@ -464,9 +462,8 @@ def lookhistory(request):
             user_instance = User.objects.get(uid=uid)
             response_lookhistory="response_lookhistory"
             response_lookhistory = Datakeep.get_field_data(user_instance,response_lookhistory)
-
             return JsonResponse(response_lookhistory)
-
+    
     else:
         url_lookhistory='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
         data_lookhistory={
@@ -718,24 +715,52 @@ def commit_decision(request):
         if newcycle.cycle_number==7 and newcycle.end_time!=None:    #判断是否为最后一周期
             state_1=0
         
-        if state_1==1:                                             #state_1==1表明不是最后一周期可以爬取1.1和1.2
-            # 1.1
-            # 1.1
-            # 1.1
-            # 1.1
-            # 1.1
-            #爬取并存入response_look1    
-              
-            url_look1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
-            response1=session.get(url=url_look1)
-            # 解析HTML内容
-            tree=etree.HTML(response1.text)
+                                           
+        # 1.1
+        # 1.1
+        # 1.1
+        # 1.1
+        # 1.1
+        #爬取并存入response_look1    
             
+        url_look1='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
+        response1=session.get(url=url_look1)
+        # 解析HTML内容
+        tree=etree.HTML(response1.text)
+        
+        # 使用XPath定位元素
+        # 例如，定位一个包含特定文本的元素
+        element1 = tree.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
+        element2 = tree.xpath('//font[@color="#000000" and @style="font-size:18px"]/text()')
+        element3 = tree.xpath('//font[@class="title"]/text()')
+        # 删除字段中的 \xa0
+        cleaned_element1 = [text.replace('\xa0', '') for text in element1]
+        cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+        cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+        cleaned_element1 = [element.lstrip('·') for element in cleaned_element1]
+        response_looknow={}
+        response_looknow['标题']=cleaned_element3[0]
+        for i,j in zip(cleaned_element1,cleaned_element2):
+            response_looknow[i]=j
+        response_look1[response_looknow['标题']]=response_looknow
+        
+        while len(response_looknow['标题'])<16:
+            url_look1_switchover='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
+            data_look1_switchover={
+                '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOQ9kFgJmD2QWAgIDD2QWAgIBD2QWBAIEDxYCHgdWaXNpYmxlaBYCAgEPZBYEAgEPDxYCHgRUZXh0BTXnrKwgMSDlkajmnJ/miqXlkYrlt7LmmK/lj6/nnIvnmoTmnIDml6nmiqXlkYrvvIw8YnIvPmRkAgMPDxYCHwFlZGQCCA8WAh8AaBYCAgEPZBYCAgEPDxYCHwEFNiA8YnIvPuesrCA3IOWRqOacn+aKpeWRiuW3suaYr+WPr+eci+eahOacgOWQjuaKpeWRiu+8gWRkZBmTd+AeDzUNQa2vzCRT56lsSWQmVcW0na2NEIfHf9Tc',
+                '__VIEWSTATEGENERATOR': '94DCD150',
+                '__EVENTVALIDATION': '/wEdAAaI5UnofgfVCsO/QLIHFqLpufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zDQiHzVrlf2wb7y+XRSWNi82if6HN5I9VzZLdku/7Y22A==',
+                'ctl00$contentplaceholder1$ober': '上一周期',
+                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+            }
+            response11=session.post(url=url_look1_switchover,data=data_look1_switchover)
+            # 解析HTML内容
+            tree1=etree.HTML(response11.text)
             # 使用XPath定位元素
             # 例如，定位一个包含特定文本的元素
-            element1 = tree.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
-            element2 = tree.xpath('//font[@color="#000000" and @style="font-size:18px"]/text()')
-            element3 = tree.xpath('//font[@class="title"]/text()')
+            element1 = tree1.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
+            element2 = tree1.xpath('//font[@color="#000000" and @style="font-size:18px"]/text()')
+            element3 = tree1.xpath('//font[@class="title"]/text()')
             # 删除字段中的 \xa0
             cleaned_element1 = [text.replace('\xa0', '') for text in element1]
             cleaned_element2 = [text.replace('\xa0', '') for text in element2]
@@ -746,43 +771,64 @@ def commit_decision(request):
             for i,j in zip(cleaned_element1,cleaned_element2):
                 response_looknow[i]=j
             response_look1[response_looknow['标题']]=response_looknow
-            
-            while len(response_looknow['标题'])<16:
-                url_look1_switchover='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
-                data_look1_switchover={
-                    '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOQ9kFgJmD2QWAgIDD2QWAgIBD2QWBAIEDxYCHgdWaXNpYmxlaBYCAgEPZBYEAgEPDxYCHgRUZXh0BTXnrKwgMSDlkajmnJ/miqXlkYrlt7LmmK/lj6/nnIvnmoTmnIDml6nmiqXlkYrvvIw8YnIvPmRkAgMPDxYCHwFlZGQCCA8WAh8AaBYCAgEPZBYCAgEPDxYCHwEFNiA8YnIvPuesrCA3IOWRqOacn+aKpeWRiuW3suaYr+WPr+eci+eahOacgOWQjuaKpeWRiu+8gWRkZBmTd+AeDzUNQa2vzCRT56lsSWQmVcW0na2NEIfHf9Tc',
-                    '__VIEWSTATEGENERATOR': '94DCD150',
-                    '__EVENTVALIDATION': '/wEdAAaI5UnofgfVCsO/QLIHFqLpufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zDQiHzVrlf2wb7y+XRSWNi82if6HN5I9VzZLdku/7Y22A==',
-                    'ctl00$contentplaceholder1$ober': '上一周期',
-                    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
-                }
-                response11=session.post(url=url_look1_switchover,data=data_look1_switchover)
-                # 解析HTML内容
-                tree1=etree.HTML(response11.text)
-                # 使用XPath定位元素
-                # 例如，定位一个包含特定文本的元素
-                element1 = tree1.xpath('//font[translate(@color, "F", "f")="#ffffff" and @style="font-size:18px"]/text()')
-                element2 = tree1.xpath('//font[@color="#000000" and @style="font-size:18px"]/text()')
-                element3 = tree1.xpath('//font[@class="title"]/text()')
-                # 删除字段中的 \xa0
-                cleaned_element1 = [text.replace('\xa0', '') for text in element1]
-                cleaned_element2 = [text.replace('\xa0', '') for text in element2]
-                cleaned_element3 = [text.replace('\xa0', '') for text in element3]
-                cleaned_element1 = [element.lstrip('·') for element in cleaned_element1]
-                response_looknow={}
-                response_looknow['标题']=cleaned_element3[0]
-                for i,j in zip(cleaned_element1,cleaned_element2):
-                    response_looknow[i]=j
-                response_look1[response_looknow['标题']]=response_looknow
-            # 将字典项转换为列表并倒序
-            reversed_items = list(response_look1.items())[::-1]
-            
-            # 将倒序后的列表转换回字典
-            response_look1 = dict(reversed_items)
-            if len(response_look1)<7:
-                for i in range(len(response_look1),7):
-                    response_look1['第'+str(i+1)+'周期市场形势报告']='无'
-            # 将数据存入数据库
+        # 将字典项转换为列表并倒序
+        reversed_items = list(response_look1.items())[::-1]
+        
+        # 将倒序后的列表转换回字典
+        response_look1 = dict(reversed_items)
+        if len(response_look1)<7:
+            for i in range(len(response_look1),7):
+                response_look1['第'+str(i+1)+'周期市场形势报告']='无'
+
+        # 1.2
+        # 1.2
+        # 1.2
+        # 1.2
+        # 1.2
+        url_lookhistory='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
+        data_lookhistory={
+            '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOWRkcH+X8uLl91V+Wwn59cMAChdkvb49cBtIUw1ctC5d2vI=',
+            '__VIEWSTATEGENERATOR': '94DCD150',
+            '__EVENTVALIDATION': '/wEdAAas194nENGdrO9KNXirw1X2ufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zArqoVeHawAFMgtV364YEwGDV0dgpUkABn/BNQJlgqepA==',
+            'ctl00$contentplaceholder1$back': '历史平均',
+            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+        }
+
+        response1=session.post(url=url_lookhistory,data=data_lookhistory)
+        # 解析返回的页面
+        soup = BeautifulSoup(response1.text, 'html.parser')
+
+        # 解析HTML内容
+        tree=etree.HTML(response1.text)
+
+        # 使用XPath定位元素
+        # 例如，定位一个包含特定文本的元素
+        element2 = tree.xpath('//font[@color="#000000" and @style="font-size: 16px"]/text()')
+        element3 = tree.xpath('//font[@class="title"]/text()')
+        # 删除字段中的 \xa0
+
+        cleaned_element2 = [text.replace('\xa0', '') for text in element2]
+        cleaned_element3 = [text.replace('\xa0', '') for text in element3]
+        data_list=cleaned_element2
+
+        
+        response_lookhistory['标题']=cleaned_element3[0]
+
+
+        # Extracting order quantities and unit prices
+        response_lookhistory['订购批量_批量范围'] = data_list[0:12:3]
+        response_lookhistory['订购批量_原材料单价（元）'] = data_list[1:12:3]
+        response_lookhistory['订购批量_附件单价（元）'] = data_list[2:12:3]
+
+        # Extracting department salaries
+        response_lookhistory['部门'] = data_list[12:22:2]
+        response_lookhistory['年薪（万元）'] = data_list[13:22:2]
+
+        # Extracting fund types and amounts
+        response_lookhistory['资金类型'] = data_list[22::2]
+        response_lookhistory['数额（万元）'] = data_list[23::2]
+        # 将数据存入数据库（1.1，1.2一起）
+        if state_1==1:      #state_1==1表明不是最后一周期可以存储1.1和1.2
             num=0
             for title, data in response_look1.items():
                 num+=1
@@ -800,53 +846,7 @@ def commit_decision(request):
                     )
                     break
                         
-            # 1.2
-            # 1.2
-            # 1.2
-            # 1.2
-            # 1.2
-            url_lookhistory='http://www.jctd.net/cyjc/cyrjdkweb/cysx/rjdkweb/mtrend/mtrend.aspx'
-            data_lookhistory={
-                '__VIEWSTATE': '/wEPDwUKMTk0OTkyNTkwOWRkcH+X8uLl91V+Wwn59cMAChdkvb49cBtIUw1ctC5d2vI=',
-                '__VIEWSTATEGENERATOR': '94DCD150',
-                '__EVENTVALIDATION': '/wEdAAas194nENGdrO9KNXirw1X2ufKS5sa+yJvJjw+5JY9vLwktJF0MZ56SB8vS/XZ5neQ6okqFUwKhyoUSfg2h7Mgo1dNSXck49YdW1B5T4adaDrk4TCrBr5sOTl9xSqNj9zArqoVeHawAFMgtV364YEwGDV0dgpUkABn/BNQJlgqepA==',
-                'ctl00$contentplaceholder1$back': '历史平均',
-                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
-            }
 
-            response1=session.post(url=url_lookhistory,data=data_lookhistory)
-            # 解析返回的页面
-            soup = BeautifulSoup(response1.text, 'html.parser')
-
-            # 解析HTML内容
-            tree=etree.HTML(response1.text)
-
-            # 使用XPath定位元素
-            # 例如，定位一个包含特定文本的元素
-            element2 = tree.xpath('//font[@color="#000000" and @style="font-size: 16px"]/text()')
-            element3 = tree.xpath('//font[@class="title"]/text()')
-            # 删除字段中的 \xa0
-
-            cleaned_element2 = [text.replace('\xa0', '') for text in element2]
-            cleaned_element3 = [text.replace('\xa0', '') for text in element3]
-            data_list=cleaned_element2
-
-            
-            response_lookhistory['标题']=cleaned_element3[0]
-
-
-            # Extracting order quantities and unit prices
-            response_lookhistory['订购批量_批量范围'] = data_list[0:12:3]
-            response_lookhistory['订购批量_原材料单价（元）'] = data_list[1:12:3]
-            response_lookhistory['订购批量_附件单价（元）'] = data_list[2:12:3]
-
-            # Extracting department salaries
-            response_lookhistory['部门'] = data_list[12:22:2]
-            response_lookhistory['年薪（万元）'] = data_list[13:22:2]
-
-            # Extracting fund types and amounts
-            response_lookhistory['资金类型'] = data_list[22::2]
-            response_lookhistory['数额（万元）'] = data_list[23::2]
 
             MarketHistoryReport.objects.create(
                 cycle_id=newcycle,
@@ -1173,13 +1173,11 @@ def commit_decision(request):
             tree=etree.HTML(response.text)
             # 使用XPath定位元素
             # 例如，定位一个包含特定文本的元素
-            element1 = tree.xpath('//font[@style="font-size:16px"]/text()')
+            element1 = tree.xpath('//font[contains(@style, "font-size:16px")]/text()')
             # 匹配包含“font-size: 24px”的 font 标签（第3周期）
             element2 = tree.xpath('//font[contains(@style, "font-size: 24px") and contains(text(), "周期")]/text()')
-
             # 匹配包含“font-size: 40px”的 font 标签（报告名称）
-            element3 = tree.xpath('//font[contains(@style, "font-size: 40px") and contains(text(), "数据报告")]/text()')
-
+            element3 = tree.xpath('//font[contains(@style, "font-size: 40px") and contains(@style, "font-family: 隶书")]/text()')
             # 删除字段中的 \xa0
             cleaned_element1 = [text.replace('\xa0', '') for text in element1]   #数据 如：['1150', '0', '840', '19873', '0']
             cleaned_element2 = [text.replace('\xa0', '') for text in element2]   #周期数 如：['（第4周期）']
@@ -1205,14 +1203,15 @@ def commit_decision(request):
                     #爬取目标网站
                     url=urll+'3&hcycleno='+str(i)
                     response=session.get(url=url)
-
                     # 解析HTML内容
                     tree=etree.HTML(response.text)
                     # 使用XPath定位元素
                     # 例如，定位一个包含特定文本的元素
-                    element1 = tree.xpath('//font[@style="font-size:16px"]/text()')
-                    element2 = tree.xpath('//font[@style="POSITION:relative;top:20px;Z-INDEX:4;font-size: 24px;font-family:隶书;"]/text()')
-                    element3 = tree.xpath('//font[@style="position:relative;top:15px;Z-INDEX:4;line-height:15px; width:500px;height: 50px;font-size: 40px;font-family:隶书;"]/text()')
+                    element1 = tree.xpath('//font[contains(@style, "font-size:16px")]/text()')
+                    # 匹配包含“font-size: 24px”的 font 标签（第3周期）
+                    element2 = tree.xpath('//font[contains(@style, "font-size: 24px") and contains(text(), "周期")]/text()')
+                    # 匹配包含“font-size: 40px”的 font 标签（报告名称）
+                    element3 = tree.xpath('//font[contains(@style, "font-size: 40px") and contains(@style, "font-family: 隶书")]/text()')
                     # 删除字段中的 \xa0
                     cleaned_element1 = [text.replace('\xa0', '') for text in element1]   #数据 如：['1150', '0', '840', '19873', '0']
                     cleaned_element2 = [text.replace('\xa0', '') for text in element2]   #周期数 如：['（第4周期）']
@@ -1785,7 +1784,6 @@ def enterreporting(request):
     user_instance = User.objects.get(uid=uid)
     response_enterreporting="response_enterreporting"
     response_enterreporting = Datakeep.get_field_data(user_instance,response_enterreporting)
-
     return JsonResponse(response_enterreporting)  
 
 
@@ -1859,7 +1857,6 @@ def new_rounds(request):
     if '已进行了 20 次新的一轮，不得重新开始!' in response.text:
         respond_new_rounds['state']='已进行了 20 次新的一轮，不得重新开始!'
         respond_new_rounds['restronundmum']='0'
-
     # 如果还有新的一轮次数，返回剩余新的一轮次数，
     else:
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -1908,7 +1905,6 @@ def new_rounds(request):
             cycle_number=1,
         )
         new_cycle.save()  # 保存到数据库中 
-
     return JsonResponse(respond_new_rounds)
 
 #用户对局等信息查看
@@ -1936,7 +1932,7 @@ def user_data(request):
         cycle=Cycle.objects.filter(round_id=round.round_id).last()
         evaluation=Evaluation.objects.filter(round_id=round.round_id).last()
         if cycle.end_time:
-            end_time_local = timezone.localtime(cycle.end_time)
+            end_time_local = timezone.localtime(round.end_time)
             end_time=str(end_time_local)
             respond_userdata['history_rounds'][end_time[:19]]={}
             respond_userdata['history_rounds'][end_time[:19]]['结束周期']=cycle.cycle_number
@@ -1966,7 +1962,6 @@ def user_data(request):
     else:
         respond_userdata['current_rounds'][start_time[:19]]['末周期评分']='未评分'
         respond_userdata['current_rounds'][start_time[:19]]['名次']='未评分'
-
     return JsonResponse(respond_userdata)
 
 
@@ -1980,7 +1975,6 @@ def round_hisdistail(request):
         return JsonResponse({'error': '会话已过期，请重新登录'}, status=403)
     data=json.loads(request.body)
     endtime= data.get('endtime')
-
     #获取用户id
     uid = request.session.get('uid')
 
