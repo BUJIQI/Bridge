@@ -38,6 +38,8 @@
                         </tr>
                     </tbody>
                 </table>
+                <hr>
+                <e-charts :option="chartOption" style="width: 100%; height: 300px;" />
             </div>
         </div>
 
@@ -52,8 +54,7 @@
                                 <ul class="list-group">
                                     <li class="list-group-item" v-for="(value, key) in roundData['各指标评分汇总-市场类指标']"
                                         :key="key">
-                                        {{ key }}: <span class="badge" style="background-color: lightcoral;">{{ value
-                                            }}</span>
+                                        {{ key }}: <span class="badge">{{ value }}</span>
                                     </li>
                                 </ul>
                             </div>
@@ -66,8 +67,7 @@
                                 <ul class="list-group">
                                     <li class="list-group-item" v-for="(value, key) in roundData['各指标评分汇总-生产类指标']"
                                         :key="key">
-                                        {{ key }}: <span class="badge" style="background-color: lightcoral;">{{ value
-                                            }}</span>
+                                        {{ key }}: <span class="badge">{{ value }}</span>
                                     </li>
                                 </ul>
                             </div>
@@ -80,8 +80,7 @@
                                 <ul class="list-group">
                                     <li class="list-group-item" v-for="(value, key) in roundData['各指标评分汇总-财务类指标']"
                                         :key="key">
-                                        {{ key }}: <span class="badge" style="background-color: lightcoral;">{{ value
-                                            }}</span>
+                                        {{ key }}: <span class="badge">{{ value }}</span>
                                     </li>
                                 </ul>
                             </div>
@@ -93,36 +92,69 @@
     </div>
 </template>
 
-<script>
-import { ref, onMounted } from 'vue';
+<script setup>
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+const route = useRoute();
+const router = useRouter();
 
-export default {
-    setup() {
-        const route = useRoute();
-        const router = useRouter();
-        const roundData = ref({
-            各周期评分: [] // 初始化时设置默认值为一个空数组
-        });
+const roundData = ref({
+    各周期评分: [] 
+});
 
-        const goBack = () => {
-            router.go(-1);
-        };
-
-        onMounted(() => {
-            const roundDataStr = route.query.roundData;
-            if (roundDataStr) {
-                roundData.value = JSON.parse(roundDataStr);
-            }
-        });
-
-        return {
-            roundData,
-            goBack,
-        };
-    }
+const goBack = () => {
+    router.go(-1);
 };
+
+// 计算图表的option
+const chartOption = computed(() => {
+    return {
+        tooltip: {
+            trigger: 'axis'
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        xAxis: {
+            type: 'category',
+            data: Array.from({ length: 7 }, (_, i) => `第${i + 1}周期`) // 动态生成周期数据
+        },
+        yAxis: {
+            type: 'value',
+            min: 0,
+            max: 100
+        },
+        series: [
+            {
+                name: '评分',
+                type: 'line',
+                data: roundData.value.各周期评分, // 使用roundData.各周期评分作为数据
+                itemStyle: {
+                    color: '#f94d4d' // 设置折线颜色为红色
+                },
+                lineStyle: {
+                    color: '#f94d4d' // 设置折线颜色为红色
+                }
+            }
+        ]
+    };
+});
+
+onMounted(() => {
+    const roundDataStr = route.query.roundData;
+    if (roundDataStr) {
+        roundData.value = JSON.parse(roundDataStr);
+    }
+});
 </script>
 
 <style scoped>
@@ -168,8 +200,14 @@ export default {
 }
 
 .card .card-header {
-    background-color: #ffdede;
+    background-color: #ff8e8e;
     border-bottom: none;
+    color: #fff;
+}
+
+.badge {
+    background-color: #d34e4e;
+    color: #fff;
 }
 
 .table th,
