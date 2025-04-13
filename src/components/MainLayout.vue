@@ -102,8 +102,12 @@ export default {
               const userInfoObject = JSON.parse(userInfoString);
               userInfoObject.cycle = 1;
               localStorage.setItem('userInfo', JSON.stringify(userInfoObject));
-              // 自动刷新页面
-              window.location.reload();
+              // 自动跳转到根路径
+              router.push('/');
+              // 延迟1秒后刷新页面
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
             });
           } else {
             // 没有重开次数的情况
