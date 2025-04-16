@@ -8,6 +8,8 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
+import ECharts from 'vue-echarts';
+import 'echarts';
 
 const app = createApp(App);
 
@@ -15,6 +17,9 @@ const app = createApp(App);
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);
 }
+
+// 注册 Vue ECharts 组件
+app.component('ECharts', ECharts);
 
 app.use(router);
 app.use(createPinia());
